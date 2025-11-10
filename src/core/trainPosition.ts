@@ -1,20 +1,20 @@
-import { simulation } from "./simulation";
 import type { Rail } from "./rail";
 import { Position } from "../utils/position";
+import type { Track } from "./track";
 
 export enum TrainDirection {
     FromStartToEnd,
     FromEndToStart,
 }
-
+export type TrainPosition = Track | TrainPositionOnRail;
 /**
  * For representation of each Train Position on the way
  */
-export class TrainPosition {
+export class TrainPositionOnRail {
     // maybe export should be here also
-    /** distance from the previous Station */
-    #distance: number; // in something per step // TODO - modify when velocity set
-    /** as the name suggests - idk if mandatory in the basic version */
+    /** from start to the next station */
+    #distance: number;
+    /**  */
     #rail: Rail;
     #direction: TrainDirection;
 
@@ -24,28 +24,6 @@ export class TrainPosition {
         this.#direction = direction;
     }
 
-    /**
-     * Moves train in a simulation step period
-     * @param velocity train current velocity
-     * @param acceleration train current acceleration
-     */
-    trainStep(velocity: number, acceleration: number) {
-        this.#distance +=
-            this.getTrainStep(velocity, acceleration);
-    }
-
-    getTrainStep(velocity: number, acceleration: number): number {
-        return velocity * simulation.timeStep + (1 / 2) * (acceleration * simulation.timeStep * simulation.timeStep);
-    }
-
-    /**
-     * Changes the rail train is currently using
-     * @param newRailNumber (new) current rail number
-     */
-    updateRailNumber(newRail: Rail) {
-        this.#rail = newRail;
-        this.#distance = 0;
-    }
 
     calculatePosition(): Position {
         if (this.#direction === TrainDirection.FromStartToEnd) {
@@ -55,7 +33,7 @@ export class TrainPosition {
         }
     }
 
-    moveAlongRail(distanceDelta: number) {
+    move(distanceDelta: number) {
         this.#distance += distanceDelta;
     }
 

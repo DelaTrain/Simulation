@@ -16,21 +16,6 @@ export class Position {
         return this.#longitude;
     }
 
-    // /**
-    //  * @returns distance to other in meters
-    //  */
-    // distanceTo(other: Position): number {
-    //     return L.latLng(this.#latitude, this.#longitude).distanceTo(L.latLng(other.#latitude, other.#longitude));
-    // }
-
-    // moveBy(other: Position, distance: number): Position {
-    //     const totalDistance = this.distanceTo(other);
-    //     const fraction = distance / totalDistance;
-    //     const lat = this.#latitude + (other.#latitude - this.#latitude) * fraction;
-    //     const lon = this.#longitude + (other.#longitude - this.#longitude) * fraction;
-    //     return new Position(lat, lon);
-    // }
-
     toArray(): [number, number] {
         return [this.#latitude, this.#longitude];
     }

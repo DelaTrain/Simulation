@@ -5,39 +5,29 @@ import type { Train } from "./train";
 import DATA from "../../data/delatrain.json";
 import type { Rail } from "./rail";
 import { updateTime } from "../app";
+import { Time } from "../utils/time";
+import type { TrainTemplate } from "./trainTemplate";
 
 export class Simulation {
-    timeStep: number = 15000; // in milliseconds
-    currentTime: number = Date.now(); // in milliseconds
+    timeStep: number = 15; // in seconds
+    currentTime: Time = new Time(0, 0, 0);
     autorun: boolean = false;
     autorunSpeed: number = 250; // in milliseconds
 
     stations: Map<string, Station>;
     trains: Train[] = [];
-    trainsUnspawned: Train[];
+    trainsUnspawned: TrainTemplate[] = [];
     rails: Set<Rail>;
-    callback: any = null;
 
     constructor(data: ImportedData) {
         this.stations = data.stations;
-        this.trainsUnspawned = data.trains;
+        //this.trainsUnspawned = data.trains; // TODO: przepisać importer, @Kacper0510
         this.rails = data.rails;
-        this.#resetTime();
+        // this.#resetTime(); // TODO
     }
 
     step() {
-        this.currentTime += this.timeStep;
-        updateTime();
-
-        this.trains.forEach((train) => {
-            train.moveTrain();
-        });
-
-        this.stations.forEach((station) => {
-            station.startTrains(new Date(this.currentTime));
-        });
-
-        this.callback(this.trains);
+        this.currentTime.addSeconds(this.timeStep);
     }
 
     runAutomatically() {
@@ -46,16 +36,6 @@ export class Simulation {
         setTimeout(() => this.runAutomatically(), this.autorunSpeed);
     }
 
-    restart() {
-        this.#resetTime();
-        updateTime();
-    }
-
-    #resetTime() {
-        const date = new Date();
-        date.setHours(4, 20, 0, 0);
-        this.currentTime = date.getTime();
-    }
 }
 
 /*

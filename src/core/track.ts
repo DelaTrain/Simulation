@@ -1,33 +1,29 @@
+import { Station } from "./station";
 import { Train } from "./train";
+import { Position } from "../utils/position";
 
 /**
  * For representation of each platform Track at the station
  */
 export class Track {
+    #station: Station;
     #platformNumber: number;
     /** track "number" within the platform may have some letters in it */
     #trackNumber: string;
     /** all Train units present on the platform track */
-    #currectOccupancy: Train | null;
+    #currentTrain: Train | null;
 
-
-    /** maximum amount of Train units on the Track */
-    #capacity: number = 1;
-
-    constructor(platformNumber: number, trackNumber: string, capacity: number) {
+    constructor(station: Station, platformNumber: number, trackNumber: string) {
+        this.#station = station;
         this.#platformNumber = platformNumber;
         this.#trackNumber = trackNumber;
-        this.#capacity = capacity;
-        this.#currectOccupancy = null;
+        this.#currentTrain = null;
     }
 
-    /**
-     * Checks if the Track has some space for a train or trains
-     * @returns false if is full
-     */
-    isFull(): boolean {
-        return this.#currectOccupancy != null;
+    getPosition(): Position {
+        return this.#station.position;
     }
+
 
     /**
      * Removes a specified train from the Track
@@ -35,8 +31,8 @@ export class Track {
      * @returns deleted Train or null if there is no
      */
     trainDepart(): Train | null {
-        let deleted = this.#currectOccupancy;
-        this.#currectOccupancy = null;
+        const deleted = this.#currentTrain;
+        this.#currentTrain = null;
         return deleted;
     }
 
@@ -46,8 +42,8 @@ export class Track {
      * @returns false if the Track is full
      */
     trainArrival(train: Train): boolean {
-        if(this.#currectOccupancy == null){
-            this.#currectOccupancy = train;
+        if(this.#currentTrain == null){
+            this.#currentTrain = train;
             return true;
         }else{
             return false;
@@ -61,12 +57,9 @@ export class Track {
         return this.#trackNumber;
     }
     get currentOccupancy() {
-        return this.#currectOccupancy;
-    }
-    get capacity() {
-        return this.#capacity;
+        return this.#currentTrain;
     }
     get trains() {
-        return this.#currectOccupancy;
+        return this.#currentTrain;
     }
 }

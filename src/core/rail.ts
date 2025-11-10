@@ -12,10 +12,10 @@ export class Rail {
         this.#positions = positions;
         this.#fromStation = fromStation;
         this.#toStation = toStation;
-        this.calculateDistances();
+        this.#calculateDistances();
     }
 
-    calculateDistances() {
+    #calculateDistances() {
         const allPositions = this.allPositions();
         this.#distances = [...Array(allPositions.length - 1).keys()].map((i) =>
             allPositions[i].distanceTo(allPositions[i + 1])

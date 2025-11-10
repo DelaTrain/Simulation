@@ -6,10 +6,10 @@ export class TrainCategory {
     /** priority scale value amongst trains */
     #priority: number = 0;
     /** the time exceeding which will result in some delay */
-    #maxWaitingTime: number = 0; // Is it ok?
+    #maxWaitingTime: number = 0;
     /** speed value which cannot be surpassed */
     #maxVelocity: number = 0;
-    /** idk; probably some parameter describing capability of gaining the above speed */
+    /** parameter describing capability of gaining the above speed */
     #acceleration: number = 0;
 
     constructor(name: string, priority: number, maxWaitingTime: number, maxVelocity: number, acceleration: number) {
@@ -20,12 +20,9 @@ export class TrainCategory {
         this.#acceleration = acceleration;
     }
 
-    /**
-     * Changes train priority
-     * @param newPriority new train priority
-     */
-    updatePriority(newPriority: number) {
-        this.#priority = newPriority;
+    isWaiting(currentWaitingTime: number): boolean {
+        // TODO
+        return currentWaitingTime < this.#maxWaitingTime;
     }
 
     get name() {
@@ -33,9 +30,6 @@ export class TrainCategory {
     }
     get priority() {
         return this.#priority;
-    }
-    get maxWaitingTime() {
-        return this.#maxWaitingTime;
     }
     get maxVelocity() {
         return this.#maxVelocity;
