@@ -24,8 +24,7 @@ export class TrainPositionOnRail {
         this.#direction = direction;
     }
 
-
-    calculatePosition(): Position {
+    getPosition(): Position {
         if (this.#direction === TrainDirection.FromStartToEnd) {
             return this.#rail.findPositionAtDistance(this.#distance);
         } else {

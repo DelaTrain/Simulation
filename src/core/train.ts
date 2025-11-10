@@ -2,11 +2,10 @@ import { type TrainPosition } from "./trainPosition";
 import { TrainTemplate } from "./trainTemplate";
 import type { Track } from "./track";
 
-
 enum AccelerationStatus {
     Accelerating,
     Descelerating,
-    Constant
+    Constant,
 }
 
 /**
@@ -23,10 +22,7 @@ export class Train {
     /** individual time of being late */
     #delay: number = 0;
 
-    constructor(
-        track: Track,
-        trainTemplate: TrainTemplate
-    ) {
+    constructor(track: Track, trainTemplate: TrainTemplate) {
         this.trainTemplate = trainTemplate;
         this.#position = track;
     }
@@ -47,13 +43,21 @@ export class Train {
         this.#acceleration = newAcceleration;
     }
 
-
     stop() {
         this.#velocity = 0;
         this.#acceleration = 0;
     }
 
+    displayName(): string {
+        return this.trainTemplate.displayName();
+    }
 
+    get number() {
+        return this.trainTemplate.number;
+    }
+    get type() {
+        return this.trainTemplate.type;
+    }
 
     get velocity() {
         return this.#velocity;
