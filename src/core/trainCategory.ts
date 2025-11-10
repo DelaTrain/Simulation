@@ -21,7 +21,7 @@ export class TrainCategory {
     }
 
     isWaiting(currentWaitingTime: number): boolean {
-        // TODO
+        //TODO: implement more complex logic if needed
         return currentWaitingTime < this.#maxWaitingTime;
     }
 

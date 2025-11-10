@@ -12,7 +12,10 @@ export class Simulation {
     currentTime: Time = new Time(0, 0, 0);
     autoRun: boolean = false;
     autoRunSpeed: number = 250; // in milliseconds
+
     stepEvent: SimulationEvent = new SimulationEvent();
+    trainAddedEvent: SimulationEvent<Train> = new SimulationEvent();
+    trainRemovedEvent: SimulationEvent<Train> = new SimulationEvent();
 
     stations: Map<string, Station>;
     trains: Train[] = [];
@@ -49,6 +52,19 @@ export class Simulation {
         if (!this.autoRun) return;
         this.step();
         setTimeout(() => this.runAutomatically(), this.autoRunSpeed);
+    }
+
+    addTrain(train: Train) {
+        this.trains.push(train);
+        this.trainAddedEvent.emit(train);
+    }
+
+    removeTrain(train: Train) {
+        const index = this.trains.indexOf(train);
+        if (index !== -1) {
+            this.trains.splice(index, 1);
+            this.trainRemovedEvent.emit(train);
+        }
     }
 }
 

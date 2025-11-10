@@ -24,7 +24,6 @@ export class Track {
         return this.#station.position;
     }
 
-
     /**
      * Removes a specified train from the Track
      * @param train train to be removed from the Track
@@ -42,10 +41,10 @@ export class Track {
      * @returns false if the Track is full
      */
     trainArrival(train: Train): boolean {
-        if(this.#currentTrain == null){
+        if (this.#currentTrain == null) {
             this.#currentTrain = train;
             return true;
-        }else{
+        } else {
             return false;
         }
     }
@@ -59,7 +58,10 @@ export class Track {
     get currentOccupancy() {
         return this.#currentTrain;
     }
-    get trains() {
+    get train() {
         return this.#currentTrain;
+    }
+    get station() {
+        return this.#station;
     }
 }

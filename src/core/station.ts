@@ -52,11 +52,36 @@ export class Station {
     }
 
     step() {
-        // TODO - implement station logic for each step @jakseluz
+        // TODO: implement station logic for each step @jakseluz
+        // check if trains are to be spawned
+        // check if trains are to be destroyed
+        // check if any trains should depart
+        // handle taken track at the station when spawning trains
     }
 
     reset() {
-        // TODO - do we need to reset something in Station?
+        // TODO: do we need to reset something in Station?
+    }
+
+    spawnTrain(trainTemplate: TrainTemplate): Train {
+        const track = this.#tracks.find((track) => track.train == null); //TODO: correct track selection logic
+        if (!track) {
+            throw new Error(
+                `No available track to spawn train ${trainTemplate.displayName()} at station ${this.#name}`
+            );
+        }
+        const train = new Train(track, trainTemplate);
+        simulation.addTrain(train);
+        track.trainArrival(train);
+        return train;
+    }
+
+    destroyTrain(train: Train) {
+        if (train.position instanceof Track === false || train.position.station !== this) {
+            throw new Error(`Train ${train.displayName()} is not at station ${this.#name}`);
+        }
+        train.position.trainDepart();
+        simulation.removeTrain(train);
     }
 
     get name(): string {

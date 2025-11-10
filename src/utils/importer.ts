@@ -53,6 +53,7 @@ export class ImportedData {
         });
     }
 
+    // TODO: import tracks
     #importStop(t: any, i: number, trainTemplate: TrainTemplate) {
         const stop_current = t.stops[i];
         const stop_next = i + 1 <= t.stops.length ? t.stops[i + 1] : null;

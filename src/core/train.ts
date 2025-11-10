@@ -1,10 +1,11 @@
 import { type TrainPosition } from "./trainPosition";
 import { TrainTemplate } from "./trainTemplate";
 import type { Track } from "./track";
+import SimulationEvent from "../utils/event";
 
 enum AccelerationStatus {
     Accelerating,
-    Descelerating,
+    Decelerating,
     Constant,
 }
 
@@ -44,7 +45,11 @@ export class Train {
     }
 
     step() {
-        // TODO - implement train movement logic @jakseluz
+        // TODO: implement train movement logic @jakseluz
+        // updating position based on velocity and acceleration
+        // updating velocity based on acceleration
+        // checking if the train reached its next station
+        // handle taken track at the station
     }
 
     stop() {
