@@ -1,8 +1,7 @@
-import { ImportedData } from "../utils/importer";
+import { importedData, ImportedData } from "../utils/importer";
 import type { Station } from "./station";
 import "./train";
 import type { Train } from "./train";
-import DATA from "../../data/delatrain.json";
 import type { Rail } from "./rail";
 import { updateTime } from "../app";
 import { Time } from "../utils/time";
@@ -11,19 +10,24 @@ import type { TrainTemplate } from "./trainTemplate";
 export class Simulation {
     timeStep: number = 15; // in seconds
     currentTime: Time = new Time(0, 0, 0);
-    autorun: boolean = false;
-    autorunSpeed: number = 250; // in milliseconds
+    autoRun: boolean = false;
+    autoRunSpeed: number = 250; // in milliseconds
 
     stations: Map<string, Station>;
     trains: Train[] = [];
-    trainsUnspawned: TrainTemplate[] = [];
+    trainTemplates: TrainTemplate[] = [];
     rails: Set<Rail>;
 
     constructor(data: ImportedData) {
         this.stations = data.stations;
-        //this.trainsUnspawned = data.trains; // TODO: przepisać importer, @Kacper0510
+        this.trainTemplates = data.trains;
         this.rails = data.rails;
-        // this.#resetTime(); // TODO
+        this.reset();
+    }
+
+    reset() {
+        this.currentTime = new Time(0, 0, 0);
+        // TODO: reset trains, stations, etc.
     }
 
     step() {
@@ -31,11 +35,10 @@ export class Simulation {
     }
 
     runAutomatically() {
-        if (!this.autorun) return;
+        if (!this.autoRun) return;
         this.step();
-        setTimeout(() => this.runAutomatically(), this.autorunSpeed);
+        setTimeout(() => this.runAutomatically(), this.autoRunSpeed);
     }
-
 }
 
 /*
@@ -51,5 +54,4 @@ export class Simulation {
             * delay range on the map (?)
 */
 
-const importedData = new ImportedData(DATA);
 export const simulation = new Simulation(importedData);

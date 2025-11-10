@@ -1,6 +1,11 @@
 export class Time {
     constructor(private hour: number, private minute: number, private second: number) {}
 
+    static fromString(timeString: string): Time {
+        const [hours, minutes, seconds] = timeString.split(":").map((x: string) => parseInt(x, 10));
+        return new Time(hours, minutes, seconds);
+    }
+
     toSeconds(): number {
         return this.hour * 3600 + this.minute * 60 + this.second;
     }

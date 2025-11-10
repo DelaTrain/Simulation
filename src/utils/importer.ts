@@ -3,6 +3,9 @@ import { Station } from "../core/station";
 import { Train } from "../core/train";
 import { TrainCategory } from "../core/trainCategory";
 import { Position } from "./position";
+import DATA from "../../data/delatrain.json";
+import { TrainTemplate } from "../core/trainTemplate";
+import { Time } from "./time";
 
 function mapCategory(category: string) {
     switch (category) {
@@ -19,10 +22,9 @@ function mapCategory(category: string) {
 
 export class ImportedData {
     #stations: Map<string, Station> = new Map();
-    #trains: Array<Train> = [];
+    #trains: Array<TrainTemplate> = [];
     #rails: Set<Rail> = new Set();
 
-    // jak ktoś jest mądrzejszy ode mnie, to niech to ztypuje lepiej niż any
     constructor(jsonData: any) {
         this.#importStations(jsonData.stations);
         this.#importTrains(jsonData.trains);
@@ -30,63 +32,51 @@ export class ImportedData {
 
     #importStations(stations: any[]) {
         this.#stations = new Map(
-            stations.map(
-                (station) => [
-                    station.name,
-                    new Station(station.name, new Position(station.latitude, station.longitude)),
-                ]
-            )
+            stations.map((station) => [
+                station.name,
+                new Station(station.name, new Position(station.latitude, station.longitude)),
+            ])
         );
     }
 
     #importTrains(trains: any[]) {
         this.#trains = trains.map((t) => {
-            // TODO: What position and targets have trains that haven't spawned yet?
-            const train = new Train(t.number, mapCategory(t.category), t.name, null!, null!, null!);
+            const trainTemplate = new TrainTemplate(t.number, mapCategory(t.category), t.name);
 
-            if (t.stops.length < 2) {
-                throw new Error(`Train ${t.name} ${t.number} has less than 2 stops`);
-            }
+            if (t.stops.length < 2) throw new Error(`Train ${t.name} ${t.number} has less than 2 stops`);
 
             for (let i = 0; i < t.stops.length; i++) {
-                const stop_current = t.stops[i];
-                const stop_next = i + 1 <= t.stops.length ? t.stops[i + 1] : null;
-
-                const sc = this.#stations.get(stop_current.station_name);
-                if (!sc) {
-                    throw new Error(`Train ${t.name} ${t.number} has invalid stop station: ${stop_current.station_name}`);
-                }
-                if (i == 0) {
-                    sc.addStartingTrain(train);
-                }
-                const sn = this.#stations.get(stop_next?.station_name);
-                const rail = sn ? new Rail(sc, [], sn) : null;
-                if (rail) {
-                    this.#rails.add(rail);
-                }
-
-                let arrival_time = new Date();
-                if (stop_current.arrival_time != null) {
-                    const [hours, minutes, seconds] = stop_current.arrival_time.split(":").map((x: string) => parseInt(x, 10));
-                    arrival_time.setHours(hours, minutes, seconds, 0);
-                }
-                let departure_time = new Date();
-                if (stop_current.departure_time != null) {
-                    const [hours, minutes, seconds] = stop_current.departure_time.split(":").map((x: string) => parseInt(x, 10));
-                    departure_time.setHours(hours, minutes, seconds, 0);
-                }
-
-                sc.addScheduleInfo(
-                    train,
-                    stop_current.arrival_time == null ? null : arrival_time,
-                    stop_current.departure_time == null ? null : departure_time,
-                    sn ?? null,
-                    rail,
-                );
+                this.#importStop(t, i, trainTemplate);
             }
 
-            return train;
+            return trainTemplate;
         });
+    }
+
+    #importStop(t: any, i: number, trainTemplate: TrainTemplate) {
+        const stop_current = t.stops[i];
+        const stop_next = i + 1 <= t.stops.length ? t.stops[i + 1] : null;
+
+        const sc = this.#stations.get(stop_current.station_name);
+        if (!sc) {
+            throw new Error(`Train ${t.name} ${t.number} has invalid stop station: ${stop_current.station_name}`);
+        }
+
+        const arrival_time = stop_current.arrival_time == null ? null : Time.fromString(stop_current.arrival_time);
+        const departure_time =
+            stop_current.departure_time == null ? null : Time.fromString(stop_current.departure_time);
+
+        if (i == 0) {
+            if (departure_time == null) throw new Error(`Train ${t.name} ${t.number} has no departure_time`);
+            sc.addStartingTrain(trainTemplate, departure_time);
+        }
+        const sn = this.#stations.get(stop_next?.station_name);
+        const rail = sn ? new Rail(sc, [], sn) : null;
+        if (rail) {
+            this.#rails.add(rail);
+        }
+
+        sc.addScheduleInfo(trainTemplate, arrival_time, departure_time, sn ?? null, rail);
     }
 
     get stations() {
@@ -99,3 +89,5 @@ export class ImportedData {
         return this.#rails;
     }
 }
+
+export const importedData = new ImportedData(DATA);
