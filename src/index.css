@@ -17,7 +17,7 @@ button {
     border-radius: 8px;
     border: 1px solid transparent;
     padding: 0.6em 1.2em;
-    margin: 0.5em;
+    margin: 0.1em;
     font-size: 1em;
     font-weight: 500;
     font-family: inherit;
@@ -30,7 +30,7 @@ button:hover {
 }
 button:focus,
 button:focus-visible {
-    outline: 4px auto -webkit-focus-ring-color;
+    outline: none;
 }
 
 .controls {
@@ -65,4 +65,46 @@ div.station-icon {
     background-color: white;
     border: 4px solid blue;
     border-radius: 50%;
+}
+
+div.controls p {
+    text-align: center;
+    font-size: 1.2em;
+    margin: 0 0 0.5em 0;
+}
+
+div.buttons {
+    text-align: center;
+    margin-bottom: 0.5em;
+}
+
+div.sliders {
+    text-align: center;
+    margin-top: 0.5em;
+}
+
+input[type="range"] {
+    width: 60%;
+}
+input[type="range"]::-webkit-slider-thumb {
+    cursor: pointer;
+}
+input[type="range"]::-moz-range-thumb {
+    cursor: pointer;
+}
+label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: white;
+    font-size: 0.9em;
+    margin: 0 0.5em;
+}
+label input {
+    vertical-align: middle;
+}
+
+label span span {
+    font-weight: bold;
+    margin-left: 1ch;
 }
