@@ -3,14 +3,11 @@ import { Rail } from "./rail";
 import { Station } from "./station";
 
 export class TrainScheduleStep {
-
     constructor(
-        private trainID: number,
-        private arrivalTime: Time | null,
-        private departureTime: Time | null,
-        private nextStation: Station | null,
-        private nextRail: Rail | null,
+        public trainID: number,
+        public arrivalTime: Time | null,
+        public departureTime: Time | null,
+        public nextStation: Station | null,
+        public nextRail: Rail | null
     ) {}
-
-    // TODO: gettery
 }
