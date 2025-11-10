@@ -11,7 +11,6 @@ export function updateTime() {
 
 stepButton.addEventListener("click", () => {
     simulation.step();
-    updateTime();
 });
 
 restartButton.addEventListener("click", () => {
@@ -28,7 +27,7 @@ autoRunButton.addEventListener("click", () => {
         autoRunButton.textContent = "Pause";
         simulation.runAutomatically();
     }
-    updateTime();
 });
 
+simulation.stepEvent.subscribe(updateTime);
 updateTime();

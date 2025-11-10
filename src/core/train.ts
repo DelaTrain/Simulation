@@ -43,6 +43,10 @@ export class Train {
         this.#acceleration = newAcceleration;
     }
 
+    step() {
+        // TODO - implement train movement logic @jakseluz
+    }
+
     stop() {
         this.#velocity = 0;
         this.#acceleration = 0;

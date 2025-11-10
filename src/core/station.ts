@@ -51,6 +51,14 @@ export class Station {
         this.#startingTrains.set(departureTime, train);
     }
 
+    step() {
+        // TODO - implement station logic for each step @jakseluz
+    }
+
+    reset() {
+        // TODO - do we need to reset something in Station?
+    }
+
     get name(): string {
         return this.#name;
     }

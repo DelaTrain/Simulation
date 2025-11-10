@@ -3,15 +3,16 @@ import type { Station } from "./station";
 import "./train";
 import type { Train } from "./train";
 import type { Rail } from "./rail";
-import { updateTime } from "../app";
 import { Time } from "../utils/time";
 import type { TrainTemplate } from "./trainTemplate";
+import SimulationEvent from "../utils/event";
 
 export class Simulation {
     timeStep: number = 15; // in seconds
     currentTime: Time = new Time(0, 0, 0);
     autoRun: boolean = false;
     autoRunSpeed: number = 250; // in milliseconds
+    stepEvent: SimulationEvent = new SimulationEvent();
 
     stations: Map<string, Station>;
     trains: Train[] = [];
@@ -27,11 +28,21 @@ export class Simulation {
 
     reset() {
         this.currentTime = new Time(0, 0, 0);
-        // TODO: reset trains, stations, etc.
+        this.trains = [];
+        this.stations.forEach((station) => {
+            station.reset();
+        });
     }
 
     step() {
         this.currentTime.addSeconds(this.timeStep);
+        this.stations.forEach((station) => {
+            station.step();
+        });
+        this.trains.forEach((train) => {
+            train.step();
+        });
+        this.stepEvent.emit();
     }
 
     runAutomatically() {
