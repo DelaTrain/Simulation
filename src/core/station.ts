@@ -21,6 +21,7 @@ export class Station {
     #tracks: Track[] = [];
     /** trains starting at this Station */
     #startingTrains: Map<TrainTemplate, Time> = new Map();
+    #alreadySpawnedTrains: Set<TrainTemplate> = new Set();
 
     constructor(name: string, position: Position) {
         this.#name = name;
@@ -53,8 +54,9 @@ export class Station {
     step() {
         // check if trains are to be spawned
         this.#startingTrains.forEach((value: Time, key: TrainTemplate) => {
-            if (simulation.currentTime.toSeconds() >= value.toSeconds()) {
+            if (simulation.currentTime.toSeconds() >= value.toSeconds() && !this.#alreadySpawnedTrains.has(key)) {
                 this.spawnTrain(key);
+                this.#alreadySpawnedTrains.add(key);
             }
         });
 
@@ -63,7 +65,7 @@ export class Station {
     }
 
     reset() {
-        this.#startingTrains.clear();
+        this.#alreadySpawnedTrains.clear();
         this.#tracks.forEach((track) => {
             track.trainDepart();
         });
