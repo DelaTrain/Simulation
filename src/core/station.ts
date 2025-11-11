@@ -145,6 +145,12 @@ export class Station {
         simulation.removeTrain(train);
     }
 
+    addTrack(platformNumber: number, trackNumber: string) {
+        if (this.#tracks.filter((t) => t.platformNumber === platformNumber && t.trackNumber === trackNumber).length > 0)
+            return;
+        this.#tracks.push(new Track(this, platformNumber, trackNumber));
+    }
+
     get trainsSchedule() {
         return this.#trainsSchedule;
     }

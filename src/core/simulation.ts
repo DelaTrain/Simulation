@@ -7,11 +7,13 @@ import { Time } from "../utils/time";
 import type { TrainTemplate } from "./trainTemplate";
 import SimulationEvent from "../utils/event";
 
+const START_TIME = new Time(3, 30, 0);
+
 export class Simulation {
     timeStep: number = 15; // in seconds
-    currentTime: Time = new Time(0, 0, 0);
+    currentTime: Time = START_TIME;
     autoRun: boolean = false;
-    autoRunSpeed: number = 250; // in milliseconds
+    autoRunSpeed: number = 0; // in milliseconds
 
     stepEvent: SimulationEvent = new SimulationEvent();
     trainAddedEvent: SimulationEvent<Train> = new SimulationEvent();
@@ -30,7 +32,7 @@ export class Simulation {
     }
 
     reset() {
-        this.currentTime = new Time(0, 0, 0);
+        this.currentTime = START_TIME;
         this.trains = [];
         this.stations.forEach((station) => {
             station.reset();

@@ -66,10 +66,11 @@ export class Train {
 
     handleNextStationArrival() {
         if (this.#nextStation) {
-            const distanceToNextStation = this.#nextStation.position.distanceTo(this.#position.getPosition());
+            if (!(this.#position instanceof TrainPositionOnRail)) return; // safety check
+            const arrived = (this.#position as TrainPositionOnRail).distance >= this.#position.rail.length();
             // checking if the train reached its next station
             const nextSchedule = this.#nextStation.trainsSchedule.get(this.trainTemplate);
-            if (distanceToNextStation <= 0 && nextSchedule?.arrivalTime) {
+            if (arrived && nextSchedule?.arrivalTime) {
                 // TODO ^ - idk if it should be like this - depends on TrainPositionOnRail management
                 const trackAtTheStation = this.#nextStation.assignTrack(this.trainTemplate);
                 if (trackAtTheStation == null) {

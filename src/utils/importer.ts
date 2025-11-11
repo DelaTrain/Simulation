@@ -63,6 +63,9 @@ export class ImportedData {
             throw new Error(`Train ${t.name} ${t.number} has invalid stop station: ${stop_current.station_name}`);
         }
 
+        if (stop_current.track != null) sc.addTrack(stop_current.track.platform, stop_current.track.track);
+        else sc.addTrack(0, "?");
+
         const arrival_time = stop_current.arrival_time == null ? null : Time.fromString(stop_current.arrival_time);
         const departure_time =
             stop_current.departure_time == null ? null : Time.fromString(stop_current.departure_time);

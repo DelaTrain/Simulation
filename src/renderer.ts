@@ -51,7 +51,7 @@ export class Renderer {
         this.simulation.trains.forEach((train) => {
             const marker = this.trainMarkers.get(train);
             if (marker) {
-                marker.setLatLng(train.position!.getPosition().toArray());
+                marker.setLatLng(train.position.getPosition().toArray());
             }
         });
     }
