@@ -39,6 +39,10 @@ export class Simulation {
 
     step() {
         this.currentTime.addSeconds(this.timeStep);
+        if (this.currentTime.toSeconds() >= 86400) {
+            this.reset();
+        }
+
         this.stations.forEach((station) => {
             station.step();
         });
