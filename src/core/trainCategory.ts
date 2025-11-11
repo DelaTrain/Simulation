@@ -20,7 +20,7 @@ export class TrainCategory {
         this.#acceleration = acceleration;
     }
 
-    isWaiting(currentWaitingTime: number): boolean {
+    shouldWaitLonger(currentWaitingTime: number): boolean {
         //TODO: implement more complex logic if needed
         return currentWaitingTime < this.#maxWaitingTime;
     }

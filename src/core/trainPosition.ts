@@ -36,6 +36,10 @@ export class TrainPositionOnRail {
         this.#distance += distanceDelta;
     }
 
+    set distance(newDistance: number) {
+        this.#distance = newDistance;
+    }
+
     get distance() {
         return this.#distance;
     }
