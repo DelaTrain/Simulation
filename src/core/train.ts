@@ -1,7 +1,9 @@
-import { type TrainPosition } from "./trainPosition";
+import { TrainPositionOnRail, type TrainPosition } from "./trainPosition";
 import { TrainTemplate } from "./trainTemplate";
 import type { Track } from "./track";
-import SimulationEvent from "../utils/event";
+import { simulation } from "./simulation";
+import type { Station } from "./station";
+import { Delay } from "../utils/delay";
 
 enum AccelerationStatus {
     Accelerating,
@@ -17,15 +19,87 @@ export class Train {
     /** train speed value - meters per second */
     #velocity: number = 0;
     /** train acceleration value */
-    #acceleration: AccelerationStatus = AccelerationStatus.Constant;
+    #acceleration: AccelerationStatus = AccelerationStatus.Accelerating;
     /** contains distance and rail number */
     #position: TrainPosition;
     /** individual time of being late */
-    #delay: number = 0;
+    #delay: Delay = new Delay();
+    /** Next Station */
+    #nextStation: Station | null = null;
+    /** If waiting for the others */
+    #isWaiting: boolean = false;
 
     constructor(track: Track, trainTemplate: TrainTemplate) {
         this.trainTemplate = trainTemplate;
         this.#position = track;
+    }
+
+    step() {
+        // train movement logic in progress - @jakseluz
+        // TODO - delay time updating logic (partially done already)
+        // TODO - user delays (trivial when the above is finished)
+        // TODO - simulation state saving - trivial
+        if (!this.#isWaiting) {
+            this.move();
+            this.handleNextStationArrival();
+        } else {
+            // the train is at the station - no movement
+            this.handleNextStationArrival();
+        }
+    }
+
+    move() {
+        if (this.#position instanceof TrainPositionOnRail) {
+            // updating position based on velocity and acceleration
+            this.#position.move(
+                this.#velocity * simulation.timeStep +
+                    0.5 * this.trainTemplate.type.acceleration * simulation.timeStep * simulation.timeStep
+            );
+
+            // updating velocity based on acceleration
+            this.#velocity = Math.min(
+                this.trainTemplate.type.maxVelocity,
+                this.#velocity + this.trainTemplate.type.acceleration * simulation.timeStep
+            );
+        }
+    }
+
+    handleNextStationArrival() {
+        if (this.#nextStation) {
+            const distanceToNextStation = this.#nextStation.position.distanceTo(this.#position.getPosition());
+            // checking if the train reached its next station
+            const nextSchedule = this.#nextStation.trainsSchedule.get(this.trainTemplate);
+            if (distanceToNextStation <= 0 && nextSchedule?.arrivalTime) {
+                // TODO ^ - idk if it should be like this - depends on TrainPositionOnRail management
+                const trackAtTheStation = this.#nextStation.assignTrack(this.trainTemplate);
+                if (trackAtTheStation == null) {
+                    // cannot arrive at the station - track full; waiting
+                    // Z jaką prędkością może czekać pociąg?
+                    this.#isWaiting = true;
+                    this.#delay.addConflictDelay(this.calculateConflictDelay());
+
+                    return;
+                } else {
+                    this.#isWaiting = false;
+
+                    this.#position = trackAtTheStation; // TrainPositionOnRail no longer useful
+                    this.#position.trainArrival(this);
+                    this.stop();
+                    this.#nextStation = null;
+                    this.#acceleration = AccelerationStatus.Constant;
+                }
+            }
+        } else {
+            // despawning in the station logic, if nextStation is null
+        }
+    }
+
+    /**
+     * Adds external delays
+     * @param delaySeconds external delay time in seconds
+     */
+    addDelay(delaySeconds: number) {
+        this.#delay.addDelay(delaySeconds);
     }
 
     /**
@@ -37,28 +111,61 @@ export class Train {
     }
 
     /**
-     * Changes Train acceleration
-     * @param newAcceleration updated acceleration
+     * Changes Train acceleration status
+     * @param newAcceleration updated acceleration status
      */
-    updateAcceleration(newAcceleration: number) {
-        this.#acceleration = newAcceleration;
+    updateAcceleration(newAccelerationStatus: AccelerationStatus) {
+        this.#acceleration = newAccelerationStatus;
     }
 
-    step() {
-        // TODO: implement train movement logic @jakseluz
-        // updating position based on velocity and acceleration
-        // updating velocity based on acceleration
-        // checking if the train reached its next station
-        // handle taken track at the station
+    calculateConflictDelay(): number {
+        let conflictDelay: number = 0;
+        if (this.#nextStation) {
+            const firstTrackTrain = this.#nextStation.tracks[0].train;
+            if (firstTrackTrain) {
+                let firstTrackTrainSchedule = this.#nextStation.trainsSchedule.get(firstTrackTrain.trainTemplate);
+                if (firstTrackTrainSchedule) {
+                    if (firstTrackTrainSchedule.departureTime) {
+                        conflictDelay =
+                            firstTrackTrainSchedule.departureTime.toSeconds() - simulation.currentTime.toSeconds();
+                    }
+                }
+            }
+
+            this.#nextStation.tracks.forEach((track) => {
+                const trackTrain = track.train;
+                if (trackTrain) {
+                    let trackTrainSchedule = this.#nextStation!.trainsSchedule.get(trackTrain.trainTemplate);
+                    if (trackTrainSchedule) {
+                        if (trackTrainSchedule.departureTime) {
+                            if (
+                                trackTrainSchedule.departureTime.toSeconds() - simulation.currentTime.toSeconds() <
+                                conflictDelay
+                            ) {
+                                conflictDelay =
+                                    trackTrainSchedule.departureTime.toSeconds() - simulation.currentTime.toSeconds();
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        return conflictDelay;
     }
 
     stop() {
         this.#velocity = 0;
-        this.#acceleration = 0;
     }
 
     displayName(): string {
         return this.trainTemplate.displayName();
+    }
+
+    set nextStation(station: Station | null) {
+        this.#nextStation = station;
+    }
+    set position(newPosition: TrainPosition) {
+        this.#position = newPosition;
     }
 
     get number() {
@@ -67,7 +174,6 @@ export class Train {
     get type() {
         return this.trainTemplate.type;
     }
-
     get velocity() {
         return this.#velocity;
     }
