@@ -11,7 +11,7 @@ const START_TIME = new Time(3, 30, 0);
 
 export class Simulation {
     timeStep: number = 15; // in seconds
-    currentTime: Time = START_TIME;
+    currentTime: Time = START_TIME.copy();
     autoRun: boolean = false;
     autoRunSpeed: number = 0; // in milliseconds
 
@@ -32,7 +32,7 @@ export class Simulation {
     }
 
     reset() {
-        this.currentTime = START_TIME;
+        this.currentTime = START_TIME.copy();
         this.trains = [];
         this.stations.forEach((station) => {
             station.reset();

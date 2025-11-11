@@ -6,6 +6,10 @@ export class Time {
         return new Time(hours, minutes, seconds);
     }
 
+    copy(): Time {
+        return new Time(this.hour, this.minute, this.second);
+    }
+
     toSeconds(): number {
         return this.hour * 3600 + this.minute * 60 + this.second;
     }
