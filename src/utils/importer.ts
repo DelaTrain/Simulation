@@ -1,6 +1,5 @@
 import { Rail } from "../core/rail";
 import { Station } from "../core/station";
-import { Train } from "../core/train";
 import { TrainCategory } from "../core/trainCategory";
 import { Position } from "./position";
 import DATA from "../../data/delatrain.json";
@@ -53,7 +52,6 @@ export class ImportedData {
         });
     }
 
-    // TODO: import tracks
     #importStop(t: any, i: number, trainTemplate: TrainTemplate) {
         const stop_current = t.stops[i];
         const stop_next = i + 1 <= t.stops.length ? t.stops[i + 1] : null;
@@ -63,8 +61,10 @@ export class ImportedData {
             throw new Error(`Train ${t.name} ${t.number} has invalid stop station: ${stop_current.station_name}`);
         }
 
-        if (stop_current.track != null) sc.addTrack(stop_current.track.platform, stop_current.track.track);
-        else sc.addTrack(0, "?");
+        const track =
+            stop_current.track != null
+                ? sc.addTrack(stop_current.track.platform, stop_current.track.track)
+                : sc.addTrack(0, "?");
 
         const arrival_time = stop_current.arrival_time == null ? null : Time.fromString(stop_current.arrival_time);
         const departure_time =
@@ -72,7 +72,7 @@ export class ImportedData {
 
         if (i == 0) {
             if (departure_time == null) throw new Error(`Train ${t.name} ${t.number} has no departure_time`);
-            sc.addStartingTrain(trainTemplate, departure_time);
+            sc.addStartingTrain(trainTemplate, departure_time, track);
         }
         const sn = this.#stations.get(stop_next?.station_name);
         const rail = sn ? new Rail(sc, [], sn) : null;
@@ -80,7 +80,7 @@ export class ImportedData {
             this.#rails.add(rail);
         }
 
-        sc.addScheduleInfo(trainTemplate, arrival_time, departure_time, sn ?? null, rail);
+        sc.addScheduleInfo(trainTemplate, track, arrival_time, departure_time, sn ?? null, rail);
     }
 
     get stations() {

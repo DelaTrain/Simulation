@@ -72,7 +72,7 @@ export class Train {
             const nextSchedule = this.#nextStation.trainsSchedule.get(this.trainTemplate);
             if (arrived && nextSchedule?.arrivalTime) {
                 // TODO ^ - idk if it should be like this - depends on TrainPositionOnRail management
-                const trackAtTheStation = this.#nextStation.assignTrack(this.trainTemplate);
+                const trackAtTheStation = this.#nextStation.assignTrack(this.trainTemplate, nextSchedule.track);
                 if (trackAtTheStation == null) {
                     // cannot arrive at the station - track full; waiting
                     // Z jaką prędkością może czekać pociąg?
