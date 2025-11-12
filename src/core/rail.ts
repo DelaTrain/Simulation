@@ -58,4 +58,12 @@ export class Rail {
         const res = segmentStartPos.moveBy(segmentEndPos, segmentLength + distanceToEnd);
         return res;
     }
+
+    /**
+     * @param distance in meters
+     * @returns max speed at selected point in km/h
+     */
+    getMaxSpeed(distance: number): number {
+        return Infinity * distance;
+    }
 }
