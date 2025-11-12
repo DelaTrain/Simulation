@@ -61,7 +61,7 @@ export class Rail {
 
     /**
      * @param distance in meters
-     * @returns max speed at selected point in km/h
+     * @returns max speed at selected point in m/s
      */
     getMaxSpeed(distance: number): number {
         return Infinity * distance;

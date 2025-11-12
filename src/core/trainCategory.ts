@@ -7,9 +7,9 @@ export class TrainCategory {
     #priority: number = 0;
     /** the time exceeding which will result in some delay */
     #maxWaitingTime: number = 0;
-    /** speed value which cannot be surpassed */
+    /** speed value which cannot be surpassed in m/s*/
     #maxVelocity: number = 0;
-    /** parameter describing capability of gaining the above speed */
+    /** parameter describing capability of gaining the above speed in m/s^2*/
     #acceleration: number = 0;
 
     constructor(name: string, priority: number, maxWaitingTime: number, maxVelocity: number, acceleration: number) {

@@ -9,13 +9,13 @@ import { Time } from "./time";
 function mapCategory(category: string) {
     switch (category) {
         case "Bus":
-            return new TrainCategory("Bus", 0, 40, 80, 1);
+            return new TrainCategory("Bus", 0, 40, 16, 1);
         case "R":
-            return new TrainCategory("R", 1, 60, 120, 2);
+            return new TrainCategory("R", 1, 60, 33, 2);
         case "KS":
-            return new TrainCategory("KS", 1, 60, 120, 2);
+            return new TrainCategory("KS", 1, 60, 33, 2);
         default:
-            return new TrainCategory(category, 2, 80, 160, 3);
+            return new TrainCategory(category, 2, 80, 44, 3);
     }
 }
 
