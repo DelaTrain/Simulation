@@ -39,7 +39,7 @@ export class Station {
         railToNextStation: Rail | null
     ) {
         const scheduleStep = new TrainScheduleStep(
-            train.number,
+            train,
             arrivalTime,
             departureTime,
             nextStation,
@@ -50,7 +50,7 @@ export class Station {
     }
 
     addStartingTrain(train: TrainTemplate, departureTime: Time, track: Track) {
-        this.#startingTrains.set(train, new SpawnTrainScheduleStep(train.number, departureTime, track));
+        this.#startingTrains.set(train, new SpawnTrainScheduleStep(train, departureTime, track));
     }
 
     step() {

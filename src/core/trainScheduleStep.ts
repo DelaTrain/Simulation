@@ -2,10 +2,11 @@ import type { Time } from "../utils/time";
 import { Rail } from "./rail";
 import { Station } from "./station";
 import type { Track } from "./track";
+import type { TrainTemplate } from "./trainTemplate";
 
 export class TrainScheduleStep {
     constructor(
-        public trainNumber: number,
+        public train: TrainTemplate,
         public arrivalTime: Time | null,
         public departureTime: Time | null,
         public nextStation: Station | null,
@@ -14,14 +15,14 @@ export class TrainScheduleStep {
     ) {}
 
     displayArrival() {
-        return `(${this.trainNumber}) ${this.arrivalTime ? this.arrivalTime.toString() : " - "}`;
+        return `(${this.train.number}) ${this.arrivalTime ? this.arrivalTime.toString() : " - "}`;
     }
 
     displayDeparture() {
-        return `(${this.trainNumber}) ${this.departureTime ? this.departureTime.toString() : " - "}`;
+        return `(${this.train.number}) ${this.departureTime ? this.departureTime.toString() : " - "}`;
     }
 }
 
 export class SpawnTrainScheduleStep {
-    constructor(public trainNumber: number, public departureTime: Time, public track: Track) {}
+    constructor(public train: TrainTemplate, public departureTime: Time, public track: Track) {}
 }
