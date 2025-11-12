@@ -4,6 +4,7 @@ import "leaflet/dist/leaflet.css";
 import type { Station } from "./core/station";
 import type { Rail } from "./core/rail";
 import type { Train } from "./core/train";
+import { uiPanel } from "./panel";
 
 const stationIcon = L.divIcon({ className: "station-icon" });
 
@@ -94,7 +95,10 @@ export class Renderer {
             title: station.name,
             alt: station.name,
         }).addTo(this.map);
-        marker.bindPopup(`<b>${station.name}</b>`);
+        marker.bindTooltip(station.name, { direction: "top" });
+        marker.on("click", () => {
+            uiPanel.display(station);
+        });
         this.stationMarkers.set(station, marker);
     }
 
@@ -111,7 +115,10 @@ export class Renderer {
         marker.setIcon(
             L.icon({ iconUrl: "https://cdn-icons-png.flaticon.com/512/565/565410.png", iconSize: [32, 32] })
         );
-        marker.bindPopup(`<b>${train.displayName()}</b>`);
+        marker.bindTooltip(train.displayName(), { direction: "top" });
+        marker.on("click", () => {
+            uiPanel.display(train);
+        });
         this.trainMarkers.set(train, marker);
     }
 }

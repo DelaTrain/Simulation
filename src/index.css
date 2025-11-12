@@ -5,7 +5,7 @@
 
     color-scheme: light dark;
     color: rgba(255, 255, 255, 0.87);
-    background-color: #242424;
+    --bg-color: #333;
 
     font-synthesis: none;
     text-rendering: optimizeLegibility;
@@ -33,15 +33,24 @@ button:focus-visible {
     outline: none;
 }
 
-.controls {
+.left {
     position: fixed;
     top: 1rem;
     right: 1rem;
     width: clamp(300px, 30vw, 500px);
-    background-color: #4d4d4d;
+    height: calc(100vh - 2rem);
+}
+
+.panel {
+    background-color: var(--bg-color);
     border-radius: 1rem;
     padding: 1rem;
     z-index: 1;
+    margin-bottom: 1rem;
+}
+
+#panel {
+    display: none;
 }
 
 #map {
@@ -107,4 +116,37 @@ label input {
 label span span {
     font-weight: bold;
     margin-left: 1ch;
+}
+
+#panel {
+    position: relative;
+}
+
+#panel-close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+#panel-close:hover {
+    color: rgba(255, 255, 255, 1);
+}
+
+#panel h2 {
+    margin: 0;
+    padding: 0;
+}
+
+#panel-content p {
+    margin: 0.2rem 0;
+}
+
+#panel-content table {
+    text-align: center;
 }

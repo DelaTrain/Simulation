@@ -7,22 +7,29 @@
         <title>simulation</title>
     </head>
     <body>
-        <div class="controls">
-            <p id="time">Loading...</p>
-            <div class="buttons">
-                <button id="step-button">Step</button>
-                <button id="autorun-button">Play</button>
-                <button id="restart-button">Restart</button>
+        <div class="left">
+            <div class="controls panel">
+                <p id="time">Loading...</p>
+                <div class="buttons">
+                    <button id="step-button">Step</button>
+                    <button id="autorun-button">Play</button>
+                    <button id="restart-button">Restart</button>
+                </div>
+                <div class="sliders">
+                    <label>
+                        <span>Step size: <span id="step-value"></span></span>
+                        <input type="range" id="step" step="1" min="1" max="60" />
+                    </label>
+                    <label>
+                        <span>Play speed: <span id="speed-value"></span></span>
+                        <input type="range" id="speed" step="10" min="0" max="1000" />
+                    </label>
+                </div>
             </div>
-            <div class="sliders">
-                <label>
-                    <span>Step size: <span id="step-value"></span></span>
-                    <input type="range" id="step" step="1" min="1" max="60" />
-                </label>
-                <label>
-                    <span>Play speed: <span id="speed-value"></span></span>
-                    <input type="range" id="speed" step="10" min="0" max="1000" />
-                </label>
+            <div class="panel" id="panel">
+                <button id="panel-close">×</button>
+                <h2 id="panel-title">Select a station or train</h2>
+                <div id="panel-content"></div>
             </div>
         </div>
 

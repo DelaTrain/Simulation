@@ -162,6 +162,36 @@ export class Station {
         return newTrack;
     }
 
+    nextArrivalForTrack(track: Track, time: Time): TrainScheduleStep | null {
+        let nextSchedule: TrainScheduleStep | null = null;
+        this.#trainsSchedule.forEach((schedule) => {
+            if (
+                schedule.track === track &&
+                schedule.arrivalTime &&
+                schedule.arrivalTime.toSeconds() >= time.toSeconds() &&
+                (nextSchedule === null || schedule.arrivalTime.toSeconds() < nextSchedule.arrivalTime!.toSeconds())
+            ) {
+                nextSchedule = schedule;
+            }
+        });
+        return nextSchedule;
+    }
+
+    nextDepartureForTrack(track: Track, time: Time): TrainScheduleStep | null {
+        let nextSchedule: TrainScheduleStep | null = null;
+        this.#trainsSchedule.forEach((schedule) => {
+            if (
+                schedule.track === track &&
+                schedule.departureTime &&
+                schedule.departureTime.toSeconds() >= time.toSeconds() &&
+                (nextSchedule === null || schedule.departureTime.toSeconds() < nextSchedule.departureTime!.toSeconds())
+            ) {
+                nextSchedule = schedule;
+            }
+        });
+        return nextSchedule;
+    }
+
     get trainsSchedule() {
         return this.#trainsSchedule;
     }
