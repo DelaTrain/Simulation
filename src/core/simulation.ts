@@ -18,6 +18,7 @@ export class Simulation {
     stepEvent: SimulationEvent = new SimulationEvent();
     trainAddedEvent: SimulationEvent<Train> = new SimulationEvent();
     trainRemovedEvent: SimulationEvent<Train> = new SimulationEvent();
+    resetEvent: SimulationEvent = new SimulationEvent();
 
     stations: Map<string, Station>;
     trains: Train[] = [];
@@ -37,6 +38,7 @@ export class Simulation {
         this.stations.forEach((station) => {
             station.reset();
         });
+        this.resetEvent.emit();
     }
 
     step() {

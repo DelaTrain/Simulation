@@ -17,6 +17,7 @@ export class Renderer {
         this.simulation.stepEvent.subscribe(this.update.bind(this));
         this.simulation.trainAddedEvent.subscribe(this.trainAdded.bind(this));
         this.simulation.trainRemovedEvent.subscribe(this.trainRemoved.bind(this));
+        this.simulation.resetEvent.subscribe(this.reset.bind(this));
 
         this.map = L.map("map").setView([50.061389, 19.938333], 12);
         this.trainMarkers = new Map();
@@ -45,6 +46,25 @@ export class Renderer {
         this.simulation.trains.forEach((train) => {
             this.displayTrain(train);
         });
+    }
+
+    reset() {
+        this.trainMarkers.forEach((marker) => {
+            this.map.removeLayer(marker);
+        });
+        this.trainMarkers.clear();
+
+        this.stationMarkers.forEach((marker) => {
+            this.map.removeLayer(marker);
+        });
+        this.stationMarkers.clear();
+
+        this.railLines.forEach((polyline) => {
+            this.map.removeLayer(polyline);
+        });
+        this.railLines.clear();
+
+        this.initialDraw();
     }
 
     update() {
