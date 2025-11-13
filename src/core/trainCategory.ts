@@ -5,7 +5,7 @@ export class TrainCategory {
     #name: string;
     /** priority scale value amongst trains */
     #priority: number = 0;
-    /** the time exceeding which will result in some delay */
+    /** the time exceeding which will result in some delay (in seconds) */
     #maxWaitingTime: number = 0;
     /** speed value which cannot be surpassed in m/s*/
     #maxVelocity: number = 0;
@@ -20,9 +20,11 @@ export class TrainCategory {
         this.#acceleration = acceleration;
     }
 
-    shouldWaitLonger(currentWaitingTime: number): boolean {
-        //TODO: implement more complex logic if needed
-        return currentWaitingTime < this.#maxWaitingTime;
+    /**
+     * (in seconds)
+     */
+    get maxWaitingTime() {
+        return this.#maxWaitingTime;
     }
 
     get name() {

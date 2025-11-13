@@ -1,6 +1,7 @@
 import { Station } from "./station";
 import { Train } from "./train";
 import { Position } from "../utils/position";
+import { simulation } from "./simulation";
 
 /**
  * For representation of each platform Track at the station
@@ -43,6 +44,7 @@ export class Track {
     trainArrival(train: Train): boolean {
         if (this.#currentTrain == null) {
             this.#currentTrain = train;
+            this.#currentTrain.delay.actualTrainArrival = simulation.currentTime;
             return true;
         } else {
             return false;
