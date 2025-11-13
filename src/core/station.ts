@@ -148,7 +148,8 @@ export class Station {
         if (trainSchedule.nextStation && trainSchedule.nextRail) {
             // Assuming that the train has nextRail if it has nextStation
             train.nextStation = trainSchedule.nextStation;
-            train.position = new TrainPositionOnRail(trainSchedule.nextRail!, TrainDirection.FromStartToEnd, 0); // Is nextRail already in the schedule?
+            const direction = trainSchedule.nextRail.fromStation === this ? TrainDirection.FromStartToEnd : TrainDirection.FromEndToStart;
+            train.position = new TrainPositionOnRail(trainSchedule.nextRail!, direction, 0); // Is nextRail already in the schedule?
         } else {
             this.destroyTrain(train);
         }

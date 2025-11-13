@@ -5,13 +5,15 @@ export class Rail {
     #positions: Position[];
     #fromStation: Station;
     #toStation: Station;
+    #maxSpeeds: Array<number>;
 
     #distances: Array<number> = [];
 
-    constructor(fromStation: Station, positions: Position[], toStation: Station) {
+    constructor(fromStation: Station, positions: Position[], toStation: Station, maxSpeeds: Array<number>) {
         this.#positions = positions;
         this.#fromStation = fromStation;
         this.#toStation = toStation;
+        this.#maxSpeeds = maxSpeeds;
         this.#calculateDistances();
     }
 
@@ -64,6 +66,6 @@ export class Rail {
      * @returns max speed at selected point in m/s
      */
     getMaxSpeed(distance: number): number {
-        return Infinity * distance;
+        return Infinity * distance;  // TODO: implement max speed logic @jaanonim
     }
 }

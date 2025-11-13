@@ -10,10 +10,14 @@ function mapCategory(category: string) {
     switch (category) {
         case "Bus":
             return new TrainCategory("Bus", 0, 40, 16, 1);
+        case "BUS":
+            return new TrainCategory("BUS", 0, 40, 16, 1);
         case "R":
             return new TrainCategory("R", 1, 60, 33, 2);
         case "KS":
             return new TrainCategory("KS", 1, 60, 33, 2);
+        case "KML":
+            return new TrainCategory("KML", 1, 60, 33, 2);
         default:
             return new TrainCategory(category, 2, 80, 44, 3);
     }
@@ -22,10 +26,11 @@ function mapCategory(category: string) {
 export class ImportedData {
     #stations: Map<string, Station> = new Map();
     #trains: Array<TrainTemplate> = [];
-    #rails: Set<Rail> = new Set();
+    #rails: Map<string, Rail> = new Map();
 
     constructor(jsonData: any) {
         this.#importStations(jsonData.stations);
+        this.#importRails(jsonData.rails);
         this.#importTrains(jsonData.trains);
     }
 
@@ -33,7 +38,7 @@ export class ImportedData {
         this.#stations = new Map(
             stations.map((station) => [
                 station.name,
-                new Station(station.name, new Position(station.latitude, station.longitude)),
+                new Station(station.name, new Position(station.location.latitude, station.location.longitude)),
             ])
         );
     }
@@ -50,6 +55,23 @@ export class ImportedData {
 
             return trainTemplate;
         });
+    }
+
+    #importRails(rails: any[]) {
+        this.#rails = new Map(
+            rails.map((r) => {
+                const stationA = this.#stations.get(r.start_station);
+                const stationB = this.#stations.get(r.end_station);
+
+                if (!stationA || !stationB) {
+                    throw new Error(`Invalid rail stations: ${r.start_station} -> ${r.end_station}`);
+                }
+
+                const positions = r.points.map((p: any) => new Position(p.latitude, p.longitude)).slice(1, -1);
+                const maxSpeeds = r.max_speeds ?? [];
+                return [JSON.stringify([stationA.name, stationB.name]), new Rail(stationA, positions, stationB, maxSpeeds)];
+            })
+        );
     }
 
     #importStop(t: any, i: number, trainTemplate: TrainTemplate) {
@@ -84,11 +106,17 @@ export class ImportedData {
             sc.addStartingTrain(trainTemplate, departure_time, track);
         }
         const sn = this.#stations.get(stop_next?.station_name);
-        const rail = sn ? new Rail(sc, [], sn) : null;
-        if (rail) {
-            this.#rails.add(rail);
-        }
 
+        let rail: Rail | null = null;
+        if (sc && sn) {
+            const stationsSorted = sc.name < sn.name ? [sc, sn] : [sn, sc];
+            const stationKey = JSON.stringify([stationsSorted[0].name, stationsSorted[1].name]);
+            rail = this.#rails.get(stationKey) ?? null;
+            if (!rail) {
+                rail = new Rail(stationsSorted[0], [], stationsSorted[1], [120]);
+                this.#rails.set(stationKey, rail);
+            }
+        }
         sc.addScheduleInfo(trainTemplate, track, arrival_time, departure_time, sn ?? null, rail);
     }
 
