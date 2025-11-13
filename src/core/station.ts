@@ -28,8 +28,6 @@ export class Station {
         this.#position = position;
     }
 
-    // TODO - delay managing - in progress - @jakseluz
-
     addScheduleInfo(
         train: TrainTemplate,
         track: Track,
@@ -56,6 +54,7 @@ export class Station {
     step() {
         // check if any trains should depart or be destroyed
         this.departureTrains();
+        this.updateTrainWaitingTimes();
         // check if trains are to be spawned
         this.#startingTrains.forEach((schedule: SpawnTrainScheduleStep, train: TrainTemplate) => {
             if (
@@ -103,9 +102,13 @@ export class Station {
             if (track.train) {
                 const trainSchedule = this.#trainsSchedule.get(track.train.trainTemplate);
                 if (trainSchedule && trainSchedule.departureTime) {
+                    const delayedTrains = this.lateTrainsToArrive();
                     if (
+                        /* prettier-ignore */
+                        (track.currentOccupancy &&
+                        !delayedTrains.some((t) => track.currentOccupancy!.shouldWaitLonger(t))) && // check if proper for sure
                         simulation.currentTime.toSeconds() >=
-                        trainSchedule.departureTime.toSeconds() + track.train.delay.delayTimeInSeconds
+                            trainSchedule!.departureTime!.toSeconds() + track.train!.delay.delayTimeInSeconds
                     ) {
                         this.departTrain(track, trainSchedule);
                     }
@@ -115,6 +118,22 @@ export class Station {
                 }
             }
         });
+    }
+
+    lateTrainsToArrive(): Train[] {
+        const delayedTrainsTemplates = Array.from(this.#trainsSchedule.entries())
+            .filter(
+                ([_, schedule]) =>
+                    schedule &&
+                    schedule.arrivalTime && // what about spawn trains without arrival time?
+                    schedule.departureTime &&
+                    !schedule.satisfied &&
+                    schedule.departureTime.toSeconds() <= simulation.currentTime.toSeconds()
+            )
+            .map(([trainTemplate]) => trainTemplate);
+
+        const delayedTrains = simulation.trains.filter((train) => delayedTrainsTemplates.includes(train.trainTemplate));
+        return delayedTrains;
     }
 
     /**
@@ -131,6 +150,7 @@ export class Station {
         } else {
             this.destroyTrain(train);
         }
+        trainSchedule.satisfied = true;
     }
 
     spawnTrain(trainTemplate: TrainTemplate, preferredTrack: Track): Train | null {
@@ -189,6 +209,20 @@ export class Station {
             }
         });
         return nextSchedule;
+    }
+
+    /**
+     * Adds timeStep waiting delay to all trains currently at the station whose departure time has passed
+     */
+    updateTrainWaitingTimes() {
+        this.#tracks.forEach((track) => {
+            if (track.train) {
+                const departureTime = this.#trainsSchedule.get(track.train.trainTemplate)?.departureTime;
+                if (simulation.currentTime.toSeconds() > (departureTime?.toSeconds() ?? 0)) {
+                    track.train.delay.addWaitingDelay(simulation.timeStep);
+                }
+            }
+        });
     }
 
     get trainsSchedule() {

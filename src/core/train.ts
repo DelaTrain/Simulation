@@ -36,10 +36,6 @@ export class Train {
     }
 
     step() {
-        // train movement logic in progress - @jakseluz
-        // TODO - delay time updating logic (partially done already)
-        // TODO - user delays (trivial when the above is finished)
-        // TODO - simulation state saving - trivial
         if (!this.#isWaiting) {
             this.move();
             this.handleNextStationArrival();
@@ -169,6 +165,24 @@ export class Train {
 
     displayName(): string {
         return this.trainTemplate.displayName();
+    }
+
+    shouldWaitLonger(otherTrain: Train): boolean {
+        const timeLeft = this.trainTemplate.type.maxWaitingTime - this.#delay.currentWaitingTimeAtTheStationInSeconds;
+        if (
+            otherTrain.delay.delayTimeInSeconds < timeLeft &&
+            otherTrain.trainTemplate.type.priority > this.trainTemplate.type.priority
+        ) {
+            return true;
+        } else if (
+            otherTrain.delay.delayTimeInSeconds < timeLeft &&
+            otherTrain.trainTemplate.type.priority <= this.trainTemplate.type.priority
+        ) {
+            // TODO - randomness; for now - priority really matters
+            return false;
+        } /*if (otherTrain.delay.delayTimeInSeconds >= timeLeft) */ else {
+            return false;
+        }
     }
 
     set nextStation(station: Station | null) {
