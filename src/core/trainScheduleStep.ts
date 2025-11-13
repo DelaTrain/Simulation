@@ -15,11 +15,11 @@ export class TrainScheduleStep {
     ) {}
 
     displayArrival() {
-        return `(${this.train.number}) ${this.arrivalTime ? this.arrivalTime.toString() : " - "}`;
+        return `${this.train.displayName()}<br/>${this.arrivalTime ? this.arrivalTime.toString() : " - "}`;
     }
 
     displayDeparture() {
-        return `(${this.train.number}) ${this.departureTime ? this.departureTime.toString() : " - "}`;
+        return `${this.train.displayName()}<br/>${this.departureTime ? this.departureTime.toString() : " - "}`;
     }
 }
 
