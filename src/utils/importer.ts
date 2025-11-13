@@ -54,6 +54,15 @@ export class ImportedData {
 
     #importStop(t: any, i: number, trainTemplate: TrainTemplate) {
         const stop_current = t.stops[i];
+
+        // maybe not necessary but good for clarity; less chance of mistakes
+        // null arrival/departure times for first/last stops for trains changing numbers and being treated as separate ones
+        if (i == 0) {
+            stop_current.arrival_time = null;
+        } else if (i == t.stops.length - 1) {
+            stop_current.departure_time = null;
+        }
+
         const stop_next = i + 1 <= t.stops.length ? t.stops[i + 1] : null;
 
         const sc = this.#stations.get(stop_current.station_name);
