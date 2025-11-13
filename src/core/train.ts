@@ -35,6 +35,8 @@ export class Train {
         this.#position = track;
     }
 
+    // TODO - make delay reduction visible by adjusting train speeds to be more accurate
+    // TODO - make train speeds reduce before meeting stations
     step() {
         if (!this.#isWaiting) {
             this.move();
@@ -81,7 +83,7 @@ export class Train {
                     this.#isWaiting = false;
 
                     this.#position = trackAtTheStation; // TrainPositionOnRail no longer useful
-                    this.#position.trainArrival(this);
+                    this.#position.trainArrival(this, nextSchedule.arrivalTime);
                     this.stop();
                     this.#nextStation = null;
                     this.#acceleration = AccelerationStatus.Constant;

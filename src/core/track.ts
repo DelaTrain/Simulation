@@ -2,6 +2,7 @@ import { Station } from "./station";
 import { Train } from "./train";
 import { Position } from "../utils/position";
 import { simulation } from "./simulation";
+import type { Time } from "../utils/time";
 
 /**
  * For representation of each platform Track at the station
@@ -41,10 +42,13 @@ export class Track {
      * @param train arrived train
      * @returns false if the Track is full
      */
-    trainArrival(train: Train): boolean {
+    trainArrival(train: Train, scheduleArrival: Time | null): boolean {
         if (this.#currentTrain == null) {
             this.#currentTrain = train;
             this.#currentTrain.delay.actualTrainArrival = simulation.currentTime;
+            if (scheduleArrival) {
+                this.#currentTrain.delay.reduceDelays(scheduleArrival.toSeconds());
+            }
             return true;
         } else {
             return false;

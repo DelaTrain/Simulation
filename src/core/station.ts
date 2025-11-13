@@ -54,7 +54,6 @@ export class Station {
     step() {
         // check if any trains should depart or be destroyed
         this.departureTrains();
-        this.updateTrainWaitingTimes();
         // check if trains are to be spawned
         this.#startingTrains.forEach((schedule: SpawnTrainScheduleStep, train: TrainTemplate) => {
             if (
@@ -103,14 +102,17 @@ export class Station {
                 const trainSchedule = this.#trainsSchedule.get(track.train.trainTemplate);
                 if (trainSchedule && trainSchedule.departureTime) {
                     const delayedTrains = this.lateTrainsToArrive();
+                    const anyTrainToWaitFor = delayedTrains.some((t) => track.currentOccupancy!.shouldWaitLonger(t));
                     if (
                         /* prettier-ignore */
                         (track.currentOccupancy &&
-                        !delayedTrains.some((t) => track.currentOccupancy!.shouldWaitLonger(t))) && // check if proper for sure
+                        !anyTrainToWaitFor) && // check if proper for sure
                         simulation.currentTime.toSeconds() >=
                             trainSchedule!.departureTime!.toSeconds() + track.train!.delay.delayTimeInSeconds
                     ) {
                         this.departTrain(track, trainSchedule);
+                    } else if (anyTrainToWaitFor) {
+                        track.train!.delay.addWaitingDelay(simulation.timeStep);
                     }
                 } else if (trainSchedule) {
                     // no departure time - train skips the station (departs immediately)
@@ -158,7 +160,7 @@ export class Station {
         if (track) {
             const train = new Train(track, trainTemplate);
             simulation.addTrain(train);
-            track.trainArrival(train);
+            track.trainArrival(train, null);
             return train;
         }
         return null;
@@ -209,20 +211,6 @@ export class Station {
             }
         });
         return nextSchedule;
-    }
-
-    /**
-     * Adds timeStep waiting delay to all trains currently at the station whose departure time has passed
-     */
-    updateTrainWaitingTimes() {
-        this.#tracks.forEach((track) => {
-            if (track.train) {
-                const departureTime = this.#trainsSchedule.get(track.train.trainTemplate)?.departureTime;
-                if (simulation.currentTime.toSeconds() > (departureTime?.toSeconds() ?? 0)) {
-                    track.train.delay.addWaitingDelay(simulation.timeStep);
-                }
-            }
-        });
     }
 
     get trainsSchedule() {

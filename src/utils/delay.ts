@@ -4,6 +4,7 @@ import { Time } from "./time";
 export class Delay {
     #actualTrainArrival: Time = new Time(0, 0, 0);
 
+    #delay: number = 0;
     #dWait: number = 0;
     #dConflict: number = 0;
     #dExternal: number = 0;
@@ -38,10 +39,34 @@ export class Delay {
     }
 
     /**
+     * Reduces delays based on how late the train is at the next station
+     * @param latenessInSeconds how much late is the train at the next station
+     */
+    reduceDelays(scheduleArrival: number) {
+        const latenessInSeconds = this.#actualTrainArrival.toSeconds() - scheduleArrival;
+        let toSubstract = this.delayTimeInSeconds - latenessInSeconds;
+        if (toSubstract > 0) {
+            this.#dExternal -= toSubstract;
+            if (this.#dExternal < 0) {
+                this.#dWait -= -this.#dExternal;
+                if (this.#dWait < 0) {
+                    this.#dConflict -= -this.#dWait;
+                    this.#dExternal = 0;
+                    this.#dWait = 0;
+                    if (this.#dConflict < 0) {
+                        this.#dConflict = 0;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * Total delay time in seconds
      */
     get delayTimeInSeconds(): number {
-        return Math.max(0, this.#dWait + this.#dConflict + this.#dExternal);
+        this.#delay = Math.max(0, this.#dWait + this.#dConflict + this.#dExternal);
+        return this.#delay;
     }
 
     get currentWaitingTimeAtTheStationInSeconds(): number {
