@@ -64,6 +64,13 @@ class UiPanel {
             <p><strong>Speed:</strong> ${train.velocity.toFixed(2)} m/s</p>
             <p><strong>Delay:</strong> ${(train.delay.delayTimeInSeconds / 60).toFixed(2)} min</p>
         `;
+        const btn = document.createElement("button");
+        btn.textContent = "Add 5 min delay";
+        btn.addEventListener("click", () => {
+            train.delay.addDelay(300); // 5 minutes
+            this.updateDisplay();
+        });
+        this.contentEle.appendChild(btn);
     }
 
     displayStation(station: Station) {
