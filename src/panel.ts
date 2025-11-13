@@ -108,7 +108,7 @@ class UiPanel {
             .join("");
         this.contentEle.innerHTML = `
         <table>
-        <tr><th>Platform</th><th>Occupancy</th><th>Arrival</th><th>Departure</th></tr>
+        <tr><th>Platform<br/>(Track)</th><th>Occupancy</th><th>Arrival</th><th>Departure</th></tr>
         ${tracks}
         </table>`;
     }
