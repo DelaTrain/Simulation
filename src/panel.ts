@@ -1,6 +1,8 @@
 import { simulation } from "./core/simulation";
 import { Station } from "./core/station";
+import { Track } from "./core/track";
 import { Train } from "./core/train";
+import { createButton } from "./utils/button";
 
 class UiPanel {
     element: HTMLDivElement;
@@ -52,6 +54,11 @@ class UiPanel {
 
     updateDisplay() {
         if (this.content instanceof Train) {
+            if (this.content.destroyed) {
+                this.hide();
+                this.content = null;
+                return;
+            }
             this.displayTrain(this.content);
         } else if (this.content instanceof Station) {
             this.displayStation(this.content);
@@ -64,13 +71,19 @@ class UiPanel {
             <p><strong>Speed:</strong> ${train.velocity.toFixed(2)} m/s</p>
             <p><strong>Delay:</strong> ${(train.delay.delayTimeInSeconds / 60).toFixed(2)} min</p>
         `;
-        const btn = document.createElement("button");
-        btn.textContent = "Add 5 min delay";
-        btn.addEventListener("click", () => {
-            train.delay.addDelay(300); // 5 minutes
-            this.updateDisplay();
-        });
-        this.contentEle.appendChild(btn);
+        this.contentEle.appendChild(
+            createButton("Add 5 min delay", () => {
+                train.delay.addDelay(300);
+                this.updateDisplay();
+            })
+        );
+        if (train.position instanceof Track) {
+            this.contentEle.appendChild(
+                createButton("Show station", () => {
+                    this.display((train.position as Track).station);
+                })
+            );
+        }
     }
 
     displayStation(station: Station) {

@@ -28,6 +28,7 @@ export class Train {
     #nextStation: Station | null = null;
     /** If waiting for the others */
     #isWaiting: boolean = false;
+    #destroyed: boolean = false;
 
     constructor(track: Track, trainTemplate: TrainTemplate) {
         this.trainTemplate = trainTemplate;
@@ -158,6 +159,10 @@ export class Train {
         this.#velocity = 0;
     }
 
+    destroy() {
+        this.#destroyed = true;
+    }
+
     displayName(): string {
         return this.trainTemplate.displayName();
     }
@@ -169,6 +174,9 @@ export class Train {
         this.#position = newPosition;
     }
 
+    get destroyed() {
+        return this.#destroyed;
+    }
     get number() {
         return this.trainTemplate.number;
     }

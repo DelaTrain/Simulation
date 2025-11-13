@@ -149,6 +149,7 @@ export class Station {
             throw new Error(`Train ${train.displayName()} is not at station ${this.#name}`);
         }
         train.position.trainDepart();
+        train.destroy();
         simulation.removeTrain(train);
     }
 
