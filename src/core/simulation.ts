@@ -23,7 +23,8 @@ export class Simulation {
     stations: Map<string, Station>;
     trains: Train[] = [];
     trainTemplates: TrainTemplate[] = [];
-    rails: Set<Rail>;
+    // map from (JSON of tuple of station names in alphabetical order) to Rail
+    rails: Map<string, Rail>;
 
     constructor(data: ImportedData) {
         this.stations = data.stations;
