@@ -21,7 +21,7 @@ concurrency:
     cancel-in-progress: true
 
 env:
-    BASE_URL: /simulation/
+    BASE_URL: /Simulation/
 
 jobs:
     # Single deploy job since we're just deploying
