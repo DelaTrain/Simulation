@@ -1,6 +1,6 @@
 import { TrainPositionOnRail, type TrainPosition } from "./trainPosition";
 import { TrainTemplate } from "./trainTemplate";
-import type { Track } from "./track";
+import { Track } from "./track";
 import { simulation } from "./simulation";
 import type { Station } from "./station";
 import { Delay } from "../utils/delay";
@@ -161,6 +161,10 @@ export class Train {
 
     destroy() {
         this.#destroyed = true;
+        if (this.#position instanceof Track) {
+            this.#position.trainDepart();
+        }
+        simulation.removeTrain(this);
     }
 
     displayName(): string {

@@ -148,9 +148,7 @@ export class Station {
         if (train.position instanceof Track === false || train.position.station !== this) {
             throw new Error(`Train ${train.displayName()} is not at station ${this.#name}`);
         }
-        train.position.trainDepart();
         train.destroy();
-        simulation.removeTrain(train);
     }
 
     addTrack(platformNumber: number, trackNumber: string): Track {
