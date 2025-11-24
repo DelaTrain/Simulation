@@ -1,8 +1,8 @@
-import { simulation } from "./core/simulation";
-import { Station } from "./core/station";
-import { Track } from "./core/track";
-import { Train } from "./core/train";
-import { createButton } from "./utils/button";
+import { simulation } from "../core/simulation";
+import { Station } from "../core/station";
+import { Track } from "../core/track";
+import { Train } from "../core/train";
+import { createButton } from "../utils/button";
 
 class UiPanel {
     element: HTMLDivElement;

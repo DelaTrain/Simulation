@@ -1,4 +1,4 @@
-import { simulation } from "./core/simulation";
+import { simulation } from "../core/simulation";
 
 const timeEle = document.getElementById("time")!;
 const stepButton = document.getElementById("step-button")!;

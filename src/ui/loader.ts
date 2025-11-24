@@ -1,6 +1,6 @@
-import { simulation } from "./core/simulation";
-import { ImportedData } from "./utils/importer";
-import { Loader } from "./utils/loader";
+import { simulation } from "../core/simulation";
+import { ImportedData } from "../utils/importer";
+import { Loader } from "../utils/loader";
 
 const loaderEle = document.getElementById("loader") as HTMLDivElement;
 const loaderProgressEle = document.getElementById("loaderProgress") as HTMLProgressElement;

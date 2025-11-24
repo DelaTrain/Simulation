@@ -1,9 +1,9 @@
-import type { Simulation } from "./core/simulation";
+import type { Simulation } from "../core/simulation";
 import * as L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import type { Station } from "./core/station";
-import type { Rail } from "./core/rail";
-import type { Train } from "./core/train";
+import type { Station } from "../core/station";
+import type { Rail } from "../core/rail";
+import type { Train } from "../core/train";
 import { uiPanel } from "./panel";
 
 const stationIcon = L.divIcon({ className: "station-icon" });
