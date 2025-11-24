@@ -11,9 +11,6 @@ importers:
 
   .:
     dependencies:
-      agentscript:
-        specifier: ^0.10.26
-        version: 0.10.26
       geolocation-utils:
         specifier: ^1.2.6
         version: 1.2.6
@@ -149,9 +146,6 @@ packages:
 
   '@types/node@24.8.1':
     resolution: {integrity: sha512-alv65KGRadQVfVcG69MuB4IzdYVpRwMG/mq8KWOaoOdyY617P5ivaDiMCGOFDWD2sAn5Q0mR3mRtUOgm99hL9Q==}
-
-  agentscript@0.10.26:
-    resolution: {integrity: sha512-r3K+hkcqDInH8NG6U8fwq0rTMtMYok5j7pgt3zeJhKcCZA91CoKXSJxOdZvo6XuRhWpqOxCQYXuboLQVGUDw1Q==}
 
   ansis@4.2.0:
     resolution: {integrity: sha512-HqZ5rWlFjGiV0tDm3UxxgNRqsOTniqoKZu0pIAfh7TZQMGuZK+hH0drySty0si0QXj1ieop4+SkSfPZBPPkHig==}
@@ -319,9 +313,6 @@ packages:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
     engines: {node: '>=0.10.0'}
 
-  three@0.120.1:
-    resolution: {integrity: sha512-ktaCRFUR7JUZcKec+cBRz+oBex5pOVaJhrtxvFF2T7on53o9UkEux+/Nh1g/4zeb4t/pbxIFcADbn/ACu3LC1g==}
-
   tinyglobby@0.2.15:
     resolution: {integrity: sha512-j2Zq4NyQYG5XMST4cbs02Ak8iJUdxRM0XI5QyxXuZOzKOINmWurp3smXu3y5wDcJrptwpSjgXHzIQxR0omXljQ==}
     engines: {node: '>=12.0.0'}
@@ -336,9 +327,6 @@ packages:
 
   undici-types@7.14.0:
     resolution: {integrity: sha512-QQiYxHuyZ9gQUIrmPo3IA+hUl4KYk8uSA7cHrcKd/l3p1OTpZcM0Tbp9x7FAtXdAYhlasd60ncPpgu6ihG6TOA==}
-
-  uplot@1.6.32:
-    resolution: {integrity: sha512-KIMVnG68zvu5XXUbC4LQEPnhwOxBuLyW1AHtpm6IKTXImkbLgkMy+jabjLgSLMasNuGGzQm/ep3tOkyTxpiQIw==}
 
 snapshots:
 
@@ -430,11 +418,6 @@ snapshots:
     dependencies:
       undici-types: 7.14.0
     optional: true
-
-  agentscript@0.10.26:
-    dependencies:
-      three: 0.120.1
-      uplot: 1.6.32
 
   ansis@4.2.0: {}
 
@@ -552,8 +535,6 @@ snapshots:
 
   source-map-js@1.2.1: {}
 
-  three@0.120.1: {}
-
   tinyglobby@0.2.15:
     dependencies:
       fdir: 6.5.0(picomatch@4.0.3)
@@ -566,5 +547,3 @@ snapshots:
 
   undici-types@7.14.0:
     optional: true
-
-  uplot@1.6.32: {}

@@ -9,7 +9,6 @@
         "preview": "vite preview"
     },
     "dependencies": {
-        "agentscript": "^0.10.26",
         "geolocation-utils": "^1.2.6",
         "leaflet": "^1.9.4"
     },
