@@ -2,7 +2,6 @@ import { Rail } from "../core/rail";
 import { Station } from "../core/station";
 import { TrainCategory } from "../core/trainCategory";
 import { Position } from "./position";
-import DATA from "../../data/delatrain.json";
 import { TrainTemplate } from "../core/trainTemplate";
 import { Time } from "./time";
 
@@ -69,7 +68,10 @@ export class ImportedData {
 
                 const positions = r.points.map((p: any) => new Position(p.latitude, p.longitude)).slice(1, -1);
                 const maxSpeeds = r.max_speeds ?? [];
-                return [JSON.stringify([stationA.name, stationB.name]), new Rail(stationA, positions, stationB, maxSpeeds)];
+                return [
+                    JSON.stringify([stationA.name, stationB.name]),
+                    new Rail(stationA, positions, stationB, maxSpeeds),
+                ];
             })
         );
     }
@@ -130,5 +132,3 @@ export class ImportedData {
         return this.#rails;
     }
 }
-
-export const importedData = new ImportedData(DATA);

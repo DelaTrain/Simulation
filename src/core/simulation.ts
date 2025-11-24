@@ -1,4 +1,4 @@
-import { importedData, ImportedData } from "../utils/importer";
+import { ImportedData } from "../utils/importer";
 import type { Station } from "./station";
 import "./train";
 import type { Train } from "./train";
@@ -20,13 +20,17 @@ export class Simulation {
     trainRemovedEvent: SimulationEvent<Train> = new SimulationEvent();
     resetEvent: SimulationEvent = new SimulationEvent();
 
-    stations: Map<string, Station>;
+    stations: Map<string, Station> = new Map();
     trains: Train[] = [];
     trainTemplates: TrainTemplate[] = [];
     // map from (JSON of tuple of station names in alphabetical order) to Rail
-    rails: Map<string, Rail>;
+    rails: Map<string, Rail> = new Map();
 
-    constructor(data: ImportedData) {
+    constructor() {
+        this.reset();
+    }
+
+    loadData(data: ImportedData) {
         this.stations = data.stations;
         this.trainTemplates = data.trains;
         this.rails = data.rails;
@@ -91,4 +95,4 @@ export class Simulation {
             * delay range on the map (?)
 */
 
-export const simulation = new Simulation(importedData);
+export const simulation = new Simulation();
