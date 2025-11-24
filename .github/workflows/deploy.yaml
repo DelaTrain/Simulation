@@ -52,6 +52,8 @@ jobs:
                   unzip -q ./data/data.zip -d ./data
                   rm ./data/data.zip
                   echo "Extracted data to ./data/"
+                  ls -l
+                  ls -l ./data
             - uses: pnpm/action-setup@v4
               name: Install pnpm
               with:
