@@ -95,6 +95,12 @@ class UiPanel {
                 }
                 return a.platformNumber - b.platformNumber;
             })
+            .filter(
+                // skip printing imaginary tracks except those with scheduled arrival/ departure times (e.g. abroad)
+                (track) =>
+                    station.nextArrivalForTrack(track, simulation.currentTime) !== null ||
+                    station.nextDepartureForTrack(track, simulation.currentTime) !== null
+            )
             .map(
                 (track) =>
                     `<tr><th>${track.platformNumber} (${track.trackNumber})</th><td>${

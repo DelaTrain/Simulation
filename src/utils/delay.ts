@@ -72,4 +72,12 @@ export class Delay {
     get currentWaitingTimeAtTheStationInSeconds(): number {
         return simulation.currentTime.toSeconds() - this.#actualTrainArrival.toSeconds();
     }
+
+    get userDelayInSeconds(): number {
+        return this.#dExternal;
+    }
+
+    set userDelayInSeconds(delay: number) {
+        this.#dExternal = delay;
+    }
 }

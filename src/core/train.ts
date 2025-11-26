@@ -36,6 +36,7 @@ export class Train {
     }
 
     // TODO - make delay reduction visible by adjusting train speeds to be more accurate
+    // TODO - fix user delays if not at the station (before it)
     // TODO - make train speeds reduce before meeting stations
     step() {
         if (!this.#isWaiting) {
@@ -47,6 +48,9 @@ export class Train {
         }
     }
 
+    /**
+     * Train movement logic
+     */
     move() {
         if (this.#position instanceof TrainPositionOnRail) {
             // updating position based on velocity and acceleration
@@ -63,30 +67,39 @@ export class Train {
         }
     }
 
+    /** Approaching the next station logic */
     handleNextStationArrival() {
         if (this.#nextStation) {
             if (!(this.#position instanceof TrainPositionOnRail)) return; // safety check
             const arrived = (this.#position as TrainPositionOnRail).distance >= this.#position.rail.length();
+
             // checking if the train reached its next station
             const nextSchedule = this.#nextStation.trainsSchedule.get(this.trainTemplate);
-            if (arrived && nextSchedule?.arrivalTime) {
-                // TODO ^ - idk if it should be like this - depends on TrainPositionOnRail management
-                const trackAtTheStation = this.#nextStation.assignTrack(this.trainTemplate, nextSchedule.track);
-                if (trackAtTheStation == null) {
-                    // cannot arrive at the station - track full; waiting
-                    // Z jaką prędkością może czekać pociąg?
-                    this.#isWaiting = true;
-                    this.#delay.addConflictDelay(this.calculateConflictDelay());
+            if (arrived) {
+                if (nextSchedule) {
+                    const trackAtTheStation = this.#nextStation.assignTrack(this.trainTemplate, nextSchedule.track);
 
-                    return;
+                    if (trackAtTheStation == null) {
+                        // cannot arrive at the station - track full; waiting
+                        // Z jaką prędkością może czekać pociąg?
+                        this.#isWaiting = true;
+                        this.#delay.addConflictDelay(this.calculateConflictDelay());
+                        return;
+                    } else {
+                        this.#isWaiting = false;
+                        this.#position = trackAtTheStation; // TrainPositionOnRail no longer useful
+                        this.#nextStation = null;
+
+                        // only if this is a real stop
+                        if (nextSchedule.arrivalTime) {
+                            this.stop();
+                            this.#acceleration = AccelerationStatus.Constant;
+                        }
+
+                        this.#position.trainArrival(this, nextSchedule.arrivalTime);
+                    }
                 } else {
-                    this.#isWaiting = false;
-
-                    this.#position = trackAtTheStation; // TrainPositionOnRail no longer useful
-                    this.#position.trainArrival(this, nextSchedule.arrivalTime);
-                    this.stop();
-                    this.#nextStation = null;
-                    this.#acceleration = AccelerationStatus.Constant;
+                    throw new Error("Train schedule missing for the next station");
                 }
             }
         } else {
@@ -118,37 +131,25 @@ export class Train {
         this.#acceleration = newAccelerationStatus;
     }
 
+    /**
+     * Calculates delay due to (track occupancy) conflicts at the next station
+     * @returns delay time in seconds
+     */
     calculateConflictDelay(): number {
         let conflictDelay: number = 0;
         if (this.#nextStation) {
-            const firstTrackTrain = this.#nextStation.tracks[0].train;
-            if (firstTrackTrain) {
-                let firstTrackTrainSchedule = this.#nextStation.trainsSchedule.get(firstTrackTrain.trainTemplate);
-                if (firstTrackTrainSchedule) {
-                    if (firstTrackTrainSchedule.departureTime) {
+            const trackNumber = this.#nextStation.trainsSchedule.get(this.trainTemplate)?.track.trackNumber;
+            const trackTrain = this.#nextStation.tracks.find((t) => t.trackNumber === trackNumber)?.train;
+
+            if (trackTrain) {
+                let trackTrainSchedule = this.#nextStation!.trainsSchedule.get(trackTrain.trainTemplate);
+                if (trackTrainSchedule) {
+                    if (trackTrainSchedule.departureTime) {
                         conflictDelay =
-                            firstTrackTrainSchedule.departureTime.toSeconds() - simulation.currentTime.toSeconds();
+                            trackTrainSchedule.departureTime.toSeconds() - simulation.currentTime.toSeconds();
                     }
                 }
             }
-
-            this.#nextStation.tracks.forEach((track) => {
-                const trackTrain = track.train;
-                if (trackTrain) {
-                    let trackTrainSchedule = this.#nextStation!.trainsSchedule.get(trackTrain.trainTemplate);
-                    if (trackTrainSchedule) {
-                        if (trackTrainSchedule.departureTime) {
-                            if (
-                                trackTrainSchedule.departureTime.toSeconds() - simulation.currentTime.toSeconds() <
-                                conflictDelay
-                            ) {
-                                conflictDelay =
-                                    trackTrainSchedule.departureTime.toSeconds() - simulation.currentTime.toSeconds();
-                            }
-                        }
-                    }
-                }
-            });
         }
         return conflictDelay;
     }
@@ -169,6 +170,11 @@ export class Train {
         return this.trainTemplate.displayName();
     }
 
+    /**
+     * Determines if the train should wait longer at the station for other trains with specific priorities
+     * @param otherTrain train to wait for (or not to wait for)
+     * @returns boolean indicating whether to wait longer
+     */
     shouldWaitLonger(otherTrain: Train): boolean {
         const timeLeft = this.trainTemplate.type.maxWaitingTime - this.#delay.currentWaitingTimeAtTheStationInSeconds;
         if (

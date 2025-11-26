@@ -21,6 +21,7 @@ export class Station {
     #tracks: Track[] = [];
     /** trains starting at this Station */
     #startingTrains: Map<TrainTemplate, SpawnTrainScheduleStep> = new Map();
+    /** already spawned trains to avoid multiple spawns */
     #alreadySpawnedTrains: Set<TrainTemplate> = new Set();
 
     constructor(name: string, position: Position) {
@@ -28,6 +29,7 @@ export class Station {
         this.#position = position;
     }
 
+    /** Used in the importer module */
     addScheduleInfo(
         train: TrainTemplate,
         track: Track,
@@ -47,6 +49,7 @@ export class Station {
         this.#trainsSchedule.set(train, scheduleStep);
     }
 
+    /** Used in the importer module */
     addStartingTrain(train: TrainTemplate, departureTime: Time, track: Track) {
         this.#startingTrains.set(train, new SpawnTrainScheduleStep(train, departureTime, track));
     }
@@ -54,6 +57,7 @@ export class Station {
     step() {
         // check if any trains should depart or be destroyed
         this.departureTrains();
+
         // check if trains are to be spawned
         this.#startingTrains.forEach((schedule: SpawnTrainScheduleStep, train: TrainTemplate) => {
             if (
@@ -114,14 +118,27 @@ export class Station {
                     } else if (anyTrainToWaitFor) {
                         track.train!.delay.addWaitingDelay(simulation.timeStep);
                     }
+                } else if (trainSchedule && trainSchedule.arrivalTime && !trainSchedule.departureTime) {
+                    // no departure time - train ends here
+                    const train = this.departTrain(track, trainSchedule);
+                    console.log(`Train ${train.displayName()} ends at the station: ${this.#name}`);
                 } else if (trainSchedule) {
                     // no departure time - train skips the station (departs immediately)
-                    this.departTrain(track, trainSchedule);
+                    const train = this.departTrain(track, trainSchedule);
+                    console.log(`Train ${train.displayName()} skips station ${this.#name}`);
+                } else {
+                    throw new Error(
+                        `No schedule found for train ${track.train.displayName()} at station ${this.#name}`
+                    );
                 }
             }
         });
     }
 
+    /**
+     * Returns a list of trains that are late to arrive at the station
+     * @returns array of late trains
+     */
     lateTrainsToArrive(): Train[] {
         const delayedTrainsTemplates = Array.from(this.#trainsSchedule.entries())
             .filter(
@@ -148,12 +165,16 @@ export class Station {
         if (trainSchedule.nextStation && trainSchedule.nextRail) {
             // Assuming that the train has nextRail if it has nextStation
             train.nextStation = trainSchedule.nextStation;
-            const direction = trainSchedule.nextRail.fromStation === this ? TrainDirection.FromStartToEnd : TrainDirection.FromEndToStart;
-            train.position = new TrainPositionOnRail(trainSchedule.nextRail!, direction, 0); // Is nextRail already in the schedule?
+            const direction =
+                trainSchedule.nextRail.fromStation === this
+                    ? TrainDirection.FromStartToEnd
+                    : TrainDirection.FromEndToStart;
+            train.position = new TrainPositionOnRail(trainSchedule.nextRail!, direction, 0);
         } else {
             this.destroyTrain(train);
         }
         trainSchedule.satisfied = true;
+        return train;
     }
 
     spawnTrain(trainTemplate: TrainTemplate, preferredTrack: Track): Train | null {
