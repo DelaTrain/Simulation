@@ -1,5 +1,6 @@
 import type { Simulation } from "../core/simulation";
 import * as L from "leaflet";
+import "leaflet.heat/dist/leaflet-heat.js";
 import "leaflet/dist/leaflet.css";
 import type { Station } from "../core/station";
 import type { Rail } from "../core/rail";
@@ -7,12 +8,14 @@ import type { Train } from "../core/train";
 import { uiPanel } from "./panel";
 
 const stationIcon = L.divIcon({ className: "station-icon" });
+const MIN_RENDER_DELAY_SECONDS = 30;
 
 export class Renderer {
     map: L.Map;
     trainMarkers: Map<Train, L.Marker>;
     stationMarkers: Map<Station, L.Marker>;
     railLines: Map<Rail, L.Polyline>;
+    heatmap: any;
 
     constructor(protected simulation: Simulation) {
         this.simulation.stepEvent.subscribe(this.update.bind(this));
@@ -32,6 +35,7 @@ export class Renderer {
             maxZoom: 19,
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
         }).addTo(this.map);
+        this.heatmap = (L as any).heatLayer([], { radius: 50, blur: 50, maxZoom: 1 }).addTo(this.map);
         this.initialDraw();
     }
 
@@ -69,12 +73,23 @@ export class Renderer {
     }
 
     update() {
-        this.simulation.trains.forEach((train) => {
-            const marker = this.trainMarkers.get(train);
-            if (marker) {
-                marker.setLatLng(train.position.getPosition().toArray());
-            }
-        });
+        const heatmap = this.simulation.trains
+            .map((train) => {
+                const marker = this.trainMarkers.get(train);
+                if (marker) {
+                    marker.setLatLng(train.position.getPosition().toArray());
+                    if (train.delay.delayTimeInSeconds > MIN_RENDER_DELAY_SECONDS) {
+                        return [
+                            train.position.getPosition().latitude,
+                            train.position.getPosition().longitude,
+                            train.delay.delayTimeInSeconds,
+                        ];
+                    }
+                }
+                return null;
+            })
+            .filter((item) => item !== null);
+        this.heatmap.setLatLngs(heatmap);
     }
 
     trainAdded(train: Train) {
