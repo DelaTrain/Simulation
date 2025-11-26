@@ -15,6 +15,7 @@ enum AccelerationStatus {
  * For representation of each Train in the simulation
  */
 export class Train {
+    /** More abstract representation of the train */
     trainTemplate: TrainTemplate;
     /** train speed value - meters per second */
     #velocity: number = 0;
@@ -36,7 +37,6 @@ export class Train {
         this.#position = track;
     }
 
-    // TODO - fix user delays if not at the station (before it)
     // TODO - make train speeds reduce before meeting stations
     step() {
         if (!this.#isWaiting) {
@@ -54,17 +54,22 @@ export class Train {
     move() {
         if (this.#position instanceof TrainPositionOnRail) {
             // updating position based on velocity and acceleration
-            this.#position.move(
-                this.#velocity * simulation.timeStep +
-                    0.5 * this.trainTemplate.type.acceleration * simulation.timeStep * simulation.timeStep
-            );
+            if (this.#delay.dUserAlreadyHandled()) {
+                this.#position.move(
+                    this.#velocity * simulation.timeStep +
+                        0.5 * this.trainTemplate.type.acceleration * simulation.timeStep * simulation.timeStep
+                );
 
-            // updating velocity based on acceleration
-            this.#velocity = Math.min(
-                this.#position.rail.getMaxSpeed(this.#position.distance),
-                this.trainTemplate.type.maxVelocity,
-                this.#velocity + this.trainTemplate.type.acceleration * simulation.timeStep
-            );
+                // updating velocity based on acceleration
+                this.#velocity = Math.min(
+                    this.#position.rail.getMaxSpeed(this.#position.distance),
+                    this.trainTemplate.type.maxVelocity,
+                    this.#velocity + this.trainTemplate.type.acceleration * simulation.timeStep
+                );
+            } else {
+                this.stop();
+                this.#delay.userDelayHandle(simulation.timeStep);
+            }
         }
     }
 
@@ -78,7 +83,7 @@ export class Train {
             const nextSchedule = this.#nextStation.trainsSchedule.get(this.trainTemplate);
             if (arrived) {
                 if (nextSchedule) {
-                    const trackAtTheStation = this.#nextStation.assignTrack(this.trainTemplate, nextSchedule.track);
+                    const trackAtTheStation = this.#nextStation.assignTrack(nextSchedule.track);
 
                     if (trackAtTheStation == null) {
                         // cannot arrive at the station - track full; waiting
@@ -94,7 +99,6 @@ export class Train {
                         // only if this is a real stop
                         if (nextSchedule.arrivalTime) {
                             this.stop();
-                            this.#acceleration = AccelerationStatus.Constant;
                         }
 
                         this.#position.trainArrival(this, nextSchedule.arrivalTime);
@@ -157,6 +161,7 @@ export class Train {
 
     stop() {
         this.#velocity = 0;
+        this.#acceleration = AccelerationStatus.Constant;
     }
 
     destroy() {

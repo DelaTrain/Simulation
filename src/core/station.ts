@@ -82,16 +82,16 @@ export class Station {
      * @param trainTemplate train template (new or existing) requesting the Track
      * @returns track assigned to the train
      */
-    assignTrack(trainTemplate: TrainTemplate, preferredTrack: Track): Track | null {
+    assignTrack(preferredTrack: Track): Track | null {
         if (preferredTrack.currentOccupancy == null) {
             return preferredTrack;
         }
         const track = this.#tracks.find((track) => track.train == null);
         if (!track) {
-            console.warn(
+            /*console.warn(
                 `No available track for train ${trainTemplate.displayName()} at station ${this.#name}`,
                 this.#tracks
-            );
+            );*/
             return null;
         }
         return track;
@@ -106,13 +106,15 @@ export class Station {
                 const trainSchedule = this.#trainsSchedule.get(track.train.trainTemplate);
                 if (trainSchedule && trainSchedule.departureTime) {
                     const delayedTrains = this.lateTrainsToArrive();
-                    const anyTrainToWaitFor = delayedTrains.some((t) => track.currentOccupancy!.shouldWaitLonger(t));
+                    const anyTrainToWaitFor = delayedTrains
+                        .filter((t) => t !== track.train)
+                        .some((t) => track.currentOccupancy!.shouldWaitLonger(t));
                     if (
                         /* prettier-ignore */
                         (track.currentOccupancy &&
                         !anyTrainToWaitFor) && // check if proper for sure
                         simulation.currentTime.toSeconds() >=
-                            trainSchedule!.departureTime!.toSeconds() + track.train!.delay.delayTimeInSeconds
+                            trainSchedule!.departureTime!.toSeconds()
                     ) {
                         this.departTrain(track, trainSchedule);
                     } else if (anyTrainToWaitFor) {
@@ -121,11 +123,11 @@ export class Station {
                 } else if (trainSchedule && trainSchedule.arrivalTime && !trainSchedule.departureTime) {
                     // no departure time - train ends here
                     const train = this.departTrain(track, trainSchedule);
-                    console.log(`Train ${train.displayName()} ends at the station: ${this.#name}`);
+                    //console.log(`Train ${train.displayName()} ends at the station: ${this.#name}`);
                 } else if (trainSchedule) {
                     // no departure time - train skips the station (departs immediately)
                     const train = this.departTrain(track, trainSchedule);
-                    console.log(`Train ${train.displayName()} skips station ${this.#name}`);
+                    //console.log(`Train ${train.displayName()} skips station ${this.#name}`);
                 } else {
                     throw new Error(
                         `No schedule found for train ${track.train.displayName()} at station ${this.#name}`
@@ -178,7 +180,7 @@ export class Station {
     }
 
     spawnTrain(trainTemplate: TrainTemplate, preferredTrack: Track): Train | null {
-        const track = this.assignTrack(trainTemplate, preferredTrack);
+        const track = this.assignTrack(preferredTrack);
         if (track) {
             const train = new Train(track, trainTemplate);
             simulation.addTrain(train);
