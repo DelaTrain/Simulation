@@ -43,17 +43,25 @@ export class ImportedData {
     }
 
     #importTrains(trains: any[]) {
-        this.#trains = trains.map((t) => {
-            const trainTemplate = new TrainTemplate(t.number, mapCategory(t.category), t.name);
+        this.#trains = trains
+            .map((t) => {
+                if (t.stops.length < 2) throw new Error(`Train ${t.name} ${t.number} has less than 2 stops`);
 
-            if (t.stops.length < 2) throw new Error(`Train ${t.name} ${t.number} has less than 2 stops`);
+                // skip trains that do not depart from their first station
+                if (t.stops[0].departure_time == null) {
+                    // TODO fix properly train reappearance e.g. after changing the country
+                    return null;
+                }
 
-            for (let i = 0; i < t.stops.length; i++) {
-                this.#importStop(t, i, trainTemplate);
-            }
+                const trainTemplate = new TrainTemplate(t.number, mapCategory(t.category), t.name);
 
-            return trainTemplate;
-        });
+                for (let i = 0; i < t.stops.length; i++) {
+                    this.#importStop(t, i, trainTemplate);
+                }
+
+                return trainTemplate;
+            })
+            .filter((t) => t !== null);
     }
 
     #importRails(rails: any[]) {
