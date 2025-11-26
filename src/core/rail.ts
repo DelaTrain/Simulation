@@ -2,9 +2,11 @@ import type { Position } from "../utils/position";
 import type { Station } from "./station";
 
 export class Rail {
+    /** Intermediate positions between fromStation and toStation */
     #positions: Position[];
     #fromStation: Station;
     #toStation: Station;
+    /** Array of max speeds for each segment between positions */
     #maxSpeeds: Array<number>;
 
     #distances: Array<number> = [];
@@ -34,14 +36,17 @@ export class Rail {
         return this.#toStation;
     }
 
+    /** Returns all positions including fromStation, intermediate positions and toStation */
     allPositions(): Position[] {
         return [this.#fromStation.position, ...this.#positions, this.#toStation.position];
     }
 
+    /** Total length of the rail in meters */
     length(): number {
         return this.#distances.reduce((a, b) => a + b, 0);
     }
 
+    /** Returns the segment index and the distance to the end of that segment for a given distance along the rail */
     findSegmentIndexAtDistance(distance: number): [number, number] {
         for (let i = 0; i < this.#distances.length; i++) {
             distance -= this.#distances[i];
@@ -52,12 +57,13 @@ export class Rail {
         return [this.#distances.length - 1, 0];
     }
 
+    /** Returns the Position at a given distance along the rail */
     findPositionAtDistance(distance: number): Position {
         const [segmentIndex, distanceToEnd] = this.findSegmentIndexAtDistance(distance);
-        const segmentStartPos = this.allPositions()[segmentIndex];
-        const segmentEndPos = this.allPositions()[segmentIndex + 1];
+        const segmentStartPosition = this.allPositions()[segmentIndex];
+        const segmentEndPosition = this.allPositions()[segmentIndex + 1];
         const segmentLength = this.#distances[segmentIndex];
-        const res = segmentStartPos.moveBy(segmentEndPos, segmentLength + distanceToEnd);
+        const res = segmentStartPosition.moveBy(segmentEndPosition, segmentLength + distanceToEnd);
         return res;
     }
 
@@ -66,6 +72,22 @@ export class Rail {
      * @returns max speed at selected point in m/s
      */
     getMaxSpeed(distance: number): number {
-        return Infinity * distance;  // TODO: implement max speed logic @jaanonim
+        const [segmentIndex, _] = this.findSegmentIndexAtDistance(distance);
+        if (isNaN(this.#maxSpeeds[segmentIndex])) {
+            console.error("Max speed is NaN!");
+            console.log("maxSpeeds:", this.#maxSpeeds);
+            console.log("positions:", this.#positions);
+            console.log(
+                "Max speed at distance",
+                distance,
+                "is",
+                this.#maxSpeeds[segmentIndex],
+                "for stations",
+                this.#fromStation.name,
+                "-",
+                this.#toStation.name
+            );
+        }
+        return this.#maxSpeeds[segmentIndex];
     }
 }

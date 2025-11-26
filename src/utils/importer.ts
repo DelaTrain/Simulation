@@ -75,7 +75,7 @@ export class ImportedData {
                 }
 
                 const positions = r.points.map((p: any) => new Position(p.latitude, p.longitude)).slice(1, -1);
-                const maxSpeeds = r.max_speeds ?? [];
+                const maxSpeeds = r.max_speed.map((s: number) => s / 3.6) ?? [];
                 return [
                     JSON.stringify([stationA.name, stationB.name]),
                     new Rail(stationA, positions, stationB, maxSpeeds),
@@ -123,7 +123,7 @@ export class ImportedData {
             const stationKey = JSON.stringify([stationsSorted[0].name, stationsSorted[1].name]);
             rail = this.#rails.get(stationKey) ?? null;
             if (!rail) {
-                rail = new Rail(stationsSorted[0], [], stationsSorted[1], [120]);
+                rail = new Rail(stationsSorted[0], [], stationsSorted[1], [120 / 3.6]); // default max speed 120 km/h
                 this.#rails.set(stationKey, rail);
             }
         }

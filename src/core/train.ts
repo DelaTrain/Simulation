@@ -28,6 +28,7 @@ export class Train {
     #nextStation: Station | null = null;
     /** If waiting for the others */
     #isWaiting: boolean = false;
+    /** If destroyed */
     #destroyed: boolean = false;
 
     constructor(track: Track, trainTemplate: TrainTemplate) {
@@ -35,7 +36,6 @@ export class Train {
         this.#position = track;
     }
 
-    // TODO - make delay reduction visible by adjusting train speeds to be more accurate
     // TODO - fix user delays if not at the station (before it)
     // TODO - make train speeds reduce before meeting stations
     step() {
@@ -61,6 +61,7 @@ export class Train {
 
             // updating velocity based on acceleration
             this.#velocity = Math.min(
+                this.#position.rail.getMaxSpeed(this.#position.distance),
                 this.trainTemplate.type.maxVelocity,
                 this.#velocity + this.trainTemplate.type.acceleration * simulation.timeStep
             );
