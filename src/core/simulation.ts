@@ -25,6 +25,8 @@ export class Simulation {
     trainTemplates: TrainTemplate[] = [];
     // map from (JSON of tuple of station names in alphabetical order) to Rail
     rails: Map<string, Rail> = new Map();
+    deltaTime: number = 0;
+    lastStepTime: number = -1;
 
     constructor() {
         this.reset();
@@ -64,8 +66,13 @@ export class Simulation {
 
     runAutomatically() {
         if (!this.autoRun) return;
-        this.step();
-        setTimeout(() => this.runAutomatically(), this.autoRunSpeed);
+        const now = performance.now();
+        if (now - this.lastStepTime > this.autoRunSpeed) {
+            this.lastStepTime = now;
+            this.step();
+            this.deltaTime = performance.now() - now;
+        }
+        requestAnimationFrame(() => this.runAutomatically());
     }
 
     addTrain(train: Train) {

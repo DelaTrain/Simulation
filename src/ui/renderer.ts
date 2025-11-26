@@ -6,9 +6,20 @@ import type { Station } from "../core/station";
 import type { Rail } from "../core/rail";
 import type { Train } from "../core/train";
 import { uiPanel } from "./panel";
+import { mapValue } from "../utils/math";
 
 const stationIcon = L.divIcon({ className: "station-icon" });
+const trainIcon = L.divIcon({ className: "train-icon" });
 const MIN_RENDER_DELAY_SECONDS = 30;
+const MAX_DELAY_SECONDS = 3600;
+const MAX_HEATMAP_INTENSITY = 1.0;
+const ENABLE_HEATMAP = false;
+
+const colorScale = (value: number): string => {
+    const clampedValue = Math.max(0, Math.min(1, value));
+    const hue = Math.floor(120 * (1 - clampedValue));
+    return `hsl(${hue}, 100%, 50%)`;
+};
 
 export class Renderer {
     map: L.Map;
@@ -35,7 +46,8 @@ export class Renderer {
             maxZoom: 19,
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
         }).addTo(this.map);
-        this.heatmap = (L as any).heatLayer([], { radius: 50, blur: 50, maxZoom: 1 }).addTo(this.map);
+        if (ENABLE_HEATMAP)
+            this.heatmap = (L as any).heatLayer([], { radius: 50, blur: 50, maxZoom: 1 }).addTo(this.map);
         this.initialDraw();
     }
 
@@ -78,18 +90,22 @@ export class Renderer {
                 const marker = this.trainMarkers.get(train);
                 if (marker) {
                     marker.setLatLng(train.position.getPosition().toArray());
-                    if (train.delay.delayTimeInSeconds > MIN_RENDER_DELAY_SECONDS) {
-                        return [
-                            train.position.getPosition().latitude,
-                            train.position.getPosition().longitude,
-                            train.delay.delayTimeInSeconds,
-                        ];
-                    }
+                    marker.getElement()!.style.backgroundColor = colorScale(
+                        mapValue(0, MAX_DELAY_SECONDS, train.delay.delayTimeInSeconds)
+                    );
+                    if (ENABLE_HEATMAP)
+                        if (train.delay.delayTimeInSeconds > MIN_RENDER_DELAY_SECONDS) {
+                            return [
+                                train.position.getPosition().latitude,
+                                train.position.getPosition().longitude,
+                                train.delay.delayTimeInSeconds * MAX_HEATMAP_INTENSITY,
+                            ];
+                        }
                 }
                 return null;
             })
             .filter((item) => item !== null);
-        this.heatmap.setLatLngs(heatmap);
+        if (ENABLE_HEATMAP) this.heatmap.setLatLngs(heatmap);
     }
 
     trainAdded(train: Train) {
@@ -127,9 +143,7 @@ export class Renderer {
         const marker = L.marker(train.position!.getPosition().toArray(), {
             zIndexOffset: 1000,
         }).addTo(this.map);
-        marker.setIcon(
-            L.icon({ iconUrl: "https://cdn-icons-png.flaticon.com/512/565/565410.png", iconSize: [32, 32] })
-        );
+        marker.setIcon(trainIcon);
         marker.bindTooltip(train.displayName(), { direction: "top" });
         marker.on("click", () => {
             uiPanel.display(train);

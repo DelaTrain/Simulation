@@ -8,6 +8,7 @@ const stepSizeSlider = document.getElementById("step")!;
 const playSpeedSlider = document.getElementById("speed")!;
 const stepValue = document.getElementById("step-value")!;
 const speedValue = document.getElementById("speed-value")!;
+const deltaEle = document.getElementById("delta")!;
 
 function updateSliders() {
     (stepSizeSlider as HTMLInputElement).value = simulation.timeStep.toString();
@@ -24,6 +25,7 @@ function toggleAutoRunButton() {
 
 function updateTime() {
     timeEle.textContent = `Czas symulacji: ${simulation.currentTime.toString()}`;
+    deltaEle.textContent = `${simulation.deltaTime.toFixed(2)} ms`;
 }
 
 stepButton.addEventListener("click", () => {
