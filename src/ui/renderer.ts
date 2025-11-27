@@ -7,6 +7,7 @@ import type { Rail } from "../core/rail";
 import type { Train } from "../core/train";
 import { uiPanel } from "./panel";
 import { mapValue } from "../utils/math";
+import { Track } from "../core/track";
 
 const stationIcon = L.divIcon({ className: "station-icon" });
 const trainIcon = L.divIcon({ className: "train-icon" });
@@ -91,14 +92,14 @@ export class Renderer {
                 if (marker) {
                     marker.setLatLng(train.position.getPosition().toArray());
                     marker.getElement()!.style.backgroundColor = colorScale(
-                        mapValue(0, MAX_DELAY_SECONDS, train.delay.delayTimeInSeconds)
+                        mapValue(0, MAX_DELAY_SECONDS, train.delay.UIDelayValue)
                     );
                     if (ENABLE_HEATMAP)
-                        if (train.delay.delayTimeInSeconds > MIN_RENDER_DELAY_SECONDS) {
+                        if (train.delay.UIDelayValue > MIN_RENDER_DELAY_SECONDS) {
                             return [
                                 train.position.getPosition().latitude,
                                 train.position.getPosition().longitude,
-                                train.delay.delayTimeInSeconds * MAX_HEATMAP_INTENSITY,
+                                train.delay.UIDelayValue * MAX_HEATMAP_INTENSITY,
                             ];
                         }
                 }

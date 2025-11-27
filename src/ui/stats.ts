@@ -18,7 +18,7 @@ class StatsCollector {
         this.trainsAlive.push(aliveTrains);
 
         const latency = simulation.trains.reduce((sum, train) => {
-            return sum + (!train.destroyed ? train.delay.delayTimeInSeconds : 0);
+            return sum + (!train.destroyed ? train.delay.UIDelayValue : 0);
         }, 0);
         this.totalLatency.push(latency / 60); // in minutes
 
