@@ -48,6 +48,7 @@ export class Track {
             this.#currentTrain.delay.actualTrainArrival = simulation.currentTime;
             if (scheduleArrival) {
                 this.#currentTrain.delay.reduceDelays(scheduleArrival.toSeconds());
+                this.#currentTrain.delay.UIDelayValue = this.#currentTrain.delay.delayTimeInSeconds;
             }
             return true;
         } else {

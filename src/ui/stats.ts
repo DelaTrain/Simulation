@@ -5,7 +5,7 @@ import type { Time } from "../utils/time";
 
 class StatsCollector {
     trainsAlive: Array<number> = [];
-    totalLatency: Array<number> = []; // in minutes
+    averageLatency: Array<number> = []; // in minutes
     timeSteps: Array<Time> = [];
 
     constructor() {
@@ -17,17 +17,18 @@ class StatsCollector {
         const aliveTrains = simulation.trains.filter((train) => !train.destroyed).length;
         this.trainsAlive.push(aliveTrains);
 
-        const latency = simulation.trains.reduce((sum, train) => {
-            return sum + (!train.destroyed ? train.delay.UIDelayValue : 0);
-        }, 0);
-        this.totalLatency.push(latency / 60); // in minutes
+        const latency =
+            simulation.trains.reduce((sum, train) => {
+                return sum + (!train.destroyed ? train.delay.UIDelayValue : 0);
+            }, 0) / Math.max(aliveTrains, 1); // average latency
+        this.averageLatency.push(latency / 60); // in minutes
 
         this.timeSteps.push(simulation.currentTime);
     }
 
     resetStats() {
         this.trainsAlive = [];
-        this.totalLatency = [];
+        this.averageLatency = [];
     }
 }
 
@@ -59,15 +60,15 @@ class StatsPanel {
     show() {
         this.updateDisplay();
         this.element.style.display = "block";
-        this.titleEle.innerText = "Statystyki symulacji";
+        this.titleEle.innerText = "Simulation statistics";
         this.contentEle.innerHTML = "";
 
-        this.trainsAliveChart = new StatsChart("Liczba żywych pociągów");
+        this.trainsAliveChart = new StatsChart("Number of running trains");
         this.trainsAliveChart.addToPanel(this);
         this.trainsAliveChart.updateData(statsCollector.trainsAlive);
-        this.totalLatencyChart = new StatsChart("Całkowite opóźnienie pociągów");
+        this.totalLatencyChart = new StatsChart("Average train delay");
         this.totalLatencyChart.addToPanel(this);
-        this.totalLatencyChart.updateData(statsCollector.totalLatency);
+        this.totalLatencyChart.updateData(statsCollector.averageLatency);
         simulation.stepEvent.subscribe(this.updateDisplay.bind(this));
     }
 
@@ -85,7 +86,7 @@ class StatsPanel {
         }
         if (this.totalLatencyChart) {
             this.totalLatencyChart.updateData(
-                statsCollector.totalLatency,
+                statsCollector.averageLatency,
                 statsCollector.timeSteps.map((t) => t.toString())
             );
         }

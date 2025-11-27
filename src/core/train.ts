@@ -182,15 +182,19 @@ export class Train {
      * @returns boolean indicating whether to wait longer
      */
     shouldWaitLonger(otherTrain: Train): boolean {
-        const timeLeft = this.trainTemplate.type.maxWaitingTime - this.#delay.currentWaitingTimeAtTheStationInSeconds;
+        // TODO - correct if needed
+        const timeLeft =
+            this.trainTemplate.type.maxWaitingTime -
+            (this.#delay.currentWaitingTimeAtTheStationInSeconds + this.#delay.delayTimeInSeconds);
         if (
+            timeLeft > 0 &&
             otherTrain.delay.delayTimeInSeconds < timeLeft &&
-            otherTrain.trainTemplate.type.priority > this.trainTemplate.type.priority
+            otherTrain.trainTemplate.type.priority >= this.trainTemplate.type.priority
         ) {
             return true;
         } else if (
             otherTrain.delay.delayTimeInSeconds < timeLeft &&
-            otherTrain.trainTemplate.type.priority <= this.trainTemplate.type.priority
+            otherTrain.trainTemplate.type.priority < this.trainTemplate.type.priority
         ) {
             // TODO - randomness; for now - priority really matters
             return false;

@@ -8,17 +8,17 @@ import { Time } from "./time";
 function mapCategory(category: string) {
     switch (category) {
         case "Bus":
-            return new TrainCategory("Bus", 0, 40, 16, 1);
+            return new TrainCategory("Bus", 0, 40 * 60, 16, 1); // maxWaitingTime conversion from minutes to seconds
         case "BUS":
-            return new TrainCategory("BUS", 0, 40, 16, 1);
+            return new TrainCategory("BUS", 0, 40 * 60, 16, 1);
         case "R":
-            return new TrainCategory("R", 1, 60, 33, 2);
+            return new TrainCategory("R", 1, 60 * 60, 33, 2);
         case "KS":
-            return new TrainCategory("KS", 1, 60, 33, 2);
+            return new TrainCategory("KS", 1, 60 * 60, 33, 2);
         case "KML":
-            return new TrainCategory("KML", 1, 60, 33, 2);
+            return new TrainCategory("KML", 1, 60 * 60, 33, 2);
         default:
-            return new TrainCategory(category, 2, 80, 44, 3);
+            return new TrainCategory(category, 2, 10 * 60, 44, 3);
     }
 }
 
