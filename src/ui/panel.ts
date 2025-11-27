@@ -22,6 +22,7 @@ class UiPanel {
         });
         simulation.stepEvent.subscribe(this.updateDisplay.bind(this));
         simulation.resetEvent.subscribe(this.updateDisplay.bind(this));
+        simulation.trainRemovedEvent.subscribe(this.updateDisplay.bind(this));
 
         this.element.style.display = "none";
         this.content = null;

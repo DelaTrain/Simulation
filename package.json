@@ -10,6 +10,7 @@
         "split": "node ./split.mjs"
     },
     "dependencies": {
+        "chart.js": "^4.5.1",
         "geolocation-utils": "^1.2.6",
         "leaflet": "^1.9.4",
         "leaflet.heat": "^0.2.0"
