@@ -15,6 +15,8 @@ export class Delay {
     /** To recognise if the train has already been stopped by the external Delay */
     #dExternalAlreadyHandled: number = 0;
 
+    #UIDelayValue: number = 0;
+
     /**
      * Adds external (user) delay
      * @param dExternal delay time in seconds
@@ -86,10 +88,12 @@ export class Delay {
     }
 
     /**
+     * FOR USE IN THE SIMULATION LOGIC ONLY
      * Total delay time in seconds
      */
     get delayTimeInSeconds(): number {
         this.#delay = Math.max(0, this.#dWait + this.#dConflict + this.#dExternal);
+        //this.#delay = this.#dWait + this.#dConflict + this.#dExternal;
         return this.#delay;
     }
 
@@ -112,5 +116,15 @@ export class Delay {
      */
     set userDelayInSeconds(delay: number) {
         this.#dExternal = delay;
+    }
+
+    /** FOR USE IN THE SIMULATION LOGIC ONLY */
+    set UIDelayValue(value: number) {
+        this.#UIDelayValue = value;
+    }
+
+    /** Value displayed */
+    get UIDelayValue(): number {
+        return this.#UIDelayValue;
     }
 }
