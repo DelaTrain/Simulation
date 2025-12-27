@@ -34,6 +34,7 @@ class StatsCollector {
     resetStats() {
         this.trainsAlive = [];
         this.averageLatency = [];
+        this.timeSteps = [];
     }
 }
 
