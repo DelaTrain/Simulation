@@ -70,7 +70,7 @@ class UiPanel {
         this.title.textContent = `Train ${train.displayName()}`;
         this.contentEle.innerHTML = `
             <p><strong>Speed:</strong> ${train.velocity.toFixed(2)} m/s</p>
-            <p><strong>Delay:</strong> ${(train.delay.delayTimeInSeconds / 60).toFixed(2)} min</p>
+            <p><strong>Delay:</strong> ${(train.delay.UIDelayValue / 60).toFixed(2)} min</p>
         `;
         this.contentEle.appendChild(
             createButton("Add 5 min delay", () => {

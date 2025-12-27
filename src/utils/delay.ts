@@ -14,7 +14,7 @@ export class Delay {
     #dExternal: number = 0;
     /** To recognise if the train has already been stopped by the external Delay */
     #dExternalAlreadyHandled: number = 0;
-
+    /** User-visible delay value in seconds */
     #UIDelayValue: number = 0;
 
     /**
@@ -49,7 +49,7 @@ export class Delay {
 
     /**
      * Reduces delays based on how late the train is at the next station
-     * @param latenessInSeconds how much late is the train at the next station
+     * @param scheduleArrival scheduled arrival time in seconds
      */
     reduceDelays(scheduleArrival: number) {
         const latenessInSeconds = this.#actualTrainArrival.toSeconds() - scheduleArrival;
@@ -82,6 +82,7 @@ export class Delay {
 
     /**
      * Marks the current user delay as handled
+     * @param timeHandled time in seconds that has been handled
      */
     userDelayHandle(timeHandled: number) {
         this.#dExternalAlreadyHandled += timeHandled;
