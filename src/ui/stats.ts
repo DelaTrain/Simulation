@@ -2,6 +2,7 @@ import Chart from "chart.js/auto";
 
 import { simulation } from "../core/simulation";
 import type { Time } from "../utils/time";
+import { Track } from "../core/track";
 
 class StatsCollector {
     trainsAlive: Array<number> = [];
@@ -14,15 +15,19 @@ class StatsCollector {
     }
 
     collectStats() {
-        const aliveTrains = simulation.trains.filter((train) => !train.destroyed).length;
-        this.trainsAlive.push(aliveTrains);
+        const aliveTrains = simulation.trains.filter((train) => !train.destroyed);
+        const aliveTrainsNumber = aliveTrains.length;
+        this.trainsAlive.push(aliveTrainsNumber);
 
+        // calculate average latency only for trains that are at stations (i.e. their position is Track) - because only those trains have meaningful delay values
+        const trainsCountedInTermsOfDelay = aliveTrains.filter((train) => train.position instanceof Track);
         const latency =
-            simulation.trains.reduce((sum, train) => {
-                return sum + (!train.destroyed ? train.delay.UIDelayValue : 0);
-            }, 0) / Math.max(aliveTrains, 1); // average latency
+            trainsCountedInTermsOfDelay.reduce((sum, train) => {
+                return sum + train.delay.UIDelayValue;
+            }, 0) / Math.max(trainsCountedInTermsOfDelay.length, 1); // average latency
         this.averageLatency.push(latency / 60); // in minutes
 
+        // record time step
         this.timeSteps.push(simulation.currentTime);
     }
 
@@ -63,10 +68,10 @@ class StatsPanel {
         this.titleEle.innerText = "Simulation statistics";
         this.contentEle.innerHTML = "";
 
-        this.trainsAliveChart = new StatsChart("Number of running trains");
+        this.trainsAliveChart = new StatsChart("Number of trains on the map");
         this.trainsAliveChart.addToPanel(this);
         this.trainsAliveChart.updateData(statsCollector.trainsAlive);
-        this.totalLatencyChart = new StatsChart("Average train delay");
+        this.totalLatencyChart = new StatsChart("Average train delay (counted for trains at stations) [min]");
         this.totalLatencyChart.addToPanel(this);
         this.totalLatencyChart.updateData(statsCollector.averageLatency);
         simulation.stepEvent.subscribe(this.updateDisplay.bind(this));

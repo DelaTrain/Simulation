@@ -67,6 +67,7 @@ export class Train {
                     this.#velocity + this.trainTemplate.type.acceleration * simulation.timeStep
                 );
             } else {
+                this.#isWaiting = true;
                 this.stop();
                 this.#delay.userDelayHandle(simulation.timeStep);
             }
