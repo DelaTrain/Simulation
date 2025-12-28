@@ -51,7 +51,7 @@ export class Delay {
      * Reduces delays based on how late the train is at the next station
      * @param scheduleArrival scheduled arrival time in seconds
      */
-    reduceDelays(scheduleArrival: number) {
+    reduceDelaysAtStations(scheduleArrival: number) {
         const latenessInSeconds = this.#actualTrainArrival.toSeconds() - scheduleArrival;
         let toSubstract = this.delayTimeInSeconds - latenessInSeconds;
         if (toSubstract > 0) {

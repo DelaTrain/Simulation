@@ -32,6 +32,14 @@ export class TrainPositionOnRail {
         }
     }
 
+    getDistanceToNextStation(): number {
+        if (this.#direction === TrainDirection.FromStartToEnd) {
+            return this.#rail.length() - this.#distance;
+        } else {
+            return this.#distance;
+        }
+    }
+
     move(distanceDelta: number) {
         this.#distance += distanceDelta;
     }

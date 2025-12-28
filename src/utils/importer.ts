@@ -12,7 +12,7 @@ function mapCategory(category: string) {
         case "BUS":
             return new TrainCategory("BUS", 0, 40 * 60, 16, 1);
         case "R":
-            return new TrainCategory("R", 1, 60 * 60, 33, 2);
+            return new TrainCategory("R", 1, 60 * 60, 30, 2);
         case "KS":
             return new TrainCategory("KS", 1, 60 * 60, 33, 2);
         case "KML":

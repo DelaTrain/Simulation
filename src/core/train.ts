@@ -27,7 +27,7 @@ export class Train {
     #delay: Delay = new Delay();
     /** Next Station */
     #nextStation: Station | null = null;
-    /** If waiting for the others */
+    /** If waiting for the others or for the station */
     #isWaiting: boolean = false;
     /** If destroyed */
     #destroyed: boolean = false;
@@ -37,7 +37,9 @@ export class Train {
         this.#position = track;
     }
 
-    // TODO - make train speeds reduce before meeting stations
+    // TODO - make train speeds reduce before meeting stations - in progress
+    // TODO - display delays greater than limit
+    // TODO - think about delay calculations when moving between stations
     step() {
         if (!this.#isWaiting) {
             this.move();
@@ -45,6 +47,11 @@ export class Train {
         } else {
             // the train is at the station - no movement
             this.handleNextStationArrival();
+        }
+
+        // test code - checking if the train exceeded max waiting time at the station
+        if (this.#delay.currentWaitingTimeAtTheStationInSeconds > this.trainTemplate.type.maxWaitingTime) {
+            console.warn(`Train ${this.displayName()} exceeded max waiting time at the station.`);
         }
     }
 
@@ -60,14 +67,15 @@ export class Train {
                         0.5 * this.trainTemplate.type.acceleration * simulation.timeStep * simulation.timeStep
                 );
 
-                // updating velocity based on acceleration
+                // updating velocity based on acceleration and the next station proximity
+                const velocityForcedByNextStation = this.calculateArrivingVelocity();
                 this.#velocity = Math.min(
                     this.#position.rail.getMaxSpeed(this.#position.distance),
                     this.trainTemplate.type.maxVelocity,
                     this.#velocity + this.trainTemplate.type.acceleration * simulation.timeStep
+                    //velocityForcedByNextStation !== null ? velocityForcedByNextStation : Infinity // TODO - in progress
                 );
             } else {
-                this.#isWaiting = true;
                 this.stop();
                 this.#delay.userDelayHandle(simulation.timeStep);
             }
@@ -88,7 +96,7 @@ export class Train {
 
                     if (trackAtTheStation == null) {
                         // cannot arrive at the station - track full; waiting
-                        // Z jaką prędkością może czekać pociąg?
+                        this.stop();
                         this.#isWaiting = true;
                         this.#delay.addConflictDelay(this.calculateConflictDelay());
                         return;
@@ -111,6 +119,26 @@ export class Train {
         } else {
             // despawning in the station logic, if nextStation is null
         }
+    }
+
+    /**
+     * Calculates the velocity needed to arrive at the next station
+     */
+    calculateArrivingVelocity(): number | null {
+        if (this.#nextStation && this.#position instanceof TrainPositionOnRail) {
+            let velocity = this.#velocity;
+            if (this.trainTemplate.type.maxVelocity < 33 && this.distanceToNextStation! < 1200) {
+                velocity -= (0.7 + Math.random() * (0.9 - 0.7)) * simulation.timeStep;
+            } else if (this.trainTemplate.type.maxVelocity < 44 && this.distanceToNextStation! < 3000) {
+                velocity -= (0.5 + Math.random() * (0.7 - 0.5)) * simulation.timeStep;
+            } else if (this.trainTemplate.type.maxVelocity < 56 && this.distanceToNextStation! < 6000) {
+                velocity -= (0.4 + Math.random() * (0.5 - 0.4)) * simulation.timeStep;
+            } else if (this.distanceToNextStation! < 2000) {
+                velocity -= (0.3 + Math.random() * (0.5 - 0.3)) * simulation.timeStep;
+            }
+            return Math.max(velocity, 6); // minimum arriving speed 6 m/s (21.6 km/h)
+        }
+        return null;
     }
 
     /**
@@ -209,6 +237,13 @@ export class Train {
     }
     set position(newPosition: TrainPosition) {
         this.#position = newPosition;
+    }
+
+    get distanceToNextStation(): number | null {
+        if (this.#position instanceof TrainPositionOnRail) {
+            return this.#position.getDistanceToNextStation();
+        }
+        return null;
     }
 
     get destroyed() {
