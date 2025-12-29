@@ -3,7 +3,7 @@ import type { Rail } from "./rail";
 import { Train } from "./train";
 import { SpawnTrainScheduleStep, TrainScheduleStep } from "./trainScheduleStep.ts";
 import { Track } from "./track.ts";
-import { simulation } from "./simulation.ts";
+import { START_TIME, simulation } from "./simulation.ts";
 import type { Time } from "../utils/time.ts";
 import type { TrainTemplate } from "./trainTemplate.ts";
 import { TrainDirection, TrainPositionOnRail } from "./trainPosition.ts";
@@ -57,17 +57,8 @@ export class Station {
     step() {
         // check if any trains should depart or be destroyed
         this.departureTrains();
-
         // check if trains are to be spawned
-        this.#startingTrains.forEach((schedule: SpawnTrainScheduleStep, train: TrainTemplate) => {
-            if (
-                simulation.currentTime.toSeconds() >= schedule.departureTime.toSeconds() &&
-                !this.#alreadySpawnedTrains.has(train) &&
-                this.spawnTrain(train, schedule.track) != null
-            ) {
-                this.#alreadySpawnedTrains.add(train);
-            }
-        });
+        this.spawnTrains();
     }
 
     reset() {
@@ -82,8 +73,8 @@ export class Station {
      * @param trainTemplate train template (new or existing) requesting the Track
      * @returns track assigned to the train
      */
-    assignTrack(preferredTrack: Track): Track | null {
-        if (preferredTrack.currentOccupancy == null) {
+    assignTrack(preferredTrack: Track, trainTemplate: TrainTemplate): Track | null {
+        if (preferredTrack.train == null) {
             return preferredTrack;
         }
         const track = this.#tracks.find((track) => track.train == null);
@@ -108,10 +99,10 @@ export class Station {
                     const delayedTrains = this.lateTrainsToArrive();
                     const anyTrainToWaitFor = delayedTrains
                         .filter((t) => t !== track.train)
-                        .some((t) => track.currentOccupancy!.shouldWaitLonger(t));
+                        .some((t) => track.train!.shouldWaitLonger(t));
                     if (
                         /* prettier-ignore */
-                        (track.currentOccupancy &&
+                        (track.train &&
                         !anyTrainToWaitFor) && // check if proper for sure
                         simulation.currentTime.toSeconds() >=
                             trainSchedule!.departureTime!.toSeconds()
@@ -138,6 +129,29 @@ export class Station {
     }
 
     /**
+     * Handles spawning of trains scheduled to start at this station
+     */
+    spawnTrains() {
+        this.#startingTrains.forEach((schedule: SpawnTrainScheduleStep, train: TrainTemplate) => {
+            if (
+                simulation.currentTime.toSeconds() >= schedule.departureTime.toSeconds() &&
+                !this.#alreadySpawnedTrains.has(train) &&
+                this.spawnTrain(train, schedule.track) != null
+            ) {
+                if (schedule.departureTime < START_TIME) {
+                    console.warn(
+                        `Train ${train.displayName()} is spawned at station ${
+                            this.#name
+                        } with departure time before simulation start: ${schedule.departureTime.toString()}`
+                    );
+                }
+
+                this.#alreadySpawnedTrains.add(train);
+            }
+        });
+    }
+
+    /**
      * Returns a list of trains that are late to arrive at the station
      * @returns array of late trains
      */
@@ -149,7 +163,7 @@ export class Station {
                     schedule.arrivalTime && // what about spawn trains without arrival time?
                     schedule.departureTime &&
                     !schedule.satisfied &&
-                    schedule.departureTime.toSeconds() <= simulation.currentTime.toSeconds()
+                    schedule.departureTime.toSeconds() < simulation.currentTime.toSeconds()
             )
             .map(([trainTemplate]) => trainTemplate);
 
@@ -180,7 +194,7 @@ export class Station {
     }
 
     spawnTrain(trainTemplate: TrainTemplate, preferredTrack: Track): Train | null {
-        const track = this.assignTrack(preferredTrack);
+        const track = this.assignTrack(preferredTrack, trainTemplate);
         if (track) {
             const train = new Train(track, trainTemplate);
             simulation.addTrain(train);

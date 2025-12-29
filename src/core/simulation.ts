@@ -7,7 +7,8 @@ import { Time } from "../utils/time";
 import type { TrainTemplate } from "./trainTemplate";
 import SimulationEvent from "../utils/event";
 
-const START_TIME = new Time(3, 30, 0);
+//export const START_TIME = new Time(3, 30, 0); // TODO - for the possibility of any START_TIME -> need to spawn trains at proper stations (other than their first station) if they start before START_TIME
+export const START_TIME = new Time(0, 0, 0);
 
 export class Simulation {
     timeStep: number = 15; // in seconds

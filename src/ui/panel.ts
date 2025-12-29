@@ -105,7 +105,7 @@ class UiPanel {
             .map(
                 (track) =>
                     `<tr><th>${track.platformNumber} (${track.trackNumber})</th><td>${
-                        track.currentOccupancy === null ? " - " : track.currentOccupancy.displayName()
+                        track.train === null ? " - " : track.train.displayName()
                     }</td><td>${
                         station.nextArrivalForTrack(track, simulation.currentTime)?.displayArrival() ?? " - "
                     }</td><td>${

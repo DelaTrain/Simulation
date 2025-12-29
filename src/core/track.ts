@@ -38,8 +38,9 @@ export class Track {
     }
 
     /**
-     * Deals with train arrival on the Track
+     * Deals with train arrival on the Track, sets the actual arrival time and reduces delays
      * @param train arrived train
+     * @param scheduleArrival scheduled arrival time
      * @returns false if the Track is full
      */
     trainArrival(train: Train, scheduleArrival: Time | null): boolean {
@@ -48,6 +49,7 @@ export class Track {
             this.#currentTrain.delay.actualTrainArrival = simulation.currentTime;
             if (scheduleArrival) {
                 this.#currentTrain.delay.reduceDelaysAtStations(scheduleArrival.toSeconds());
+                // update the delay value used in the UI
                 this.#currentTrain.delay.UIDelayValue = this.#currentTrain.delay.delayTimeInSeconds;
             }
             return true;
@@ -61,9 +63,6 @@ export class Track {
     }
     get trackNumber() {
         return this.#trackNumber;
-    }
-    get currentOccupancy() {
-        return this.#currentTrain;
     }
     get train() {
         return this.#currentTrain;

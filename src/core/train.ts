@@ -67,17 +67,35 @@ export class Train {
                         0.5 * this.trainTemplate.type.acceleration * simulation.timeStep * simulation.timeStep
                 );
 
-                // updating velocity based on acceleration and the next station proximity
-                const velocityForcedByNextStation = this.calculateArrivingVelocity();
-                this.#velocity = Math.min(
-                    this.#position.rail.getMaxSpeed(this.#position.distance),
-                    this.trainTemplate.type.maxVelocity,
-                    this.#velocity + this.trainTemplate.type.acceleration * simulation.timeStep
-                    //velocityForcedByNextStation !== null ? velocityForcedByNextStation : Infinity // TODO - in progress
-                );
+                this.#updateVelocity();
             } else {
                 this.stop();
                 this.#delay.userDelayHandle(simulation.timeStep);
+            }
+        }
+    }
+
+    /**
+     * Updates the train velocity based on acceleration and next station proximity
+     */
+    #updateVelocity() {
+        if (this.#position instanceof TrainPositionOnRail) {
+            const velocityForcedByNextStation = this.calculateArrivingVelocity();
+            const previousVelocity = this.#velocity;
+            this.#velocity = Math.min(
+                this.#position.rail.getMaxSpeed(this.#position.distance),
+                this.trainTemplate.type.maxVelocity,
+                this.#velocity + this.trainTemplate.type.acceleration * simulation.timeStep
+                //velocityForcedByNextStation !== null ? velocityForcedByNextStation : Infinity // TODO - in progress
+            );
+
+            // updating acceleration status
+            if (this.#velocity < previousVelocity) {
+                this.#acceleration = AccelerationStatus.Decelerating;
+            } else if (this.#velocity > previousVelocity) {
+                this.#acceleration = AccelerationStatus.Accelerating;
+            } else {
+                this.#acceleration = AccelerationStatus.Constant;
             }
         }
     }
@@ -92,7 +110,7 @@ export class Train {
             const nextSchedule = this.#nextStation.trainsSchedule.get(this.trainTemplate);
             if (arrived) {
                 if (nextSchedule) {
-                    const trackAtTheStation = this.#nextStation.assignTrack(nextSchedule.track);
+                    const trackAtTheStation = this.#nextStation.assignTrack(nextSchedule.track, this.trainTemplate);
 
                     if (trackAtTheStation == null) {
                         // cannot arrive at the station - track full; waiting
@@ -150,22 +168,6 @@ export class Train {
     }
 
     /**
-     * Changes Train velocity
-     * @param newVelocity updated velocity
-     */
-    updateVelocity(newVelocity: number) {
-        this.#velocity = newVelocity;
-    }
-
-    /**
-     * Changes Train acceleration status
-     * @param newAcceleration updated acceleration status
-     */
-    updateAcceleration(newAccelerationStatus: AccelerationStatus) {
-        this.#acceleration = newAccelerationStatus;
-    }
-
-    /**
      * Calculates delay due to (track occupancy) conflicts at the next station
      * @returns delay time in seconds
      */
@@ -212,14 +214,22 @@ export class Train {
      */
     shouldWaitLonger(otherTrain: Train): boolean {
         // TODO - correct if needed
-        const timeLeft =
-            this.trainTemplate.type.maxWaitingTime -
-            (this.#delay.currentWaitingTimeAtTheStationInSeconds + this.#delay.delayTimeInSeconds);
+        const timeLeft = this.trainTemplate.type.maxWaitingTime - this.#delay.currentWaitingTimeAtTheStationInSeconds;
         if (
             timeLeft > 0 &&
-            otherTrain.delay.delayTimeInSeconds < timeLeft &&
+            otherTrain.delay.delayTimeInSeconds < timeLeft && // TODO - consider delayTimeInSeconds or some other metric
             otherTrain.trainTemplate.type.priority >= this.trainTemplate.type.priority
         ) {
+            /*if (otherTrain.trainTemplate.number === 40653 || otherTrain.trainTemplate.number === 44153) {
+                console.warn("Debug info for train", otherTrain.trainTemplate.number, "at shouldWaitLonger:", {
+                    thisTrain: this.trainTemplate.number,
+                    otherTrain: otherTrain.trainTemplate.number,
+                    timeLeft: timeLeft,
+                    otherTrainDelay: otherTrain.delay.delayTimeInSeconds,
+                    otherTrainPriority: otherTrain.trainTemplate.type.priority,
+                    thisTrainPriority: this.trainTemplate.type.priority,
+                });
+            }*/ // TODO - weird priority value changes for some trains - investigate
             return true;
         } else if (
             otherTrain.delay.delayTimeInSeconds < timeLeft &&

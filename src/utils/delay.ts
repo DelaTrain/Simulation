@@ -43,8 +43,7 @@ export class Delay {
 
     /** Sets the actual arrival time of the train */
     set actualTrainArrival(arrivalTime: Time) {
-        this.#actualTrainArrival = new Time(0, 0, 0);
-        this.#actualTrainArrival = arrivalTime;
+        this.#actualTrainArrival = new Time(arrivalTime.hours, arrivalTime.minutes, arrivalTime.seconds);
     }
 
     /**
@@ -126,6 +125,6 @@ export class Delay {
 
     /** Value displayed */
     get UIDelayValue(): number {
-        return this.#UIDelayValue;
+        return this.#UIDelayValue + (this.#dExternal - this.#dExternalAlreadyHandled);
     }
 }
