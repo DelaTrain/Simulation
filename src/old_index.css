@@ -170,24 +170,3 @@ label span span {
 #panel-content table {
     text-align: center;
 }
-
-.station-icon {
-    width: 16px !important;
-    height: 16px !important;
-    left: -6px !important;
-    top: -6px !important;
-    background-color: white;
-    border: 4px solid blue;
-    border-radius: 50%;
-}
-
-.train-icon {
-    width: 24px !important;
-    height: 24px !important;
-    left: -6px !important;
-    top: -6px !important;
-    background-color: hsl(120, 100%, 50%);
-    border-radius: 50%;
-    background-image: url("https://cdn-icons-png.flaticon.com/512/565/565410.png");
-    background-size: contain;
-}

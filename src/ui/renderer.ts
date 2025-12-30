@@ -1,11 +1,9 @@
 import type { Simulation } from "../core/simulation";
 import * as L from "leaflet";
 import "leaflet.heat/dist/leaflet-heat.js";
-import "leaflet/dist/leaflet.css";
 import type { Station } from "../core/station";
 import type { Rail } from "../core/rail";
 import type { Train } from "../core/train";
-import { uiPanel } from "./panel";
 import { mapValue } from "../utils/math";
 import { Track } from "../core/track";
 
@@ -129,7 +127,7 @@ export class Renderer {
         }).addTo(this.map);
         marker.bindTooltip(station.name, { direction: "top" });
         marker.on("click", () => {
-            uiPanel.display(station);
+            // uiPanel.display(station);
         });
         this.stationMarkers.set(station, marker);
     }
@@ -147,7 +145,7 @@ export class Renderer {
         marker.setIcon(trainIcon);
         marker.bindTooltip(train.displayName(), { direction: "top" });
         marker.on("click", () => {
-            uiPanel.display(train);
+            // uiPanel.display(train);
         });
         this.trainMarkers.set(train, marker);
     }
