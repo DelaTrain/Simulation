@@ -10,16 +10,18 @@
         "split": "node ./split.mjs"
     },
     "dependencies": {
+        "@tailwindcss/vite": "^4.1.18",
         "chart.js": "^4.5.1",
         "geolocation-utils": "^1.2.6",
         "leaflet": "^1.9.4",
         "leaflet.heat": "^0.2.0",
         "react": "^19.2.0",
-        "react-dom": "^19.2.0"
+        "react-dom": "^19.2.0",
+        "tailwindcss": "^4.1.18"
     },
     "devDependencies": {
-        "@types/leaflet": "^1.9.21",
         "@eslint/js": "^9.39.1",
+        "@types/leaflet": "^1.9.21",
         "@types/node": "^24.10.1",
         "@types/react": "^19.2.5",
         "@types/react-dom": "^19.2.3",
