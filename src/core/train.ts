@@ -45,14 +45,23 @@ export class Train {
             this.move();
             this.handleNextStationArrival();
         } else {
-            // the train is at the station - no movement
+            // the train is at/before the station - no movement
             this.handleNextStationArrival();
         }
 
         // test code - checking if the train exceeded max waiting time at the station
-        if (this.#delay.currentWaitingTimeAtTheStationInSeconds > this.trainTemplate.type.maxWaitingTime) {
-            console.warn(`Train ${this.displayName()} exceeded max waiting time at the station.`);
-        }
+        /*if (this.#position instanceof Track) {
+            if (this.#position.station.currentExceedingTimeInSeconds(this) > this.trainTemplate.type.maxWaitingTime) {
+                console.warn(
+                    `${simulation.currentTime} Train ${this.displayName()} at station ${
+                        this.#position.station.name
+                    } exceeded max waiting time (${this.trainTemplate.type.maxWaitingTime}) at the station by ${
+                        this.#position.station.currentExceedingTimeInSeconds(this) -
+                        this.trainTemplate.type.maxWaitingTime
+                    } seconds.`
+                );
+            }
+        }*/
     }
 
     /**
@@ -110,13 +119,13 @@ export class Train {
             const nextSchedule = this.#nextStation.trainsSchedule.get(this.trainTemplate);
             if (arrived) {
                 if (nextSchedule) {
-                    const trackAtTheStation = this.#nextStation.assignTrack(nextSchedule.track, this.trainTemplate);
+                    const trackAtTheStation = this.#nextStation.assignTrack(nextSchedule.track);
 
                     if (trackAtTheStation == null) {
                         // cannot arrive at the station - track full; waiting
                         this.stop();
                         this.#isWaiting = true;
-                        this.#delay.addConflictDelay(this.calculateConflictDelay());
+                        //this.#delay.addConflictDelay(this.calculateConflictDelay());
                         return;
                     } else {
                         this.#isWaiting = false;
@@ -212,12 +221,12 @@ export class Train {
      * @param otherTrain train to wait for (or not to wait for)
      * @returns boolean indicating whether to wait longer
      */
-    shouldWaitLonger(otherTrain: Train): boolean {
+    shouldWaitLonger(otherTrain: Train, station: Station): boolean {
         // TODO - correct if needed
-        const timeLeft = this.trainTemplate.type.maxWaitingTime - this.#delay.currentWaitingTimeAtTheStationInSeconds;
+        const timeLeft = this.trainTemplate.type.maxWaitingTime - station.currentExceedingTimeInSeconds(this);
         if (
             timeLeft > 0 &&
-            otherTrain.delay.delayTimeInSeconds < timeLeft && // TODO - consider delayTimeInSeconds or some other metric
+            otherTrain.delay.UIDelayValue < timeLeft && // TODO - consider delayTimeInSeconds or some other metric
             otherTrain.trainTemplate.type.priority >= this.trainTemplate.type.priority
         ) {
             /*if (otherTrain.trainTemplate.number === 40653 || otherTrain.trainTemplate.number === 44153) {
@@ -232,7 +241,7 @@ export class Train {
             }*/ // TODO - weird priority value changes for some trains - investigate
             return true;
         } else if (
-            otherTrain.delay.delayTimeInSeconds < timeLeft &&
+            otherTrain.delay.UIDelayValue < timeLeft &&
             otherTrain.trainTemplate.type.priority < this.trainTemplate.type.priority
         ) {
             // TODO - randomness; for now - priority really matters

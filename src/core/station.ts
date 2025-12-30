@@ -73,7 +73,7 @@ export class Station {
      * @param trainTemplate train template (new or existing) requesting the Track
      * @returns track assigned to the train
      */
-    assignTrack(preferredTrack: Track, trainTemplate: TrainTemplate): Track | null {
+    assignTrack(preferredTrack: Track): Track | null {
         if (preferredTrack.train == null) {
             return preferredTrack;
         }
@@ -99,17 +99,18 @@ export class Station {
                     const delayedTrains = this.lateTrainsToArrive();
                     const anyTrainToWaitFor = delayedTrains
                         .filter((t) => t !== track.train)
-                        .some((t) => track.train!.shouldWaitLonger(t));
+                        .some((t) => track.train!.shouldWaitLonger(t, this));
                     if (
-                        /* prettier-ignore */
-                        (track.train &&
-                        !anyTrainToWaitFor) && // check if proper for sure
-                        simulation.currentTime.toSeconds() >=
-                            trainSchedule!.departureTime!.toSeconds()
+                        track.train &&
+                        simulation.currentTime.toSeconds() >= trainSchedule!.departureTime!.toSeconds() &&
+                        !track.train.delay.handleArrivalOrDepartureHappeningNextDay(trainSchedule!.departureTime!) &&
+                        (!anyTrainToWaitFor ||
+                            this.currentExceedingTimeInSeconds(track.train) >
+                                track.train.trainTemplate.type.maxWaitingTime)
                     ) {
                         this.departTrain(track, trainSchedule);
                     } else if (anyTrainToWaitFor) {
-                        track.train!.delay.addWaitingDelay(simulation.timeStep);
+                        //track.train!.delay.addWaitingDelay(simulation.timeStep);
                     }
                 } else if (trainSchedule && trainSchedule.arrivalTime && !trainSchedule.departureTime) {
                     // no departure time - train ends here
@@ -160,7 +161,6 @@ export class Station {
             .filter(
                 ([_, schedule]) =>
                     schedule &&
-                    schedule.arrivalTime && // what about spawn trains without arrival time?
                     schedule.departureTime &&
                     !schedule.satisfied &&
                     schedule.departureTime.toSeconds() < simulation.currentTime.toSeconds()
@@ -186,6 +186,11 @@ export class Station {
                     ? TrainDirection.FromStartToEnd
                     : TrainDirection.FromEndToStart;
             train.position = new TrainPositionOnRail(trainSchedule.nextRail!, direction, 0);
+            // update delay info
+            train.delay.UIDelayValue = this.currentExceedingTimeInSeconds(train);
+            if (trainSchedule.departureTime) {
+                train.delay.previousDepartureTime = trainSchedule.departureTime;
+            }
         } else {
             this.destroyTrain(train);
         }
@@ -194,9 +199,10 @@ export class Station {
     }
 
     spawnTrain(trainTemplate: TrainTemplate, preferredTrack: Track): Train | null {
-        const track = this.assignTrack(preferredTrack, trainTemplate);
+        const track = this.assignTrack(preferredTrack);
         if (track) {
             const train = new Train(track, trainTemplate);
+            train.delay.actualTrainArrival = simulation.currentTime;
             simulation.addTrain(train);
             track.trainArrival(train, null);
             return train;
@@ -249,6 +255,35 @@ export class Station {
             }
         });
         return nextSchedule;
+    }
+
+    /**
+     * Calculates the current exceeding departure or arrival time in seconds for a given train at this station
+     * @param train train to check
+     * @param departure boolean indicating whether to check departure time (true) or arrival time (false)
+     * @returns
+     */
+    currentExceedingTimeInSeconds(train: Train, departure: boolean = true): number {
+        const schedule = this.#trainsSchedule.get(train.trainTemplate);
+        if (schedule) {
+            if (departure && schedule.departureTime) {
+                if (train.delay.handleArrivalOrDepartureHappeningNextDay(schedule.departureTime)) {
+                    return 0;
+                } else {
+                    return Math.max(0, simulation.currentTime.toSeconds() - schedule.departureTime.toSeconds());
+                }
+            } else if (!departure && schedule.arrivalTime) {
+                if (train.delay.handleArrivalOrDepartureHappeningNextDay(schedule.arrivalTime)) {
+                    return 0;
+                } else {
+                    return Math.max(0, simulation.currentTime.toSeconds() - schedule.arrivalTime.toSeconds());
+                }
+            } else {
+                return 0;
+            }
+        } else {
+            return 0;
+        }
     }
 
     get trainsSchedule() {

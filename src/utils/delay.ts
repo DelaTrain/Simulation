@@ -2,7 +2,11 @@ import { simulation } from "../core/simulation";
 import { Time } from "./time";
 
 export class Delay {
-    #actualTrainArrival: Time = new Time(0, 0, 0);
+    #actualTrainArrival: Time = new Time(
+        simulation.currentTime.hours,
+        simulation.currentTime.minutes,
+        simulation.currentTime.seconds
+    );
 
     /** Total delay time in seconds, updated each delayTimeInSeconds getter call */
     #delay: number = 0;
@@ -16,6 +20,11 @@ export class Delay {
     #dExternalAlreadyHandled: number = 0;
     /** User-visible delay value in seconds */
     #UIDelayValue: number = 0;
+
+    /** Departure time of the train from the previous station */
+    #previousDepartureTime: Time | null = null;
+    /** Indicates if the arrival or departure is happening the next day compared to the departure time from the previous stations */
+    #dayShift: boolean = false;
 
     /**
      * Adds external (user) delay
@@ -41,9 +50,12 @@ export class Delay {
         this.#dConflict += dConflict;
     }
 
-    /** Sets the actual arrival time of the train */
-    set actualTrainArrival(arrivalTime: Time) {
-        this.#actualTrainArrival = new Time(arrivalTime.hours, arrivalTime.minutes, arrivalTime.seconds);
+    /**
+     * Marks the current user delay as handled
+     * @param timeHandled time in seconds that has been handled
+     */
+    userDelayHandle(timeHandled: number) {
+        this.#dExternalAlreadyHandled += timeHandled;
     }
 
     /**
@@ -80,11 +92,24 @@ export class Delay {
     }
 
     /**
-     * Marks the current user delay as handled
-     * @param timeHandled time in seconds that has been handled
+     * Checks if the arrival or departure is happening the next day compared to the departure time from the previous station
+     * @param arrivalOrDepartureTime scheduled arrival or departure time
+     * @returns boolean indicating if the arrival/departure is happening the next day
      */
-    userDelayHandle(timeHandled: number) {
-        this.#dExternalAlreadyHandled += timeHandled;
+    handleArrivalOrDepartureHappeningNextDay(arrivalOrDepartureTime: Time): boolean {
+        if (this.#dayShift) {
+            // TODO - if simulation was featuring multiple days, this would need to be more complex
+            return true;
+        }
+        if (this.#previousDepartureTime) {
+            if (arrivalOrDepartureTime.toSeconds() < this.#previousDepartureTime.toSeconds()) {
+                this.#dayShift = true;
+                return true;
+            } else {
+                return false;
+            }
+        }
+        return false;
     }
 
     /**
@@ -104,27 +129,21 @@ export class Delay {
         return simulation.currentTime.toSeconds() - this.#actualTrainArrival.toSeconds();
     }
 
-    /**
-     * User (external) delay in seconds which has not been reduced yet
-     */
-    get userDelayInSeconds(): number {
-        return this.#dExternal;
+    /** Value displayed */
+    get UIDelayValue(): number {
+        return this.#UIDelayValue + (this.#dExternal - this.#dExternalAlreadyHandled);
     }
 
-    /**
-     * User (external) delay in seconds which has not been reduced yet
-     */
-    set userDelayInSeconds(delay: number) {
-        this.#dExternal = delay;
-    }
-
-    /** FOR USE IN THE SIMULATION LOGIC ONLY */
     set UIDelayValue(value: number) {
         this.#UIDelayValue = value;
     }
 
-    /** Value displayed */
-    get UIDelayValue(): number {
-        return this.#UIDelayValue + (this.#dExternal - this.#dExternalAlreadyHandled);
+    /** Sets the actual arrival time of the train */
+    set actualTrainArrival(arrivalTime: Time) {
+        this.#actualTrainArrival = new Time(arrivalTime.hours, arrivalTime.minutes, arrivalTime.seconds);
+    }
+
+    set previousDepartureTime(departureTime: Time) {
+        this.#previousDepartureTime = departureTime;
     }
 }
