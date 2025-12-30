@@ -31,6 +31,14 @@ export default function TrainInfo({ train, onUpdate }: TrainInfoProps) {
                     Add delay
                 </button>
             </span>
+            <p className="opacity-60 text-sm">
+                {train.trainTemplate.description.map((e) => (
+                    <>
+                        {e}
+                        <br />
+                    </>
+                ))}
+            </p>
         </div>
     );
 }

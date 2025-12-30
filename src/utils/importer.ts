@@ -53,7 +53,7 @@ export class ImportedData {
                     return null;
                 }
 
-                const trainTemplate = new TrainTemplate(t.number, mapCategory(t.category), t.name);
+                const trainTemplate = new TrainTemplate(t.number, mapCategory(t.category), t.name, t.params);
 
                 for (let i = 0; i < t.stops.length; i++) {
                     this.#importStop(t, i, trainTemplate);

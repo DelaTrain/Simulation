@@ -11,16 +11,19 @@ export class TrainTemplate {
     /** human-friendly name of the train */
     #customName: string | null;
 
+    #description: Array<string>;
+
     constructor(
         number: number,
         trainType: TrainCategory,
-        customName: string | null = null
+        customName: string | null = null,
+        description: Array<string> = []
     ) {
         this.#number = number;
         this.#type = trainType;
         this.#customName = customName;
+        this.#description = description;
     }
-
 
     displayName(): string {
         return `${this.#type.name} ${this.#number}${this.#customName ? ` "${this.#customName}"` : ""}`;
@@ -31,5 +34,8 @@ export class TrainTemplate {
     }
     get type() {
         return this.#type;
+    }
+    get description() {
+        return this.#description;
     }
 }
