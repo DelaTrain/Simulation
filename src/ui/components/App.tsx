@@ -1,11 +1,20 @@
+import { useState } from "react";
 import Controls from "./Controls";
 import Loading from "./Loading";
+import Stats from "./Stats";
 
 export default function App() {
+    const [openStats, setOpenStats] = useState(false);
+
     return (
         <>
             <Loading />
-            <Controls />
+            <Controls
+                onToggleStats={() => {
+                    setOpenStats((s) => !s);
+                }}
+            />
+            {openStats && <Stats onClose={() => setOpenStats(false)} />}
         </>
     );
 }

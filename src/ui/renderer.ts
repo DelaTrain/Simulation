@@ -5,7 +5,6 @@ import type { Station } from "../core/station";
 import type { Rail } from "../core/rail";
 import type { Train } from "../core/train";
 import { mapValue } from "../utils/math";
-import { Track } from "../core/track";
 
 const stationIcon = L.divIcon({ className: "station-icon" });
 const trainIcon = L.divIcon({ className: "train-icon" });

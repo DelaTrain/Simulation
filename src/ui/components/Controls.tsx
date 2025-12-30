@@ -1,52 +1,67 @@
+import { FaChartLine, FaForwardStep, FaPause, FaPlay } from "react-icons/fa6";
 import useSimulation from "../hooks/useSimulation";
+import { VscDebugRestart } from "react-icons/vsc";
+import Stats from "./Stats";
 
-export default function Controls() {
+interface ControlsProps {
+    onToggleStats?: () => void;
+}
+
+export default function Controls({ onToggleStats }: ControlsProps) {
     const [simulation, simulationState, updateSimulationState] = useSimulation();
 
     return (
-        <div className="fixed flex flex-col items-center top-4 right-4 bg-stone-900 text-white backdrop-blur-md p-5 rounded-md shadow-md z-10 w-lg">
-            <p className="text-lg">
-                Czas symulacji: <span className="font-bold">{simulationState.currentTime.toString()}</span>
-            </p>
-            <p className="text-sm opacity-70">{simulationState.deltaTime.toFixed(2)}ms</p>
-            <div className="flex gap-4 my-4">
+        <div className="fixed flex flex-row bottom-0 items-center justify-between w-screen bg-stone-900 text-white backdrop-blur-md py-1 px-3 rounded-t-lg shadow-md z-10 ">
+            <div className="flex gap-3 m-2 w-sm">
                 <button
-                    className="btn btn-blue"
+                    className="btn btn-icon"
                     onClick={() => {
                         simulation.step();
                         simulation.autoRun = false;
                         updateSimulationState();
                     }}
                 >
-                    Step
+                    <FaForwardStep />
                 </button>
                 <button
-                    className="btn btn-blue"
+                    className="btn btn-icon"
                     onClick={() => {
                         simulation.autoRun = !simulation.autoRun;
                         simulation.runAutomatically();
                         updateSimulationState();
                     }}
                 >
-                    {simulation.autoRun ? "Pause" : "Play"}
+                    {simulation.autoRun ? <FaPause /> : <FaPlay />}
                 </button>
                 <button
-                    className="btn btn-blue"
+                    className="btn btn-icon"
                     onClick={() => {
                         simulation.reset();
                         simulation.autoRun = false;
                         updateSimulationState();
                     }}
                 >
-                    Restart
+                    <VscDebugRestart />
                 </button>
-                <button className="btn btn-blue">Stats</button>
+                <button className="btn btn-icon" onClick={onToggleStats}>
+                    <FaChartLine />
+                </button>
             </div>
-            <div className="flex flex-col gap-2 w-full">
+
+            <div className="text-center">
+                <p className="text-2xl">
+                    <span className="font-bold">{simulationState.currentTime.toString()}</span>
+                </p>
+                <p className="text-sm opacity-70">{simulationState.deltaTime.toFixed(2)}ms</p>
+            </div>
+
+            <div className="flex flex-col gap-1 w-sm py-1">
                 <label className="flex flex-row items-center justify-between w-full">
-                    Step size: {simulationState.timeStep}s
+                    <span>
+                        Step size: <span className="font-bold">{simulationState.timeStep}s</span>
+                    </span>
                     <input
-                        className="w-75"
+                        className="w-50"
                         type="range"
                         id="step"
                         step="1"
@@ -61,9 +76,11 @@ export default function Controls() {
                     />
                 </label>
                 <label className="flex flex-row items-center justify-between w-full">
-                    Play speed: {simulationState.autoRunSpeed}ms
+                    <span>
+                        Play speed: <span className="font-bold">{simulationState.autoRunSpeed}ms</span>
+                    </span>
                     <input
-                        className="w-75"
+                        className="w-50"
                         type="range"
                         id="speed"
                         step="10"

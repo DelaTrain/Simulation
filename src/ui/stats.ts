@@ -4,6 +4,8 @@ import { simulation } from "../core/simulation";
 import type { Time } from "../utils/time";
 import { Track } from "../core/track";
 
+export type StatsKey = "trainsAlive" | "averageLatency";
+
 class StatsCollector {
     trainsAlive: Array<number> = [];
     averageLatency: Array<number> = []; // in minutes
@@ -29,7 +31,7 @@ class StatsCollector {
         this.averageLatency.push(latency / 60); // in minutes
 
         // record time step
-        this.timeSteps.push(simulation.currentTime);
+        this.timeSteps.push(simulation.currentTime.copy());
     }
 
     resetStats() {
@@ -146,5 +148,3 @@ class StatsChart {
         this.chart.update();
     }
 }
-
-export const statsPanel = new StatsPanel();

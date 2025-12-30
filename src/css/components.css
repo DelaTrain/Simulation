@@ -1,7 +1,11 @@
 .btn {
-    @apply font-bold py-2 px-5 rounded cursor-pointer;
+    @apply font-bold rounded cursor-pointer;
 }
 
 .btn-blue {
-    @apply bg-blue-500 text-white hover:bg-blue-700;
+    @apply py-2 px-5 bg-blue-500 text-white hover:bg-blue-700;
+}
+
+.btn-icon {
+    @apply p-1 text-xl hover:scale-120;
 }
