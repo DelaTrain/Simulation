@@ -53,9 +53,10 @@ export class ImportedData {
                     return null;
                 }
 
-                const trainTemplate = new TrainTemplate(t.number, mapCategory(t.category), t.name);
                 let previousDepartureTime: Time | null = null;
                 let dayShift = false;
+                const trainTemplate = new TrainTemplate(t.number, mapCategory(t.category), t.name, t.params);
+
                 for (let i = 0; i < t.stops.length; i++) {
                     [previousDepartureTime, dayShift] = this.#importStop(
                         t,

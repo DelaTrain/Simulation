@@ -12,13 +12,21 @@ export class TrainTemplate {
     /** human-friendly name of the train */
     #customName: string | null;
 
+    #description: Array<string>;
+
     /** Indicates all stations from which the arrival is happening the next day compared to the departure time from the previous stations */
     nextDayStations: Set<string> = new Set();
 
-    constructor(number: number, trainType: TrainCategory, customName: string | null = null) {
+    constructor(
+        number: number,
+        trainType: TrainCategory,
+        customName: string | null = null,
+        description: Array<string> = []
+    ) {
         this.#number = number;
         this.#type = trainType;
         this.#customName = customName;
+        this.#description = description;
     }
 
     displayName(): string {
@@ -30,5 +38,8 @@ export class TrainTemplate {
     }
     get type() {
         return this.#type;
+    }
+    get description() {
+        return this.#description;
     }
 }
