@@ -119,6 +119,14 @@ export class Train {
             const nextSchedule = this.#nextStation.trainsSchedule.get(this.trainTemplate);
             if (arrived) {
                 if (nextSchedule) {
+                    if (nextSchedule.arrivalTime) {
+                        if (simulation.currentTime.toSeconds() < nextSchedule.arrivalTime.toSeconds()) {
+                            // early arrival - wait before entering the station
+                            this.stop();
+                            this.#isWaiting = true;
+                            return;
+                        }
+                    }
                     const trackAtTheStation = this.#nextStation.assignTrack(nextSchedule.track);
 
                     if (trackAtTheStation == null) {
