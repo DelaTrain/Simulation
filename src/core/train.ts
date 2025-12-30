@@ -35,6 +35,7 @@ export class Train {
     constructor(track: Track, trainTemplate: TrainTemplate) {
         this.trainTemplate = trainTemplate;
         this.#position = track;
+        this.#delay.train = this; // TODO - temporary solution to access trainTemplate dayShift property
     }
 
     // TODO - make train speeds reduce before meeting stations - in progress
@@ -229,15 +230,17 @@ export class Train {
      * @param otherTrain train to wait for (or not to wait for)
      * @returns boolean indicating whether to wait longer
      */
-    shouldWaitLonger(otherTrain: Train, station: Station): boolean {
-        // TODO - correct if needed
-        const timeLeft = this.trainTemplate.type.maxWaitingTime - station.currentExceedingTimeInSeconds(this);
-        if (
-            timeLeft > 0 &&
-            otherTrain.delay.UIDelayValue < timeLeft && // TODO - consider delayTimeInSeconds or some other metric
-            otherTrain.trainTemplate.type.priority >= this.trainTemplate.type.priority
-        ) {
-            /*if (otherTrain.trainTemplate.number === 40653 || otherTrain.trainTemplate.number === 44153) {
+    shouldWaitLonger(otherTrain: Train): boolean {
+        if (this.position instanceof Track) {
+            // TODO - correct if needed
+            const timeLeft =
+                this.trainTemplate.type.maxWaitingTime - this.position.station.currentExceedingTimeInSeconds(this);
+            if (
+                timeLeft > 0 &&
+                otherTrain.delay.UIDelayValue < timeLeft && // TODO - consider delayTimeInSeconds or some other metric
+                otherTrain.trainTemplate.type.priority >= this.trainTemplate.type.priority
+            ) {
+                /*if (otherTrain.trainTemplate.number === 40653 || otherTrain.trainTemplate.number === 44153) {
                 console.warn("Debug info for train", otherTrain.trainTemplate.number, "at shouldWaitLonger:", {
                     thisTrain: this.trainTemplate.number,
                     otherTrain: otherTrain.trainTemplate.number,
@@ -247,14 +250,38 @@ export class Train {
                     thisTrainPriority: this.trainTemplate.type.priority,
                 });
             }*/ // TODO - weird priority value changes for some trains - investigate
-            return true;
-        } else if (
-            otherTrain.delay.UIDelayValue < timeLeft &&
-            otherTrain.trainTemplate.type.priority < this.trainTemplate.type.priority
-        ) {
-            // TODO - randomness; for now - priority really matters
-            return false;
-        } /*if (otherTrain.delay.delayTimeInSeconds >= timeLeft) */ else {
+
+                if (otherTrain.position instanceof Track) {
+                    const trainStation = otherTrain.position.station;
+                    if (trainStation.name === this.position.station.name) {
+                        const thisDepartureTime = trainStation.trainsSchedule.get(this.trainTemplate)?.departureTime;
+                        const otherDepartureTime = trainStation.trainsSchedule.get(
+                            otherTrain.trainTemplate
+                        )?.departureTime;
+                        if (thisDepartureTime && otherDepartureTime) {
+                            const intervalBetweenDepartures =
+                                thisDepartureTime.toSeconds() - otherDepartureTime.toSeconds();
+                            if (
+                                otherTrain.delay.currentWaitingTimeAtTheStationInSeconds >
+                                Math.min(10, intervalBetweenDepartures)
+                            ) {
+                                return false;
+                            }
+                        }
+                    }
+                }
+
+                return true;
+            } else if (
+                otherTrain.delay.UIDelayValue < timeLeft &&
+                otherTrain.trainTemplate.type.priority < this.trainTemplate.type.priority
+            ) {
+                // TODO - randomness; for now - priority really matters
+                return false;
+            } /*if (otherTrain.delay.delayTimeInSeconds >= timeLeft) */ else {
+                return false;
+            }
+        } else {
             return false;
         }
     }

@@ -1,4 +1,5 @@
 import { simulation } from "../core/simulation";
+import type { Train } from "../core/train";
 import { Time } from "./time";
 
 export class Delay {
@@ -7,6 +8,8 @@ export class Delay {
         simulation.currentTime.minutes,
         simulation.currentTime.seconds
     );
+
+    train: Train | null = null; // TODO - temporary solution to access trainTemplate dayShift property
 
     /** Total delay time in seconds, updated each delayTimeInSeconds getter call */
     #delay: number = 0;
@@ -104,6 +107,11 @@ export class Delay {
         if (this.#previousDepartureTime) {
             if (arrivalOrDepartureTime.toSeconds() < this.#previousDepartureTime.toSeconds()) {
                 this.#dayShift = true;
+                this.train!.trainTemplate.dayShift = new Time(
+                    this.#previousDepartureTime.hours,
+                    this.#previousDepartureTime.minutes,
+                    this.#previousDepartureTime.seconds
+                ); // TODO - temporary solution, find a better one
                 return true;
             } else {
                 return false;

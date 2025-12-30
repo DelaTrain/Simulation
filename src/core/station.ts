@@ -99,7 +99,7 @@ export class Station {
                     const delayedTrains = this.lateTrainsToArrive();
                     const anyTrainToWaitFor = delayedTrains
                         .filter((t) => t !== track.train)
-                        .some((t) => track.train!.shouldWaitLonger(t, this));
+                        .some((t) => track.train!.shouldWaitLonger(t));
                     if (
                         track.train &&
                         simulation.currentTime.toSeconds() >= trainSchedule!.departureTime!.toSeconds() &&
@@ -163,7 +163,10 @@ export class Station {
                     schedule &&
                     schedule.departureTime &&
                     !schedule.satisfied &&
-                    schedule.departureTime.toSeconds() < simulation.currentTime.toSeconds()
+                    schedule.departureTime.toSeconds() < simulation.currentTime.toSeconds() &&
+                    (schedule.train.dayShift != null
+                        ? simulation.currentTime.toSeconds() < schedule.train.dayShift.toSeconds()
+                        : true) // TODO - temporary solution - check if the train is delayed to arrive the next day
             )
             .map(([trainTemplate]) => trainTemplate);
 
