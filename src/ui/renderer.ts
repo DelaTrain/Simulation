@@ -5,6 +5,7 @@ import type { Station } from "../core/station";
 import type { Rail } from "../core/rail";
 import type { Train } from "../core/train";
 import { mapValue } from "../utils/math";
+import SimulationEvent from "../utils/event";
 
 const stationIcon = L.divIcon({ className: "station-icon" });
 const trainIcon = L.divIcon({ className: "train-icon" });
@@ -19,12 +20,19 @@ const colorScale = (value: number): string => {
     return `hsl(${hue}, 100%, 50%)`;
 };
 
+export interface RendererClickEvent {
+    latitude: number;
+    longitude: number;
+    object: Station | Train;
+}
+
 export class Renderer {
     map: L.Map;
     trainMarkers: Map<Train, L.Marker>;
     stationMarkers: Map<Station, L.Marker>;
     railLines: Map<Rail, L.Polyline>;
     heatmap: any;
+    clickEvent: SimulationEvent<RendererClickEvent> = new SimulationEvent();
 
     constructor(protected simulation: Simulation) {
         this.simulation.stepEvent.subscribe(this.update.bind(this));
@@ -126,7 +134,12 @@ export class Renderer {
         }).addTo(this.map);
         marker.bindTooltip(station.name, { direction: "top" });
         marker.on("click", () => {
-            // uiPanel.display(station);
+            const { lat, lng } = marker.getLatLng();
+            this.clickEvent.emit({
+                latitude: lat,
+                longitude: lng,
+                object: station,
+            });
         });
         this.stationMarkers.set(station, marker);
     }
@@ -144,7 +157,12 @@ export class Renderer {
         marker.setIcon(trainIcon);
         marker.bindTooltip(train.displayName(), { direction: "top" });
         marker.on("click", () => {
-            // uiPanel.display(train);
+            const { lat, lng } = marker.getLatLng();
+            this.clickEvent.emit({
+                latitude: lat,
+                longitude: lng,
+                object: train,
+            });
         });
         this.trainMarkers.set(train, marker);
     }
