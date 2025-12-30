@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { statsCollector, type StatsKey } from "../stats";
-import type { Time } from "../../utils/time";
+import { statsCollector, type StatsKey } from "../../utils/stats";
 import { simulation } from "../../core/simulation";
 
 export default function useStatsCollector(key: StatsKey) {

@@ -1,6 +1,6 @@
 import { Line } from "react-chartjs-2";
 import useStatsCollector from "../hooks/useStatsCollector";
-import type { StatsKey } from "../stats";
+import type { StatsKey } from "../../utils/stats";
 import type { Time } from "../../utils/time";
 
 interface ChartProps {
