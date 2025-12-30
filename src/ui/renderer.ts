@@ -40,7 +40,7 @@ export class Renderer {
         this.simulation.trainRemovedEvent.subscribe(this.trainRemoved.bind(this));
         this.simulation.resetEvent.subscribe(this.reset.bind(this));
 
-        this.map = L.map("map").setView([50.061389, 19.938333], 12);
+        this.map = L.map("map", { zoomControl: false }).setView([50.061389, 19.938333], 12);
         this.trainMarkers = new Map();
         this.stationMarkers = new Map();
         this.railLines = new Map();
