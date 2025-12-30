@@ -55,8 +55,15 @@ export class ImportedData {
 
                 const trainTemplate = new TrainTemplate(t.number, mapCategory(t.category), t.name);
                 let previousDepartureTime: Time | null = null;
+                let dayShift = false;
                 for (let i = 0; i < t.stops.length; i++) {
-                    previousDepartureTime = this.#importStop(t, i, trainTemplate, previousDepartureTime);
+                    [previousDepartureTime, dayShift] = this.#importStop(
+                        t,
+                        i,
+                        trainTemplate,
+                        previousDepartureTime,
+                        dayShift
+                    );
                 }
 
                 return trainTemplate;
@@ -84,7 +91,13 @@ export class ImportedData {
         );
     }
 
-    #importStop(t: any, i: number, trainTemplate: TrainTemplate, previousDepartureTime: Time | null = null) {
+    #importStop(
+        t: any,
+        i: number,
+        trainTemplate: TrainTemplate,
+        previousDepartureTime: Time | null = null,
+        dayShift: boolean = false
+    ): [Time | null, boolean] {
         const stop_current = t.stops[i];
 
         // maybe not necessary but good for clarity; less chance of mistakes
@@ -108,15 +121,7 @@ export class ImportedData {
                 : sc.addTrack(0, "?");
 
         const arrival_time = stop_current.arrival_time == null ? null : Time.fromString(stop_current.arrival_time);
-        if (arrival_time && previousDepartureTime) {
-            if (arrival_time.toSeconds() < previousDepartureTime.toSeconds()) {
-                trainTemplate.dayShift = new Time(
-                    previousDepartureTime.hours,
-                    previousDepartureTime.minutes,
-                    previousDepartureTime.seconds
-                );
-            }
-        }
+
         const departure_time =
             stop_current.departure_time == null ? null : Time.fromString(stop_current.departure_time);
 
@@ -125,6 +130,22 @@ export class ImportedData {
             sc.addStartingTrain(trainTemplate, departure_time, track);
         }
         const sn = this.#stations.get(stop_next?.station_name);
+
+        // check for day change
+        if (arrival_time && previousDepartureTime) {
+            if (arrival_time.toSeconds() < previousDepartureTime.toSeconds()) {
+                dayShift = true;
+            }
+        }
+        if (departure_time && arrival_time) {
+            if (departure_time.toSeconds() < arrival_time.toSeconds()) {
+                dayShift = true;
+            }
+        }
+        // mark station as next day if needed
+        if (dayShift) {
+            trainTemplate.nextDayStations.add(sc.name);
+        }
 
         let rail: Rail | null = null;
         if (sc && sn) {
@@ -137,7 +158,7 @@ export class ImportedData {
             }
         }
         sc.addScheduleInfo(trainTemplate, track, arrival_time, departure_time, sn ?? null, rail);
-        return departure_time;
+        return [departure_time, dayShift];
     }
 
     get stations() {

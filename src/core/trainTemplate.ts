@@ -12,8 +12,8 @@ export class TrainTemplate {
     /** human-friendly name of the train */
     #customName: string | null;
 
-    /** Indicates if the arrival or departure is happening the next day compared to the departure time from the previous stations */ // TODO - temporary solution - I made it achievable in the station method lateTrainsToArrive() (created Train instance is not achievable from in front of a station thus I cannot check the dayShift there)
-    dayShift: Time | null = null;
+    /** Indicates all stations from which the arrival is happening the next day compared to the departure time from the previous stations */
+    nextDayStations: Set<string> = new Set();
 
     constructor(number: number, trainType: TrainCategory, customName: string | null = null) {
         this.#number = number;

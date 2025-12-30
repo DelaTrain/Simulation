@@ -16,7 +16,7 @@ export class Station {
     #position: Position;
 
     /** contains info about each Train next goal */
-    #trainsSchedule: Map<TrainTemplate, TrainScheduleStep> = new Map();
+    #trainsSchedule: Map<TrainTemplate, Array<TrainScheduleStep>> = new Map();
     /** Platform units of the Station */
     #tracks: Track[] = [];
     /** trains starting at this Station */
@@ -46,7 +46,10 @@ export class Station {
             railToNextStation,
             track
         );
-        this.#trainsSchedule.set(train, scheduleStep);
+        if (!this.#trainsSchedule.has(train)) {
+            this.#trainsSchedule.set(train, []);
+        }
+        this.#trainsSchedule.get(train)!.push(scheduleStep);
     }
 
     /** Used in the importer module */
@@ -94,7 +97,9 @@ export class Station {
     departureTrains() {
         this.#tracks.forEach((track) => {
             if (track.train) {
-                const trainSchedule = this.#trainsSchedule.get(track.train.trainTemplate);
+                const trainSchedule = this.#trainsSchedule
+                    .get(track.train.trainTemplate)
+                    ?.find((schedule) => schedule.satisfied === false);
                 if (trainSchedule && trainSchedule.departureTime) {
                     const delayedTrains = this.lateTrainsToArrive();
                     const anyTrainToWaitFor = delayedTrains
@@ -158,16 +163,16 @@ export class Station {
      */
     lateTrainsToArrive(): Train[] {
         const delayedTrainsTemplates = Array.from(this.#trainsSchedule.entries())
-            .filter(
-                ([_, schedule]) =>
+            .filter(([_, schedules]) => {
+                const schedule = schedules.find((schedule) => schedule.satisfied === false);
+                return (
                     schedule &&
                     schedule.departureTime &&
                     !schedule.satisfied &&
                     schedule.departureTime.toSeconds() < simulation.currentTime.toSeconds() &&
-                    (schedule.train.dayShift != null
-                        ? simulation.currentTime.toSeconds() < schedule.train.dayShift.toSeconds()
-                        : true) // TODO - temporary solution - check if the train is delayed to arrive the next day
-            )
+                    schedule.train.nextDayStations.has(this.#name) === false
+                );
+            })
             .map(([trainTemplate]) => trainTemplate);
 
         const delayedTrains = simulation.trains.filter((train) => delayedTrainsTemplates.includes(train.trainTemplate));
@@ -232,8 +237,10 @@ export class Station {
 
     nextArrivalForTrack(track: Track, time: Time): TrainScheduleStep | null {
         let nextSchedule: TrainScheduleStep | null = null;
-        this.#trainsSchedule.forEach((schedule) => {
+        this.#trainsSchedule.forEach((schedules) => {
+            const schedule = schedules.find((schedule) => schedule.satisfied === false);
             if (
+                schedule &&
                 schedule.track === track &&
                 schedule.arrivalTime &&
                 schedule.arrivalTime.toSeconds() >= time.toSeconds() &&
@@ -247,8 +254,10 @@ export class Station {
 
     nextDepartureForTrack(track: Track, time: Time): TrainScheduleStep | null {
         let nextSchedule: TrainScheduleStep | null = null;
-        this.#trainsSchedule.forEach((schedule) => {
+        this.#trainsSchedule.forEach((schedules) => {
+            const schedule = schedules.find((schedule) => schedule.satisfied === false);
             if (
+                schedule &&
                 schedule.track === track &&
                 schedule.departureTime &&
                 schedule.departureTime.toSeconds() >= time.toSeconds() &&
@@ -267,7 +276,9 @@ export class Station {
      * @returns
      */
     currentExceedingTimeInSeconds(train: Train, departure: boolean = true): number {
-        const schedule = this.#trainsSchedule.get(train.trainTemplate);
+        const schedule = this.#trainsSchedule
+            .get(train.trainTemplate)
+            ?.find((schedule) => schedule.satisfied === false);
         if (schedule) {
             if (departure && schedule.departureTime) {
                 if (train.delay.handleArrivalOrDepartureHappeningNextDay(schedule.departureTime)) {

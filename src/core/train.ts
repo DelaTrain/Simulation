@@ -35,7 +35,6 @@ export class Train {
     constructor(track: Track, trainTemplate: TrainTemplate) {
         this.trainTemplate = trainTemplate;
         this.#position = track;
-        this.#delay.train = this; // TODO - temporary solution to access trainTemplate dayShift property
     }
 
     // TODO - make train speeds reduce before meeting stations - in progress
@@ -51,8 +50,8 @@ export class Train {
         }
 
         // test code - checking if the train exceeded max waiting time at the station
-        /*if (this.#position instanceof Track) {
-            if (this.#position.station.currentExceedingTimeInSeconds(this) > this.trainTemplate.type.maxWaitingTime) {
+        if (this.#position instanceof Track) {
+            /*if (this.#position.station.currentExceedingTimeInSeconds(this) > this.trainTemplate.type.maxWaitingTime) {
                 console.warn(
                     `${simulation.currentTime} Train ${this.displayName()} at station ${
                         this.#position.station.name
@@ -61,8 +60,29 @@ export class Train {
                         this.trainTemplate.type.maxWaitingTime
                     } seconds.`
                 );
+            }*/
+            if (this.number === 5620) {
+                console.log(
+                    `${simulation.currentTime} Train ${this.displayName()} at station ${
+                        this.#position.station.name
+                    } waiting for ${this.#position.station.currentExceedingTimeInSeconds(this)} seconds.`
+                );
             }
-        }*/
+            if (this.#position.station.currentExceedingTimeInSeconds(this) > 10 * 60) {
+                const delayedTrains = this.#position.station.lateTrainsToArrive();
+                const trainsToWaitFor = delayedTrains.filter((t) => t !== this).filter((t) => this.shouldWaitLonger(t));
+
+                console.warn(
+                    `${simulation.currentTime} Train ${this.displayName()} at station ${
+                        this.#position.station.name
+                    } exceeded 10 minutes waiting at the station by ${
+                        this.#position.station.currentExceedingTimeInSeconds(this) - 10 * 60
+                    } seconds. at the station: ${
+                        this.#position.station.name
+                    } and is waiting for other trains: ${trainsToWaitFor.map((t) => t.displayName()).join(", ")}.`
+                );
+            }
+        }
     }
 
     /**
@@ -117,7 +137,9 @@ export class Train {
             const arrived = (this.#position as TrainPositionOnRail).distance >= this.#position.rail.length();
 
             // checking if the train reached its next station
-            const nextSchedule = this.#nextStation.trainsSchedule.get(this.trainTemplate);
+            const nextSchedule = this.#nextStation.trainsSchedule
+                .get(this.trainTemplate)
+                ?.find((schedule) => schedule.satisfied === false);
             if (arrived) {
                 if (nextSchedule) {
                     if (nextSchedule.arrivalTime) {
@@ -131,6 +153,14 @@ export class Train {
                     const trackAtTheStation = this.#nextStation.assignTrack(nextSchedule.track);
 
                     if (trackAtTheStation == null) {
+                        if (this.number === 5620) {
+                            console.log(
+                                `${simulation.currentTime} Train ${this.displayName()} cannot arrive at station ${
+                                    this.#nextStation.name
+                                } - track full.`
+                            );
+                        }
+
                         // cannot arrive at the station - track full; waiting
                         this.stop();
                         this.#isWaiting = true;
@@ -147,6 +177,21 @@ export class Train {
                         }
 
                         this.#position.trainArrival(this, nextSchedule.arrivalTime);
+
+                        if (this.number === 5620) {
+                            const nextArrivalTime = nextSchedule.nextStation
+                                ? nextSchedule.nextStation.trainsSchedule
+                                      .get(this.trainTemplate)
+                                      ?.find((schedule) => schedule.satisfied === false)?.arrivalTime || "N/A"
+                                : "N/A";
+                            console.log(
+                                `${simulation.currentTime} Train ${this.displayName()} arrived at station ${
+                                    this.#position.station.name
+                                } on track ${this.#position.trackNumber}. Next station: ${
+                                    nextSchedule.nextStation?.name || "N/A"
+                                } at ${nextArrivalTime}.`
+                            );
+                        }
                     }
                 } else {
                     throw new Error("Train schedule missing for the next station");
@@ -192,11 +237,15 @@ export class Train {
     calculateConflictDelay(): number {
         let conflictDelay: number = 0;
         if (this.#nextStation) {
-            const trackNumber = this.#nextStation.trainsSchedule.get(this.trainTemplate)?.track.trackNumber;
+            const trackNumber = this.#nextStation.trainsSchedule
+                .get(this.trainTemplate)
+                ?.find((schedule) => schedule.satisfied === false)?.track.trackNumber;
             const trackTrain = this.#nextStation.tracks.find((t) => t.trackNumber === trackNumber)?.train;
 
             if (trackTrain) {
-                let trackTrainSchedule = this.#nextStation!.trainsSchedule.get(trackTrain.trainTemplate);
+                let trackTrainSchedule = this.#nextStation!.trainsSchedule.get(trackTrain.trainTemplate)?.find(
+                    (schedule) => schedule.satisfied === false
+                );
                 if (trackTrainSchedule) {
                     if (trackTrainSchedule.departureTime) {
                         conflictDelay =
@@ -254,10 +303,12 @@ export class Train {
                 if (otherTrain.position instanceof Track) {
                     const trainStation = otherTrain.position.station;
                     if (trainStation.name === this.position.station.name) {
-                        const thisDepartureTime = trainStation.trainsSchedule.get(this.trainTemplate)?.departureTime;
-                        const otherDepartureTime = trainStation.trainsSchedule.get(
-                            otherTrain.trainTemplate
-                        )?.departureTime;
+                        const thisDepartureTime = trainStation.trainsSchedule
+                            .get(this.trainTemplate)
+                            ?.find((schedule) => schedule.satisfied === false)?.departureTime;
+                        const otherDepartureTime = trainStation.trainsSchedule
+                            .get(otherTrain.trainTemplate)
+                            ?.find((schedule) => schedule.satisfied === false)?.departureTime;
                         if (thisDepartureTime && otherDepartureTime) {
                             const intervalBetweenDepartures =
                                 thisDepartureTime.toSeconds() - otherDepartureTime.toSeconds();
