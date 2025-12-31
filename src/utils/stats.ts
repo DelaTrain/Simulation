@@ -1,4 +1,3 @@
-import Chart from "chart.js/auto"; // needed for react-chartjs-2
 import { simulation } from "../core/simulation";
 import type { Time } from "../utils/time";
 import { Track } from "../core/track";
