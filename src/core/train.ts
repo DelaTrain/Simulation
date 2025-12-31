@@ -119,7 +119,13 @@ export class Train {
             if (!(this.#position instanceof TrainPositionOnRail)) {
                 return;
             }
-            const arrived = (this.#position as TrainPositionOnRail).distance >= this.#position.rail.length();
+            const distanceBeyondTracks =
+                (this.#position as TrainPositionOnRail).distance - this.#position.rail.length();
+            const arrived = distanceBeyondTracks >= 0;
+            // Fix position if the train was too fast :)
+            if (distanceBeyondTracks > 0) {
+                this.#position.move(-distanceBeyondTracks);
+            }
 
             // Check if the train reached its next station
             const nextSchedule = this.#nextStation.trainsSchedule
@@ -265,18 +271,15 @@ export class Train {
             return null;
         }
         // Check if the other train has a schedule at a station in which the train has a schedule time later than the current simulation time
-        if (otherTrain.position instanceof Track) {
-            const schedule = schedules.get(otherTrain.trainTemplate)?.find((s) => s.satisfied === false);
-            if (!schedule) {
-                return false;
-            } else if (
-                schedule.arrivalTime
-                    ? schedule.arrivalTime?.toSeconds()
-                    : (schedule.departureTime ? schedule.departureTime.toSeconds() : 0) >
-                      simulation.currentTime.toSeconds()
-            ) {
-                return false;
-            }
+        const schedule = schedules.get(otherTrain.trainTemplate)?.find((s) => s.satisfied === false);
+        if (!schedule) {
+            return false;
+        } else if (
+            schedule.arrivalTime
+                ? schedule.arrivalTime?.toSeconds()
+                : (schedule.departureTime ? schedule.departureTime.toSeconds() : 0) > simulation.currentTime.toSeconds()
+        ) {
+            return false;
         }
 
         // Calculate time left before this train exceeds its max waiting time at the station
