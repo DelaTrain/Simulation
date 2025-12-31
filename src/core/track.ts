@@ -8,11 +8,13 @@ import type { Time } from "../utils/time";
  * For representation of each platform Track at the station
  */
 export class Track {
+    /** The station to which this track belongs */
     #station: Station;
+    /** Platform "number" */
     #platformNumber: number;
-    /** track "number" within the platform may have some letters in it */
+    /** Track "number" within the platform, may have some letters in it */
     #trackNumber: string;
-    /** all Train units present on the platform track */
+    /** A train currently present on the platform track */
     #currentTrain: Train | null;
 
     constructor(station: Station, platformNumber: number, trackNumber: string) {
@@ -50,7 +52,7 @@ export class Track {
             if (scheduleArrival) {
                 this.#currentTrain.delay.reduceDelaysAtStations(scheduleArrival.toSeconds());
             }
-            // update the delay value used in the UI
+            // Update the delay value used in the UI
             this.#currentTrain.delay.UIDelayValue = this.station.currentExceedingTimeInSeconds(
                 this.#currentTrain,
                 false

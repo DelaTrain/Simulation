@@ -1,5 +1,5 @@
-import { simulation } from "../core/simulation";
-import { Time } from "./time";
+import { simulation } from "./simulation";
+import { Time } from "../utils/time";
 
 export class Delay {
     #actualTrainArrival: Time = new Time(

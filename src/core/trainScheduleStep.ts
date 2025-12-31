@@ -5,7 +5,8 @@ import type { Track } from "./track";
 import type { TrainTemplate } from "./trainTemplate";
 
 export class TrainScheduleStep {
-    satisfied: boolean = false; // whether the Schedule has been completed (to check whether the train is delayed)
+    /** Whether the Schedule has been completed (in order to check whether the train is delayed) */
+    satisfied: boolean = false;
 
     constructor(
         public train: TrainTemplate,

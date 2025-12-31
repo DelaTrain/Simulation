@@ -4,11 +4,13 @@ import type { Station } from "./station";
 export class Rail {
     /** Intermediate positions between fromStation and toStation */
     #positions: Position[];
+    /** Starting station of the rail */
     #fromStation: Station;
+    /** Ending station of the rail */
     #toStation: Station;
     /** Array of max speeds for each segment between positions */
     #maxSpeeds: Array<number>;
-
+    /** Precomputed distances between consecutive positions */
     #distances: Array<number> = [];
 
     constructor(fromStation: Station, positions: Position[], toStation: Station, maxSpeeds: Array<number>) {

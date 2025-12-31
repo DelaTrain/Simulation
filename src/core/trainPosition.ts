@@ -11,11 +11,11 @@ export type TrainPosition = Track | TrainPositionOnRail;
  * For representation of each Train Position on the way
  */
 export class TrainPositionOnRail {
-    // maybe export should be here also
-    /** from start to the next station */
+    /** Distance from the start of the rail to the current position */
     #distance: number;
-    /**  */
+    /** The rail on which the train is currently positioned */
     #rail: Rail;
+    /** The direction in which the train is moving on the rail - either from start to end or from end to start ({@link TrainDirection}) */
     #direction: TrainDirection;
 
     constructor(rail: Rail, direction: TrainDirection = TrainDirection.FromStartToEnd, distance: number = 0) {
