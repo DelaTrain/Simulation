@@ -69,6 +69,11 @@ export class Station {
         this.#tracks.forEach((track) => {
             track.trainDepart();
         });
+        this.#trainsSchedule.forEach((schedules) => {
+            schedules.forEach((schedule) => {
+                schedule.satisfied = false;
+            });
+        });
     }
 
     /**
@@ -100,11 +105,18 @@ export class Station {
                 const trainSchedule = this.#trainsSchedule
                     .get(track.train.trainTemplate)
                     ?.find((schedule) => schedule.satisfied === false);
+                if (track.train.number === 5303) {
+                    console.log(
+                        `${simulation.currentTime} Train ${track.train.displayName()} at station ${
+                            this.#name
+                        }, schedule: ${trainSchedule?.satisfied}`
+                    );
+                }
                 if (trainSchedule && trainSchedule.departureTime) {
-                    const delayedTrains = this.lateTrainsToArrive();
+                    const [delayedTrains, schedules] = this.lateTrainsToArrive();
                     const anyTrainToWaitFor = delayedTrains
                         .filter((t) => t !== track.train)
-                        .some((t) => track.train!.shouldWaitLonger(t));
+                        .some((t) => track.train!.shouldWaitLonger(t, schedules));
                     if (
                         track.train &&
                         simulation.currentTime.toSeconds() >= trainSchedule!.departureTime!.toSeconds() &&
@@ -113,7 +125,21 @@ export class Station {
                             this.currentExceedingTimeInSeconds(track.train) >
                                 track.train.trainTemplate.type.maxWaitingTime)
                     ) {
-                        this.departTrain(track, trainSchedule);
+                        const train = this.departTrain(track, trainSchedule);
+                        if (train.number === 5303) {
+                            console.log(
+                                `${simulation.currentTime} Train ${train.displayName()} at station ${
+                                    this.#name
+                                }, schedule: ${trainSchedule?.satisfied}`
+                            );
+                        }
+                        if (trainSchedule.satisfied !== true) {
+                            throw new Error(
+                                `Train ${train.displayName()} departure at station ${
+                                    this.#name
+                                } not marked as satisfied after departure.`
+                            );
+                        }
                     } else if (anyTrainToWaitFor) {
                         //track.train!.delay.addWaitingDelay(simulation.timeStep);
                     }
@@ -161,14 +187,14 @@ export class Station {
      * Returns a list of trains that are late to arrive at the station
      * @returns array of late trains
      */
-    lateTrainsToArrive(): Train[] {
+    lateTrainsToArrive(): [Train[], Map<TrainTemplate, TrainScheduleStep[]>] {
         const delayedTrainsTemplates = Array.from(this.#trainsSchedule.entries())
             .filter(([_, schedules]) => {
                 const schedule = schedules.find((schedule) => schedule.satisfied === false);
                 return (
                     schedule &&
                     schedule.departureTime &&
-                    !schedule.satisfied &&
+                    schedule.satisfied === false &&
                     schedule.departureTime.toSeconds() < simulation.currentTime.toSeconds() &&
                     schedule.train.nextDayStations.has(this.#name) === false
                 );
@@ -176,7 +202,7 @@ export class Station {
             .map(([trainTemplate]) => trainTemplate);
 
         const delayedTrains = simulation.trains.filter((train) => delayedTrainsTemplates.includes(train.trainTemplate));
-        return delayedTrains;
+        return [delayedTrains, this.#trainsSchedule];
     }
 
     /**

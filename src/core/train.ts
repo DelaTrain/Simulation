@@ -4,6 +4,7 @@ import { Track } from "./track";
 import { simulation } from "./simulation";
 import type { Station } from "./station";
 import { Delay } from "../utils/delay";
+import type { TrainScheduleStep } from "./trainScheduleStep";
 
 enum AccelerationStatus {
     Accelerating,
@@ -61,7 +62,7 @@ export class Train {
                     } seconds.`
                 );
             }*/
-            if (this.number === 5620) {
+            if (this.number === 5303) {
                 console.log(
                     `${simulation.currentTime} Train ${this.displayName()} at station ${
                         this.#position.station.name
@@ -69,8 +70,10 @@ export class Train {
                 );
             }
             if (this.#position.station.currentExceedingTimeInSeconds(this) > 10 * 60) {
-                const delayedTrains = this.#position.station.lateTrainsToArrive();
-                const trainsToWaitFor = delayedTrains.filter((t) => t !== this).filter((t) => this.shouldWaitLonger(t));
+                const [delayedTrains, schedules] = this.#position.station.lateTrainsToArrive();
+                const trainsToWaitFor = delayedTrains
+                    .filter((t) => t !== this)
+                    .filter((t) => this.shouldWaitLonger(t, schedules));
 
                 console.warn(
                     `${simulation.currentTime} Train ${this.displayName()} at station ${
@@ -79,7 +82,13 @@ export class Train {
                         this.#position.station.currentExceedingTimeInSeconds(this) - 10 * 60
                     } seconds. at the station: ${
                         this.#position.station.name
-                    } and is waiting for other trains: ${trainsToWaitFor.map((t) => t.displayName()).join(", ")}.`
+                    } and is waiting for other trains: ${trainsToWaitFor
+                        .map(
+                            (t) =>
+                                t.displayName() +
+                                schedules.get(t.trainTemplate)?.find((s) => s.satisfied === false)?.arrivalTime
+                        )
+                        .join(", ")}.`
                 );
             }
         }
@@ -279,7 +288,17 @@ export class Train {
      * @param otherTrain train to wait for (or not to wait for)
      * @returns boolean indicating whether to wait longer
      */
-    shouldWaitLonger(otherTrain: Train): boolean {
+    shouldWaitLonger(otherTrain: Train, schedules: Map<TrainTemplate, Array<TrainScheduleStep>>): boolean {
+        const schedule = schedules.get(otherTrain.trainTemplate)?.find((s) => s.satisfied === false);
+        if (!schedule) {
+            return false;
+        } else if (
+            schedule.arrivalTime
+                ? schedule.arrivalTime?.toSeconds()
+                : (schedule.departureTime ? schedule.departureTime.toSeconds() : 0) > simulation.currentTime.toSeconds()
+        ) {
+            return false;
+        }
         if (this.position instanceof Track) {
             // TODO - correct if needed
             const timeLeft =
