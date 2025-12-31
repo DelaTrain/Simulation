@@ -121,7 +121,7 @@ export class Train {
             }
             const distanceBeyondTracks =
                 (this.#position as TrainPositionOnRail).distance - this.#position.rail.length();
-            const arrived = distanceBeyondTracks >= 0;
+            const arrived = distanceBeyondTracks >= -1;
             // Fix position if the train was too fast :)
             if (distanceBeyondTracks > 0) {
                 this.#position.move(-distanceBeyondTracks);
@@ -277,7 +277,10 @@ export class Train {
         } else if (
             schedule.arrivalTime
                 ? schedule.arrivalTime?.toSeconds()
-                : (schedule.departureTime ? schedule.departureTime.toSeconds() : 0) > simulation.currentTime.toSeconds()
+                : (schedule.departureTime ? schedule.departureTime.toSeconds() : 0) >
+                      simulation.currentTime.toSeconds() ||
+                  (schedule.departureTime ? schedule.departureTime?.toSeconds() : 0) >
+                      simulation.currentTime.toSeconds()
         ) {
             return false;
         }
