@@ -1,5 +1,5 @@
-import { simulation } from "../core/simulation";
-import { Time } from "./time";
+import { simulation } from "./simulation";
+import { Time } from "../utils/time";
 
 export class Delay {
     #actualTrainArrival: Time = new Time(
@@ -105,8 +105,6 @@ export class Delay {
             if (arrivalOrDepartureTime.toSeconds() < this.#previousDepartureTime.toSeconds()) {
                 this.#dayShift = true;
                 return true;
-            } else {
-                return false;
             }
         }
         return false;
@@ -144,6 +142,6 @@ export class Delay {
     }
 
     set previousDepartureTime(departureTime: Time) {
-        this.#previousDepartureTime = departureTime;
+        this.#previousDepartureTime = new Time(departureTime.hours, departureTime.minutes, departureTime.seconds);
     }
 }

@@ -2,14 +2,15 @@
  * For representation of each Train Type depending on the train model/ company
  */
 export class TrainCategory {
+    /** Name of the train category */
     #name: string;
-    /** priority scale value amongst trains */
+    /** Priority scale value amongst trains */
     #priority: number = 0;
-    /** the time exceeding which will result in some delay (in seconds) */
+    /** The time exceeding which will result in some delay (in seconds) */
     #maxWaitingTime: number = 0;
-    /** speed value which cannot be surpassed in m/s*/
+    /** Speed value which cannot be surpassed in m/s */
     #maxVelocity: number = 0;
-    /** parameter describing capability of gaining the above speed in m/s^2*/
+    /** Parameter describing capability of gaining the above speed in m/s^2 (maximal acceleration value) */
     #acceleration: number = 0;
 
     constructor(name: string, priority: number, maxWaitingTime: number, maxVelocity: number, acceleration: number) {
@@ -21,7 +22,7 @@ export class TrainCategory {
     }
 
     /**
-     * (in seconds)
+     * The time exceeding which will result in giving up waiting (in seconds)
      */
     get maxWaitingTime() {
         return this.#maxWaitingTime;

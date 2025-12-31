@@ -10,7 +10,15 @@ import SimulationEvent from "../utils/event";
 //export const START_TIME = new Time(3, 30, 0); // TODO - for the possibility of any START_TIME -> need to spawn trains at proper stations (other than their first station) if they start before START_TIME
 export const START_TIME = new Time(0, 0, 0);
 
-export class Simulation {
+export interface SimulationState {
+    timeStep: number; // in seconds
+    currentTime: Time;
+    autoRun: boolean;
+    autoRunSpeed: number; // in milliseconds
+    deltaTime: number;
+}
+
+export class Simulation implements SimulationState {
     timeStep: number = 15; // in seconds
     currentTime: Time = START_TIME.copy();
     autoRun: boolean = false;
@@ -88,19 +96,24 @@ export class Simulation {
             this.trainRemovedEvent.emit(train);
         }
     }
-}
 
-/*
-        First version goals:
-            * delays creating by clicking
-            * train delays propagation
-                - waiting for train transfers
-                    from delayed ones
-                    (probablistic, by the TrainType/ time)
-                - next delays beacuse of the previous ones
-                - platforms limitiations
-            * delays in times by stations graphs
-            * delay range on the map (?)
-*/
+    getState(): SimulationState {
+        return {
+            timeStep: this.timeStep,
+            currentTime: this.currentTime,
+            autoRun: this.autoRun,
+            autoRunSpeed: this.autoRunSpeed,
+            deltaTime: this.deltaTime,
+        };
+    }
+
+    setState(state: SimulationState) {
+        this.timeStep = state.timeStep;
+        this.currentTime = state.currentTime;
+        this.autoRun = state.autoRun;
+        this.autoRunSpeed = state.autoRunSpeed;
+        this.deltaTime = state.deltaTime;
+    }
+}
 
 export const simulation = new Simulation();

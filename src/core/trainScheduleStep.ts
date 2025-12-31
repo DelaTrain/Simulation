@@ -5,7 +5,8 @@ import type { Track } from "./track";
 import type { TrainTemplate } from "./trainTemplate";
 
 export class TrainScheduleStep {
-    satisfied: boolean = false; // whether the Schedule has been completed (to check whether the train is delayed)
+    /** Whether the Schedule has been completed (in order to check whether the train is delayed) */
+    satisfied: boolean = false;
 
     constructor(
         public train: TrainTemplate,
@@ -17,11 +18,11 @@ export class TrainScheduleStep {
     ) {}
 
     displayArrival() {
-        return `${this.train.displayName()}<br/>${this.arrivalTime ? this.arrivalTime.toString() : " - "}`;
+        return `${this.train.displayName()}\n${this.arrivalTime ? this.arrivalTime.toString() : " - "}`;
     }
 
     displayDeparture() {
-        return `${this.train.displayName()}<br/>${this.departureTime ? this.departureTime.toString() : " - "}`;
+        return `${this.train.displayName()}\n${this.departureTime ? this.departureTime.toString() : " - "}`;
     }
 }
 

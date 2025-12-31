@@ -1,13 +1,11 @@
 import type { Simulation } from "../core/simulation";
 import * as L from "leaflet";
 import "leaflet.heat/dist/leaflet-heat.js";
-import "leaflet/dist/leaflet.css";
 import type { Station } from "../core/station";
 import type { Rail } from "../core/rail";
 import type { Train } from "../core/train";
-import { uiPanel } from "./panel";
 import { mapValue } from "../utils/math";
-import { Track } from "../core/track";
+import SimulationEvent from "../utils/event";
 
 const stationIcon = L.divIcon({ className: "station-icon" });
 const trainIcon = L.divIcon({ className: "train-icon" });
@@ -22,12 +20,19 @@ const colorScale = (value: number): string => {
     return `hsl(${hue}, 100%, 50%)`;
 };
 
+export interface RendererClickEvent {
+    latitude: number;
+    longitude: number;
+    object: Station | Train;
+}
+
 export class Renderer {
     map: L.Map;
     trainMarkers: Map<Train, L.Marker>;
     stationMarkers: Map<Station, L.Marker>;
     railLines: Map<Rail, L.Polyline>;
     heatmap: any;
+    clickEvent: SimulationEvent<RendererClickEvent> = new SimulationEvent();
 
     constructor(protected simulation: Simulation) {
         this.simulation.stepEvent.subscribe(this.update.bind(this));
@@ -35,7 +40,7 @@ export class Renderer {
         this.simulation.trainRemovedEvent.subscribe(this.trainRemoved.bind(this));
         this.simulation.resetEvent.subscribe(this.reset.bind(this));
 
-        this.map = L.map("map").setView([50.061389, 19.938333], 12);
+        this.map = L.map("map", { zoomControl: false }).setView([50.061389, 19.938333], 12);
         this.trainMarkers = new Map();
         this.stationMarkers = new Map();
         this.railLines = new Map();
@@ -50,6 +55,10 @@ export class Renderer {
         if (ENABLE_HEATMAP)
             this.heatmap = (L as any).heatLayer([], { radius: 50, blur: 50, maxZoom: 1 }).addTo(this.map);
         this.initialDraw();
+    }
+
+    focusOnPosition(latitude: number, longitude: number, zoom: number = 14) {
+        this.map.setView([latitude, longitude], zoom);
     }
 
     initialDraw() {
@@ -129,7 +138,12 @@ export class Renderer {
         }).addTo(this.map);
         marker.bindTooltip(station.name, { direction: "top" });
         marker.on("click", () => {
-            uiPanel.display(station);
+            const { lat, lng } = marker.getLatLng();
+            this.clickEvent.emit({
+                latitude: lat,
+                longitude: lng,
+                object: station,
+            });
         });
         this.stationMarkers.set(station, marker);
     }
@@ -147,7 +161,12 @@ export class Renderer {
         marker.setIcon(trainIcon);
         marker.bindTooltip(train.displayName(), { direction: "top" });
         marker.on("click", () => {
-            uiPanel.display(train);
+            const { lat, lng } = marker.getLatLng();
+            this.clickEvent.emit({
+                latitude: lat,
+                longitude: lng,
+                object: train,
+            });
         });
         this.trainMarkers.set(train, marker);
     }
