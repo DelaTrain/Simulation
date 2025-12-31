@@ -9,7 +9,7 @@ createRoot(document.getElementById("ui")!).render(
     </StrictMode>
 );
 
-window.onkeyup = (e) => {
+document.getElementById("map")!.onkeyup = (e) => {
     if (e.key === " ") {
         const simulation = (window as any).simulation as Simulation;
         simulation.autoRun = !simulation.autoRun;

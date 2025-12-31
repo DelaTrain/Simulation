@@ -57,6 +57,10 @@ export class Renderer {
         this.initialDraw();
     }
 
+    focusOnPosition(latitude: number, longitude: number, zoom: number = 14) {
+        this.map.setView([latitude, longitude], zoom);
+    }
+
     initialDraw() {
         this.simulation.rails.forEach((rail) => {
             this.displayRail(rail);

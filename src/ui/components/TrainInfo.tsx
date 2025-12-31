@@ -1,5 +1,6 @@
 import { use, useRef, useState } from "react";
 import type { Train } from "../../core/train";
+import useRenderer from "../hooks/useRenderer";
 
 interface TrainInfoProps {
     train: Train;
@@ -8,30 +9,34 @@ interface TrainInfoProps {
 
 export default function TrainInfo({ train, onUpdate }: TrainInfoProps) {
     const [delay, setDelay] = useState(5);
+    const renderer = useRenderer();
 
     return (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 text-md">
             <h3 className="font-bold text-xl">{train.displayName()}</h3>
             <p>Speed: {train.velocity.toFixed(2)} m/s</p>
-            <p>Delay: {(train.delay.UIDelayValue / 60).toFixed(2)} min</p>
-            <span>
-                <input
-                    className="border-white text-white border w-15 p-1 mr-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-stone-700"
-                    type="number"
-                    value={delay}
-                    onChange={(v) => setDelay(parseFloat(v.target.value))}
-                />
-                <button
-                    className="btn w-fit py-1 px-4 bg-blue-500 text-white hover:bg-blue-700"
-                    onClick={() => {
-                        train.delay.addDelay(60 * delay);
-                        onUpdate();
-                    }}
-                >
-                    Add delay
-                </button>
-            </span>
-            <p className="opacity-60 text-sm">
+
+            <div className="flex flex-row items-center gap-2 justify-between">
+                <p>Delay: {(train.delay.UIDelayValue / 60).toFixed(2)} min</p>
+                <span>
+                    <input
+                        className="border-white text-white border w-15 p-1 mr-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-stone-700"
+                        type="number"
+                        value={delay}
+                        onChange={(v) => setDelay(parseFloat(v.target.value))}
+                    />
+                    <button
+                        className="btn w-fit py-1 px-4 bg-blue-500 text-white hover:bg-blue-700"
+                        onClick={() => {
+                            train.delay.addDelay(60 * delay);
+                            onUpdate();
+                        }}
+                    >
+                        Add delay
+                    </button>
+                </span>
+            </div>
+            <p className="opacity-60 text-sm py-2 px-1">
                 {train.trainTemplate.description.map((e) => (
                     <>
                         {e}
@@ -39,6 +44,17 @@ export default function TrainInfo({ train, onUpdate }: TrainInfoProps) {
                     </>
                 ))}
             </p>
+            <button
+                className="btn btn-blue w-fit"
+                onClick={() => {
+                    renderer.focusOnPosition(
+                        train.position.getPosition().latitude,
+                        train.position.getPosition().longitude
+                    );
+                }}
+            >
+                Show on map
+            </button>
         </div>
     );
 }
