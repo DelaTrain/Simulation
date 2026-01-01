@@ -4,10 +4,11 @@ import type { EditableTrainCategoryFields, TrainCategory } from "../../core/trai
 interface CategorySettingsFieldProps {
     field: EditableTrainCategoryFields;
     label: string;
+    unit: string;
     category: TrainCategory;
 }
 
-export default function CategorySettingsField({ field, label, category }: CategorySettingsFieldProps) {
+export default function CategorySettingsField({ field, label, unit, category }: CategorySettingsFieldProps) {
     const [value, setValue] = useState(category[field]);
     useEffect(() => {
         category[field] = value;
@@ -16,12 +17,15 @@ export default function CategorySettingsField({ field, label, category }: Catego
     return (
         <div className="flex flex-row justify-between py-1">
             <span>{label}:</span>
-            <input
-                type="number"
-                value={value}
-                className="bg-stone-700 p-1 rounded w-20 text-right"
-                onChange={(e) => setValue(parseFloat(e.currentTarget.value))}
-            />
+            <span className="flex flex-row items-center">
+                <input
+                    type="number"
+                    value={value}
+                    className="bg-stone-700 p-1 rounded w-20 text-right"
+                    onChange={(e) => setValue(parseFloat(e.currentTarget.value))}
+                />
+                <span className="ml-2 w-[5ch]">{unit}</span>
+            </span>
         </div>
     );
 }

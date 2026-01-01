@@ -16,10 +16,15 @@ export default function CategorySettings({ category, isCollapsed, onToggle }: Ca
             </div>
             {!isCollapsed && (
                 <div className="pl-6 pb-4 text-sm opacity-80 pr-4">
-                    <CategorySettingsField field="priority" label="Priority" category={category} />
-                    <CategorySettingsField field="maxWaitingTime" label="Max Waiting Time" category={category} />
-                    <CategorySettingsField field="maxVelocity" label="Max Velocity" category={category} />
-                    <CategorySettingsField field="acceleration" label="Acceleration" category={category} />
+                    <CategorySettingsField field="priority" label="Priority" category={category} unit="" />
+                    <CategorySettingsField
+                        field="maxWaitingTime"
+                        label="Max Waiting Time"
+                        category={category}
+                        unit="s"
+                    />
+                    <CategorySettingsField field="maxVelocity" label="Max Velocity" category={category} unit="m/s" />
+                    <CategorySettingsField field="acceleration" label="Acceleration" category={category} unit="m/s²" />
                 </div>
             )}
         </div>
