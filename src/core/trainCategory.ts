@@ -1,43 +1,43 @@
 /**
  * For representation of each Train Type depending on the train model/ company
  */
+
 export class TrainCategory {
     /** Name of the train category */
     #name: string;
+    /** Full name of the train category */
+    #fullName: string;
     /** Priority scale value amongst trains */
-    #priority: number = 0;
+    priority: number = 0;
     /** The time exceeding which will result in some delay (in seconds) */
-    #maxWaitingTime: number = 0;
+    maxWaitingTime: number = 0;
     /** Speed value which cannot be surpassed in m/s */
-    #maxVelocity: number = 0;
+    maxVelocity: number = 0;
     /** Parameter describing capability of gaining the above speed in m/s^2 (maximal acceleration value) */
-    #acceleration: number = 0;
+    acceleration: number = 0;
 
-    constructor(name: string, priority: number, maxWaitingTime: number, maxVelocity: number, acceleration: number) {
+    constructor(
+        name: string,
+        fullName: string,
+        priority: number,
+        maxWaitingTime: number,
+        maxVelocity: number,
+        acceleration: number
+    ) {
         this.#name = name;
-        this.#priority = priority;
-        this.#maxWaitingTime = maxWaitingTime;
-        this.#maxVelocity = maxVelocity;
-        this.#acceleration = acceleration;
-    }
-
-    /**
-     * The time exceeding which will result in giving up waiting (in seconds)
-     */
-    get maxWaitingTime() {
-        return this.#maxWaitingTime;
+        this.#fullName = fullName;
+        this.priority = priority;
+        this.maxWaitingTime = maxWaitingTime;
+        this.maxVelocity = maxVelocity;
+        this.acceleration = acceleration;
     }
 
     get name() {
         return this.#name;
     }
-    get priority() {
-        return this.#priority;
-    }
-    get maxVelocity() {
-        return this.#maxVelocity;
-    }
-    get acceleration() {
-        return this.#acceleration;
+    get fullName() {
+        return this.#fullName;
     }
 }
+
+export type EditableTrainCategoryFields = "priority" | "maxVelocity" | "acceleration" | "maxWaitingTime";
