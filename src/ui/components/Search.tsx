@@ -50,7 +50,7 @@ export default function Search() {
     }, [searchText]);
 
     return (
-        <div className="fixed top-0 left-0 w-full flex items-center justify-center pointer-events-none z-10">
+        <div className="fixed top-0 left-0 w-full flex items-center justify-center pointer-events-none">
             <input
                 type="text"
                 placeholder="Search..."
@@ -59,7 +59,7 @@ export default function Search() {
                 className="mt-4 w-md p-2 rounded-lg border border-gray-300 pointer-events-auto bg-stone-900 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             {searchText.length > 0 && (
-                <div className="fixed top-0 mt-15 max-h-2/5 overflow-y-scroll w-md bg-stone-800 border border-gray-300 rounded-lg pointer-events-auto">
+                <div className="fixed top-0 mt-15 max-h-2/5 overflow-y-auto w-md bg-stone-800 border border-gray-300 rounded-lg pointer-events-auto">
                     {searchResults.map((result, index) => (
                         <div
                             key={index}

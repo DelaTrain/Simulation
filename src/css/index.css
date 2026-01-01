@@ -2,6 +2,7 @@
 @import "leaflet";
 @import "./icons.css";
 @import "./components.css";
+@import "./scroll.css";
 
 #map {
     position: fixed;

@@ -2,12 +2,14 @@ import { FaChartLine, FaForwardStep, FaPause, FaPlay } from "react-icons/fa6";
 import useSimulation from "../hooks/useSimulation";
 import { VscDebugRestart } from "react-icons/vsc";
 import Stats from "./Stats";
+import { MdSettings } from "react-icons/md";
 
 interface ControlsProps {
     onToggleStats?: () => void;
+    onToggleSettings?: () => void;
 }
 
-export default function Controls({ onToggleStats }: ControlsProps) {
+export default function Controls({ onToggleStats, onToggleSettings }: ControlsProps) {
     const [simulation, simulationState, updateSimulationState] = useSimulation();
 
     return (
@@ -45,6 +47,9 @@ export default function Controls({ onToggleStats }: ControlsProps) {
                 </button>
                 <button className="btn btn-icon" onClick={onToggleStats}>
                     <FaChartLine />
+                </button>
+                <button className="btn btn-icon" onClick={onToggleSettings}>
+                    <MdSettings />
                 </button>
             </div>
 
