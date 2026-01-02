@@ -64,12 +64,12 @@ export default function StationInfo({ station, onSelectTrain }: StationInfoProps
 
                                     <TimeTrainInfo
                                         schedule={station.nextArrivalForTrack(track, simulation.currentTime)}
-                                        key="arrivalTime"
+                                        isArrivalTime={true}
                                         onSelectTrain={onSelectTrain}
                                     />
                                     <TimeTrainInfo
                                         schedule={station.nextDepartureForTrack(track, simulation.currentTime)}
-                                        key="departureTime"
+                                        isArrivalTime={false}
                                         onSelectTrain={onSelectTrain}
                                     />
                                 </tr>
@@ -83,11 +83,11 @@ export default function StationInfo({ station, onSelectTrain }: StationInfoProps
 
 function TimeTrainInfo({
     schedule,
-    key,
+    isArrivalTime,
     onSelectTrain,
 }: {
     schedule: TrainScheduleStep | null;
-    key: "arrivalTime" | "departureTime";
+    isArrivalTime: boolean;
     onSelectTrain: (train: Train) => void;
 }) {
     if (!schedule) {
@@ -97,10 +97,9 @@ function TimeTrainInfo({
     const trainTemplate = schedule.train;
     const train = simulation.findTrainByTemplate(trainTemplate);
     const renderer = useRenderer();
-
     return (
         <td>
-            {schedule[key]?.toShortString() ?? " - "}
+            {(isArrivalTime ? schedule.arrivalTime?.toShortString() : schedule.departureTime?.toShortString()) ?? " - "}
             <div
                 className={`text-xs opacity-70 ${train !== null ? "text-blue-500 cursor-pointer hover:underline" : ""}`}
                 onClick={() => {
