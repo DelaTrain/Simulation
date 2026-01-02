@@ -15,9 +15,6 @@ export class ImportedData {
     #day: Date = new Date();
 
     constructor(jsonData: any) {
-        for (const i in jsonData) {
-            console.log(i);
-        }
         this.#importStations(jsonData.stations);
         this.#importRouting(jsonData.routing);
         this.#importRails(jsonData.rails);
