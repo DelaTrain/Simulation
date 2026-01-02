@@ -2,6 +2,8 @@ import type { Position } from "../utils/position";
 import type { Station } from "./station";
 
 export class Rail {
+    static maxSpeedPercentage = 1.0; // 1.0 = 100%
+
     /** Intermediate positions between fromStation and toStation */
     #positions: Position[];
     /** Starting station of the rail */
@@ -90,6 +92,6 @@ export class Rail {
                 this.#toStation.name
             );
         }
-        return this.#maxSpeeds[segmentIndex];
+        return this.#maxSpeeds[segmentIndex] * Rail.maxSpeedPercentage;
     }
 }

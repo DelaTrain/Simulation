@@ -16,6 +16,7 @@ export interface SimulationState {
     autoRun: boolean;
     autoRunSpeed: number; // in milliseconds
     deltaTime: number;
+    day: Date;
 }
 
 export class Simulation implements SimulationState {
@@ -23,6 +24,7 @@ export class Simulation implements SimulationState {
     currentTime: Time = START_TIME.copy();
     autoRun: boolean = false;
     autoRunSpeed: number = 0; // in milliseconds
+    day: Date = new Date();
 
     stepEvent: SimulationEvent = new SimulationEvent();
     trainAddedEvent: SimulationEvent<Train> = new SimulationEvent();
@@ -45,6 +47,7 @@ export class Simulation implements SimulationState {
         this.stations = data.stations;
         this.trainTemplates = data.trains;
         this.rails = data.rails;
+        this.day = data.day;
         this.reset();
     }
 
@@ -93,6 +96,15 @@ export class Simulation implements SimulationState {
         this.trainAddedEvent.emit(train);
     }
 
+    findTrainByTemplate(template: TrainTemplate): Train | null {
+        for (const train of this.trains) {
+            if (train.trainTemplate === template) {
+                return train;
+            }
+        }
+        return null;
+    }
+
     removeTrain(train: Train) {
         const index = this.trains.indexOf(train);
         if (index !== -1) {
@@ -108,6 +120,7 @@ export class Simulation implements SimulationState {
             autoRun: this.autoRun,
             autoRunSpeed: this.autoRunSpeed,
             deltaTime: this.deltaTime,
+            day: this.day,
         };
     }
 
@@ -117,6 +130,7 @@ export class Simulation implements SimulationState {
         this.autoRun = state.autoRun;
         this.autoRunSpeed = state.autoRunSpeed;
         this.deltaTime = state.deltaTime;
+        this.day = this.day;
     }
 }
 

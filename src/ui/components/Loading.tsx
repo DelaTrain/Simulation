@@ -9,7 +9,6 @@ export default function Loading() {
     const [visible, setVisible] = useState(true);
 
     useEffect(() => {
-        console.log("Loading simulation data...");
         const loader = new Loader();
         loader.update.subscribe((info) => {
             setProgress(info.progress);

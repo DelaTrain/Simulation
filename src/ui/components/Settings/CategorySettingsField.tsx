@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { EditableTrainCategoryFields, TrainCategory } from "../../core/trainCategory";
+import type { EditableTrainCategoryFields, TrainCategory } from "../../../core/trainCategory";
 
 interface CategorySettingsFieldProps {
     field: EditableTrainCategoryFields;

@@ -18,3 +18,7 @@
 .table-bordered td {
     @apply border border-stone-700 p-1;
 }
+
+.h-panel {
+    max-height: calc(100vh - 12rem);
+}

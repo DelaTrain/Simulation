@@ -399,17 +399,48 @@ export class Train {
     }
 
     /**
+     * Returns next schedules for train at its current station
+     * @returns Array<TrainScheduleStep>
+     */
+    getNextSchedules(): TrainScheduleStep[] {
+        let station = this.#position instanceof Track ? this.#position.station : this.#position.getTargetStation();
+        let lastStopTime: number = simulation.currentTime.toSeconds();
+        const results: TrainScheduleStep[] = [];
+        while (true) {
+            const schedules = station.trainsSchedule.get(this.trainTemplate);
+            if (schedules === undefined) break;
+            const schedule = schedules
+                ?.filter((s) => (s.departureTime ? s.departureTime.toSeconds() > lastStopTime : s.arrivalTime !== null))
+                .sort((a, b) => {
+                    const timeA = a.departureTime
+                        ? a.departureTime.toSeconds()
+                        : a.arrivalTime
+                        ? a.arrivalTime.toSeconds()
+                        : Infinity;
+                    const timeB = b.departureTime
+                        ? b.departureTime.toSeconds()
+                        : b.arrivalTime
+                        ? b.arrivalTime.toSeconds()
+                        : Infinity;
+                    return timeA - timeB;
+                })[0];
+            if (!schedule) break;
+            results.push(schedule);
+            lastStopTime = schedule.departureTime === null ? lastStopTime : schedule.departureTime.toSeconds();
+            if (schedule.nextStation === null) break;
+            station = schedule.nextStation;
+        }
+        return results;
+    }
+
+    /*
      * Gets the current position of the train
      * @returns Position of the train - corrected if waiting for the station
      */
     getPosition(): Position {
-        if (this.#isWaiting) {
-            return this.#nextStation!.position;
+        if (this.#isWaiting && this.#nextStation) {
+            return this.#nextStation.position;
         }
-        if (this.#position instanceof TrainPositionOnRail) {
-            return this.#position.getPosition();
-        } else {
-            return this.#position.getPosition();
-        }
+        return this.#position.getPosition();
     }
 }

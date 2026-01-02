@@ -4,7 +4,7 @@ import Loading from "./Loading";
 import Stats from "./Stats";
 import InfoPanel from "./InfoPanel";
 import Search from "./Search";
-import Settings from "./Settings";
+import Settings from "./Settings/Settings";
 
 export default function App() {
     const [openStats, setOpenStats] = useState(false);

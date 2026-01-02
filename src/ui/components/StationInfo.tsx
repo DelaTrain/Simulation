@@ -1,6 +1,10 @@
+import { FaLocationDot } from "react-icons/fa6";
 import type { Station } from "../../core/station";
 import type { Train } from "../../core/train";
 import useSimulation from "../hooks/useSimulation";
+import useRenderer from "../hooks/useRenderer";
+import type { TrainScheduleStep } from "../../core/trainScheduleStep";
+import { simulation } from "../../core/simulation";
 
 interface StationInfoProps {
     station: Station;
@@ -9,11 +13,22 @@ interface StationInfoProps {
 
 export default function StationInfo({ station, onSelectTrain }: StationInfoProps) {
     const [simulation, _simulationState, _updateSimulationState] = useSimulation();
+    const renderer = useRenderer();
 
     return (
         <div className="flex flex-col gap-2">
-            <h3 className="font-bold text-xl">{station.name}</h3>
-            <div className="overflow-y-auto max-h-[80vh] pr-2">
+            <div className="flex flex-row items-center gap-2 mb-2">
+                <h3 className="font-bold text-xl">{station.name}</h3>
+                <button
+                    className="btn btn-icon"
+                    onClick={() => {
+                        renderer.focusOnPosition(station.position.latitude, station.position.longitude);
+                    }}
+                >
+                    <FaLocationDot size={16} />
+                </button>
+            </div>
+            <div className="overflow-y-auto h-panel pr-2">
                 <table className="table-fixed w-full text-center text-sm border-collapse table-bordered">
                     <thead>
                         <tr className="text-base">
@@ -37,38 +52,69 @@ export default function StationInfo({ station, onSelectTrain }: StationInfoProps
                                         {track.platformNumber} ({track.trackNumber})
                                     </th>
                                     <td
-                                        className={track.train !== null ? "cursor-pointer text-blue-400" : ""}
+                                        className={
+                                            track.train !== null ? "cursor-pointer text-blue-400 hover:underline" : ""
+                                        }
                                         onClick={() => {
                                             if (track.train !== null) onSelectTrain(track.train);
                                         }}
                                     >
                                         {track.train === null ? " - " : track.train.displayName()}
                                     </td>
-                                    <td>
-                                        {station
-                                            .nextArrivalForTrack(track, simulation.currentTime)
-                                            ?.arrivalTime?.toShortString() ?? " - "}
-                                        <div className="text-xs opacity-70">
-                                            {station
-                                                .nextArrivalForTrack(track, simulation.currentTime)
-                                                ?.train.displayName() ?? ""}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        {station
-                                            .nextDepartureForTrack(track, simulation.currentTime)
-                                            ?.departureTime?.toShortString() ?? " - "}
-                                        <div className="text-xs opacity-70">
-                                            {station
-                                                .nextDepartureForTrack(track, simulation.currentTime)
-                                                ?.train.displayName() ?? ""}
-                                        </div>
-                                    </td>
+
+                                    <TimeTrainInfo
+                                        schedule={station.nextArrivalForTrack(track, simulation.currentTime)}
+                                        key="arrivalTime"
+                                        onSelectTrain={onSelectTrain}
+                                    />
+                                    <TimeTrainInfo
+                                        schedule={station.nextDepartureForTrack(track, simulation.currentTime)}
+                                        key="departureTime"
+                                        onSelectTrain={onSelectTrain}
+                                    />
                                 </tr>
                             ))}
                     </tbody>
                 </table>
             </div>
         </div>
+    );
+}
+
+function TimeTrainInfo({
+    schedule,
+    key,
+    onSelectTrain,
+}: {
+    schedule: TrainScheduleStep | null;
+    key: "arrivalTime" | "departureTime";
+    onSelectTrain: (train: Train) => void;
+}) {
+    if (!schedule) {
+        return <td> - </td>;
+    }
+
+    const trainTemplate = schedule.train;
+    const train = simulation.findTrainByTemplate(trainTemplate);
+    const renderer = useRenderer();
+
+    return (
+        <td>
+            {schedule[key]?.toShortString() ?? " - "}
+            <div
+                className={`text-xs opacity-70 ${train !== null ? "text-blue-500 cursor-pointer hover:underline" : ""}`}
+                onClick={() => {
+                    if (train !== null) {
+                        onSelectTrain(train);
+                        renderer.focusOnPosition(
+                            train.position.getPosition().latitude,
+                            train.position.getPosition().longitude
+                        );
+                    }
+                }}
+            >
+                {trainTemplate.displayName()}
+            </div>
+        </td>
     );
 }
