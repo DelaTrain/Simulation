@@ -142,7 +142,7 @@ export class Train {
                             return;
                         }
                     }
-                    const trackAtTheStation = this.#nextStation.assignTrack(nextSchedule.track);
+                    const trackAtTheStation = this.#nextStation.assignTrack(nextSchedule.track, this.trainTemplate);
 
                     if (trackAtTheStation == null) {
                         // Cannot arrive at the station - track full; waiting

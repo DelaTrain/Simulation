@@ -174,7 +174,7 @@ export class Station {
      * @returns
      */
     spawnTrain(trainTemplate: TrainTemplate, preferredTrack: Track): Train | null {
-        const track = this.assignTrack(preferredTrack);
+        const track = this.assignTrack(preferredTrack, trainTemplate);
         if (track) {
             const train = new Train(track, trainTemplate);
             train.delay.actualTrainArrival = simulation.currentTime;
@@ -190,11 +190,37 @@ export class Station {
      * @param preferredTrack preferred track to assign to the train
      * @returns track assigned to the train - preferredTrack if available, otherwise any free track; null if no track is available
      */
-    assignTrack(preferredTrack: Track): Track | null {
-        if (preferredTrack.train == null) {
+    assignTrack(preferredTrack: Track, trainTemplate: TrainTemplate): Track | null {
+        if (this.#tracks.length === 0) {
+            throw new Error(`Station ${this.#name} has no tracks defined.`);
+        }
+        if (preferredTrack.station !== this) {
+            throw new Error(
+                `Preferred track ${preferredTrack.platformNumber}-${
+                    preferredTrack.trackNumber
+                } does not belong to station ${this.#name}.`
+            );
+        }
+        // Special handling for buses and default type ?trains?
+        if (trainTemplate.type.name === "BUS" || trainTemplate.type.name === "DEFAULT") {
+            if (preferredTrack.train == null) {
+                return preferredTrack;
+            } else {
+                /*console.warn(
+                    `No available track for train ${trainTemplate.displayName()} at station ${this.#name}`,
+                    this.#tracks
+                );*/
+                return null;
+            }
+        }
+
+        // Try to assign preferred and not a fictitious track if possible (fictitious track has platformNumber 0 and is used if a station has no real tracks)
+        if ((this.#tracks[0].platformNumber !== 0 || this.#tracks.length === 1) && preferredTrack.train == null) {
             return preferredTrack;
         }
-        const track = this.#tracks.find((track) => track.train == null);
+        const track = (
+            this.#tracks.length > 1 ? this.#tracks.filter((track) => track.platformNumber !== 0) : this.#tracks
+        ).find((track) => track.train == null);
         if (!track) {
             /*console.warn(
                 `No available track for train ${trainTemplate.displayName()} at station ${this.#name}`,
