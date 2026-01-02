@@ -5,6 +5,7 @@ import { simulation } from "./simulation";
 import type { Station } from "./station";
 import { Delay } from "./delay";
 import type { TrainScheduleStep } from "./trainScheduleStep";
+import type { Position } from "../utils/position";
 
 /** Train acceleration status */
 enum AccelerationStatus {
@@ -29,7 +30,7 @@ export class Train {
     #delay: Delay = new Delay();
     /** Next Station */
     #nextStation: Station | null = null;
-    /** If waiting for the others or for the station */
+    /** If waiting for the station */
     #isWaiting: boolean = false;
     /** If destroyed */
     #destroyed: boolean = false;
@@ -75,8 +76,7 @@ export class Train {
         return this.#destroyed;
     }
 
-    // TODO - make train speeds reduce before meeting stations - in progress + acceleration logic
-    // TODO - think about delay calculations when moving between stations
+    // TODO - think about delay calculations when moving between stations + correct statistic (graphs, etc.)
     /** {@link simulation} step for the train */
     step() {
         if (!this.#isWaiting) {
@@ -99,12 +99,8 @@ export class Train {
         if (this.#position instanceof TrainPositionOnRail) {
             // Updating position based on velocity and acceleration
             if (this.#delay.dUserAlreadyHandled()) {
-                this.#position.move(
-                    this.#velocity * simulation.timeStep +
-                        0.5 * this.trainTemplate.type.acceleration * simulation.timeStep * simulation.timeStep
-                );
-
                 this.#updateVelocity();
+                this.#position.move(this.#velocity * simulation.timeStep);
             } else {
                 this.stop();
                 this.#delay.userDelayHandle(simulation.timeStep);
@@ -142,7 +138,7 @@ export class Train {
                             return;
                         }
                     }
-                    const trackAtTheStation = this.#nextStation.assignTrack(nextSchedule.track);
+                    const trackAtTheStation = this.#nextStation.assignTrack(nextSchedule.track, this.trainTemplate);
 
                     if (trackAtTheStation == null) {
                         // Cannot arrive at the station - track full; waiting
@@ -182,8 +178,8 @@ export class Train {
             this.#velocity = Math.min(
                 this.#position.rail.getMaxSpeed(this.#position.distance),
                 this.trainTemplate.type.maxVelocity,
-                this.#velocity + this.trainTemplate.type.acceleration * simulation.timeStep
-                //velocityForcedByNextStation !== null ? velocityForcedByNextStation : Infinity // TODO - in progress
+                this.#velocity + this.trainTemplate.type.acceleration * simulation.timeStep,
+                velocityForcedByNextStation !== null ? velocityForcedByNextStation : Infinity
             );
 
             // Update acceleration status
@@ -205,16 +201,37 @@ export class Train {
             let velocity = this.#velocity;
             if (this.trainTemplate.type.maxVelocity < 33 && this.distanceToNextStation! < 1200) {
                 velocity -= (0.7 + Math.random() * (0.9 - 0.7)) * simulation.timeStep;
-            } else if (this.trainTemplate.type.maxVelocity < 44 && this.distanceToNextStation! < 3000) {
+            } else if (
+                this.trainTemplate.type.maxVelocity >= 33 &&
+                this.trainTemplate.type.maxVelocity < 44 &&
+                this.distanceToNextStation! < 3000
+            ) {
                 velocity -= (0.5 + Math.random() * (0.7 - 0.5)) * simulation.timeStep;
-            } else if (this.trainTemplate.type.maxVelocity < 56 && this.distanceToNextStation! < 6000) {
+            } else if (
+                this.trainTemplate.type.maxVelocity >= 44 &&
+                this.trainTemplate.type.maxVelocity < 56 &&
+                this.distanceToNextStation! < 6000
+            ) {
                 velocity -= (0.4 + Math.random() * (0.5 - 0.4)) * simulation.timeStep;
-            } else if (this.distanceToNextStation! < 2000) {
+            } /*else if (this.distanceToNextStation! < 2000) { // for freight trains
                 velocity -= (0.3 + Math.random() * (0.5 - 0.3)) * simulation.timeStep;
+            }*/ else {
+                return null; // no need to reduce speed yet
             }
-            return Math.max(velocity, 6); // minimum arriving speed 6 m/s (21.6 km/h)
+            return Math.max(
+                velocity,
+                Math.min(this.trainTemplate.type.maxVelocity, this.distanceToNextStation! < 200 ? 6 : 18)
+            ); // minimum arriving speed 6 m/s (21.6 km/h) or 18 m/s (64.8 km/h) depending on distance
         }
         return null;
+    }
+
+    /**
+     *
+     * @returns current possible acceleration value in m/s^2
+     */
+    #currentAcceleration(): number {
+        return this.trainTemplate.type.acceleration;
     }
 
     /**
@@ -414,5 +431,20 @@ export class Train {
             station = schedule.nextStation;
         }
         return results;
+    }
+  
+    /*
+     * Gets the current position of the train
+     * @returns Position of the train - corrected if waiting for the station
+     */
+    getPosition(): Position {
+        if (this.#isWaiting) {
+            return this.#nextStation!.position;
+        }
+        if (this.#position instanceof TrainPositionOnRail) {
+            return this.#position.getPosition();
+        } else {
+            return this.#position.getPosition();
+        }
     }
 }

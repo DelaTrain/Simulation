@@ -98,6 +98,13 @@ export class ImportedData {
             stop_current.arrival_time = null;
         } else if (i == t.stops.length - 1) {
             stop_current.departure_time = null;
+        } else {
+            // for intermediate stops, if one of arrival/departure time is missing, set it to the other one
+            if (stop_current.arrival_time == null && stop_current.departure_time != null) {
+                stop_current.arrival_time = stop_current.departure_time;
+            } else if (stop_current.arrival_time != null && stop_current.departure_time == null) {
+                stop_current.departure_time = stop_current.arrival_time;
+            }
         }
 
         const stop_next = i + 1 <= t.stops.length ? t.stops[i + 1] : null;
