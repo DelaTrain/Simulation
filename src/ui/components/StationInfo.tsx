@@ -1,6 +1,8 @@
+import { FaLocationDot } from "react-icons/fa6";
 import type { Station } from "../../core/station";
 import type { Train } from "../../core/train";
 import useSimulation from "../hooks/useSimulation";
+import useRenderer from "../hooks/useRenderer";
 
 interface StationInfoProps {
     station: Station;
@@ -9,10 +11,21 @@ interface StationInfoProps {
 
 export default function StationInfo({ station, onSelectTrain }: StationInfoProps) {
     const [simulation, _simulationState, _updateSimulationState] = useSimulation();
+    const renderer = useRenderer();
 
     return (
         <div className="flex flex-col gap-2">
-            <h3 className="font-bold text-xl">{station.name}</h3>
+            <div className="flex flex-row items-center gap-2 mb-2">
+                <h3 className="font-bold text-xl">{station.name}</h3>
+                <button
+                    className="btn btn-icon"
+                    onClick={() => {
+                        renderer.focusOnPosition(station.position.latitude, station.position.longitude);
+                    }}
+                >
+                    <FaLocationDot size={16} />
+                </button>
+            </div>
             <div className="overflow-y-auto max-h-[80vh] pr-2">
                 <table className="table-fixed w-full text-center text-sm border-collapse table-bordered">
                     <thead>

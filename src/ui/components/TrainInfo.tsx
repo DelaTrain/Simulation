@@ -3,6 +3,8 @@ import type { Train } from "../../core/train";
 import useRenderer from "../hooks/useRenderer";
 import { Track } from "../../core/track";
 import type { Station } from "../../core/station";
+import Collapsable from "./Collapsable";
+import { FaLocationDot, FaSchool } from "react-icons/fa6";
 
 interface TrainInfoProps {
     train: Train;
@@ -15,17 +17,53 @@ export default function TrainInfo({ train, onUpdate, onSelectStation }: TrainInf
     const renderer = useRenderer();
 
     return (
-        <div className="flex flex-col gap-2 text-md">
-            <h3 className="font-bold text-xl">{train.displayName()}</h3>
-            <div className="overflow-y-auto max-h-[80vh] pr-3">
+        <div className="flex flex-col text-md">
+            <div className="flex flex-row items-center gap-2 mb-2">
+                <h3 className="font-bold text-xl">{train.displayName()}</h3>
+                <button
+                    className="btn btn-icon"
+                    onClick={() => {
+                        renderer.focusOnPosition(
+                            train.position.getPosition().latitude,
+                            train.position.getPosition().longitude
+                        );
+                    }}
+                >
+                    <FaLocationDot size={16} />
+                </button>
+                {train.position instanceof Track && (
+                    <button
+                        className="btn btn-icon"
+                        onClick={() => {
+                            onSelectStation((train.position as Track).station);
+                        }}
+                    >
+                        <FaSchool size={20} />
+                    </button>
+                )}
+            </div>
+
+            <Collapsable title="Description" className="opacity-60 -translate-x-1 mb-1/2">
+                <p className="opacity-60 text-sm pl-2">
+                    {train.trainTemplate.description.map((e, i) => (
+                        <span key={i}>
+                            {e}
+                            <br />
+                        </span>
+                    ))}
+                </p>
+            </Collapsable>
+            <div className="overflow-y-auto max-h-[80vh] pr-3 pb-2">
                 <div className="h-8 m-1/2 align-middle" style={{ lineHeight: "2rem" }}>
-                    Category: {train.trainTemplate.type.fullName}
+                    Category: <span className="font-bold">{train.trainTemplate.type.fullName}</span>
                 </div>
                 <div className="h-8 m-1/2 align-middle" style={{ lineHeight: "2rem" }}>
-                    Speed: {train.velocity.toFixed(2)} m/s
+                    Speed: <span className="font-bold">{train.velocity.toFixed(2)} m/s</span>
                 </div>
                 <div className="flex flex-row items-center gap-2 justify-between h-8 m-1/2">
-                    <p>Delay: {(train.delay.UIDelayValue / 60).toFixed(2)} min</p>
+                    <p>
+                        Delay: <span className="font-bold">{(train.delay.UIDelayValue / 60).toFixed(2)} min</span>
+                    </p>
                     <span>
                         <input
                             className="border-white text-white border w-15 p-1 mr-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-stone-700"
@@ -43,37 +81,6 @@ export default function TrainInfo({ train, onUpdate, onSelectStation }: TrainInf
                             Add delay
                         </button>
                     </span>
-                </div>
-                <p className="opacity-60 text-sm py-2 px-1">
-                    {train.trainTemplate.description.map((e, i) => (
-                        <span key={i}>
-                            {e}
-                            <br />
-                        </span>
-                    ))}
-                </p>
-                <div className="flex flex-row gap-2 mt-2">
-                    <button
-                        className="btn btn-blue w-fit"
-                        onClick={() => {
-                            renderer.focusOnPosition(
-                                train.position.getPosition().latitude,
-                                train.position.getPosition().longitude
-                            );
-                        }}
-                    >
-                        Show on map
-                    </button>
-                    {train.position instanceof Track && (
-                        <button
-                            className="btn btn-blue w-fit"
-                            onClick={() => {
-                                onSelectStation((train.position as Track).station);
-                            }}
-                        >
-                            Show station
-                        </button>
-                    )}
                 </div>
             </div>
         </div>
