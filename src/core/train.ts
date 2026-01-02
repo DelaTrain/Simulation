@@ -404,13 +404,14 @@ export class Train {
      */
     getNextSchedules(): TrainScheduleStep[] {
         let station = this.#position instanceof Track ? this.#position.station : this.#position.getTargetStation();
-        let lastStopTime: number = simulation.currentTime.toSeconds();
+        let lastStopTime: number = 0;
         const results: TrainScheduleStep[] = [];
         while (true) {
             const schedules = station.trainsSchedule.get(this.trainTemplate);
             if (schedules === undefined) break;
             const schedule = schedules
-                ?.filter((s) => (s.departureTime ? s.departureTime.toSeconds() > lastStopTime : s.arrivalTime !== null))
+                .filter((s) => !s.satisfied)
+                .filter((s) => (s.departureTime ? s.departureTime.toSeconds() > lastStopTime : s.arrivalTime !== null))
                 .sort((a, b) => {
                     const timeA = a.departureTime
                         ? a.departureTime.toSeconds()

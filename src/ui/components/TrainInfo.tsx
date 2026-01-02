@@ -16,6 +16,17 @@ export default function TrainInfo({ train, onUpdate, onSelectStation }: TrainInf
     const [delay, setDelay] = useState(5);
     const renderer = useRenderer();
 
+    if (train.destroyed) {
+        return (
+            <div className="flex flex-col text-md">
+                <div className="flex flex-row items-center gap-2 mb-2">
+                    <h3 className="font-bold text-xl">{train.displayName()}</h3>
+                </div>
+                <div className="text-red-500 font-bold">This train has been destroyed.</div>
+            </div>
+        );
+    }
+
     return (
         <div className="flex flex-col text-md">
             <div className="flex flex-row items-center gap-2 mb-2">
