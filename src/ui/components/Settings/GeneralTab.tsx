@@ -10,7 +10,7 @@ export default function GeneralTab() {
         <div className="flex flex-col gap-4 w-full">
             <label className="flex flex-row justify-between items-center w-full">
                 <span>
-                    Rail Max Speed Percentage: <span className="font-bold">{railMaxSpeedPercentage}%</span>
+                    Rail Max Speed Percentage: <span className="font-bold">{railMaxSpeedPercentage.toFixed(0)}%</span>
                 </span>
                 <input
                     className="w-50"
