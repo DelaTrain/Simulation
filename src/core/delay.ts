@@ -93,21 +93,30 @@ export class Delay {
 
     /**
      * Checks if the arrival or departure is happening the next day compared to the departure time from the previous station
-     * @param arrivalOrDepartureTime scheduled arrival or departure time
-     * @returns boolean indicating if the arrival/departure is happening the next day
+     * @param arrivalTime scheduled arrival time
+     * @param departureTime scheduled departure time
+     * @returns Object with two boolean properties:
+     *  - nextDayArrival: true if arrival happens the next day
+     *  - nextDayDeparture: true if departure happens the next day
      */
-    handleArrivalOrDepartureHappeningNextDay(arrivalOrDepartureTime: Time): boolean {
+    handleArrivalOrDepartureHappeningNextDay(
+        arrivalTime: Time | null,
+        departureTime: Time | null
+    ): { nextDayArrival: boolean; nextDayDeparture: boolean } {
         if (this.#dayShift) {
             // TODO - if simulation was featuring multiple days, this would need to be more complex
-            return true;
+            return { nextDayArrival: true, nextDayDeparture: true };
         }
         if (this.#previousDepartureTime) {
-            if (arrivalOrDepartureTime.toSeconds() < this.#previousDepartureTime.toSeconds()) {
+            if (arrivalTime && arrivalTime.toSeconds() < this.#previousDepartureTime.toSeconds()) {
                 this.#dayShift = true;
-                return true;
+                return { nextDayArrival: true, nextDayDeparture: true };
+            } else if (departureTime && departureTime.toSeconds() < this.#previousDepartureTime.toSeconds()) {
+                this.#dayShift = true;
+                return { nextDayArrival: false, nextDayDeparture: true };
             }
         }
-        return false;
+        return { nextDayArrival: false, nextDayDeparture: false };
     }
 
     /**

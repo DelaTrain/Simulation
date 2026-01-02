@@ -1,6 +1,5 @@
 import { Rail } from "../core/rail";
 import { Station } from "../core/station";
-import { TrainCategory } from "../core/trainCategory";
 import { Position } from "./position";
 import { TrainTemplate } from "../core/trainTemplate";
 import { Time } from "./time";
@@ -141,7 +140,12 @@ export class ImportedData {
         }
         // mark station as next day if needed
         if (dayShift) {
-            trainTemplate.nextDayStations.add(sc.name);
+            // if null then it will not be used anyway
+            if (!trainTemplate.nextDayStations.has(sc.name)) {
+                trainTemplate.nextDayStations.set(sc.name, []);
+            } else {
+                trainTemplate.nextDayStations.get(sc.name)!.push(departure_time);
+            }
         }
 
         let rail: Rail | null = null;
