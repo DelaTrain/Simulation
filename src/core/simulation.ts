@@ -58,11 +58,11 @@ export class Simulation implements SimulationState {
     }
 
     step() {
-        this.currentTime.addSeconds(this.timeStep);
-        if (this.currentTime.toSeconds() >= 86400) {
+        if (!this.canStep()) {
             this.autoRun = false;
             return;
         }
+        this.currentTime.addSeconds(this.timeStep);
 
         this.stations.forEach((station) => {
             station.step();
@@ -71,6 +71,10 @@ export class Simulation implements SimulationState {
             train.step();
         });
         this.stepEvent.emit();
+    }
+
+    canStep(): boolean {
+        return this.currentTime.copy().addSeconds(this.timeStep).toSeconds() + this.timeStep < 86400;
     }
 
     runAutomatically() {

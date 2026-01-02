@@ -17,6 +17,7 @@ export class Time {
     addSeconds(secondsToAdd: number) {
         this.second += secondsToAdd;
         this.normalize();
+        return this;
     }
 
     normalize() {
