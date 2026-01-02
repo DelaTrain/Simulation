@@ -56,7 +56,11 @@ export default function InfoPanel() {
                 <FaTimes />
             </button>
             {selected[0] instanceof Train ? (
-                <TrainInfo train={selected[0]} onUpdate={updateSelected} />
+                <TrainInfo
+                    train={selected[0]}
+                    onUpdate={updateSelected}
+                    onSelectStation={(s: Station) => setSelected([s])}
+                />
             ) : selected[0] instanceof Station ? (
                 <StationInfo station={selected[0]} onSelectTrain={(t: Train) => setSelected([t])} />
             ) : (

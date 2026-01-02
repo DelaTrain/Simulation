@@ -16,6 +16,7 @@ export default function Controls({ onToggleStats, onToggleSettings }: ControlsPr
         <div className="fixed flex flex-row bottom-0 items-center justify-between w-screen bg-stone-900 text-white backdrop-blur-md py-1 px-3 rounded-t-lg shadow-md z-10 ">
             <div className="flex gap-3 m-2 w-sm">
                 <button
+                    disabled={!simulation.canStep()}
                     className="btn btn-icon"
                     onClick={() => {
                         simulation.step();
@@ -26,6 +27,7 @@ export default function Controls({ onToggleStats, onToggleSettings }: ControlsPr
                     <FaForwardStep />
                 </button>
                 <button
+                    disabled={!simulation.canStep()}
                     className="btn btn-icon"
                     onClick={() => {
                         simulation.autoRun = !simulation.autoRun;
