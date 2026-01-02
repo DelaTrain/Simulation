@@ -1,5 +1,5 @@
 import { MdOutlineKeyboardArrowDown, MdOutlineKeyboardArrowRight } from "react-icons/md";
-import type { TrainCategory } from "../../core/trainCategory";
+import type { TrainCategory } from "../../../core/trainCategory";
 import CategorySettingsField from "./CategorySettingsField";
 
 interface CategorySettingsProps {
