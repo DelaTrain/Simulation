@@ -432,7 +432,7 @@ export class Train {
         }
         return results;
     }
-  
+
     /*
      * Gets the current position of the train
      * @returns Position of the train - corrected if waiting for the station
