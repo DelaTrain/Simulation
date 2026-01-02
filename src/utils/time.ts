@@ -17,6 +17,7 @@ export class Time {
     addSeconds(secondsToAdd: number) {
         this.second += secondsToAdd;
         this.normalize();
+        return this;
     }
 
     normalize() {
@@ -62,5 +63,11 @@ export class Time {
         const mm = this.minute.toString().padStart(2, "0");
         const ss = this.second.toString().padStart(2, "0");
         return `${hh}:${mm}:${ss}`;
+    }
+
+    toShortString(): string {
+        const hh = this.hour.toString().padStart(2, "0");
+        const mm = this.minute.toString().padStart(2, "0");
+        return `${hh}:${mm}`;
     }
 }

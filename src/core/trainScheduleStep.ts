@@ -16,14 +16,6 @@ export class TrainScheduleStep {
         public nextRail: Rail | null,
         public track: Track
     ) {}
-
-    displayArrival() {
-        return `${this.train.displayName()}\n${this.arrivalTime ? this.arrivalTime.toString() : " - "}`;
-    }
-
-    displayDeparture() {
-        return `${this.train.displayName()}\n${this.departureTime ? this.departureTime.toString() : " - "}`;
-    }
 }
 
 export class SpawnTrainScheduleStep {
