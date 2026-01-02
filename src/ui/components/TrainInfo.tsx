@@ -1,14 +1,16 @@
-import { use, useRef, useState } from "react";
+import { useState } from "react";
 import type { Train } from "../../core/train";
 import useRenderer from "../hooks/useRenderer";
 import { Track } from "../../core/track";
+import type { Station } from "../../core/station";
 
 interface TrainInfoProps {
     train: Train;
     onUpdate: () => void;
+    onSelectStation: (train: Station) => void;
 }
 
-export default function TrainInfo({ train, onUpdate }: TrainInfoProps) {
+export default function TrainInfo({ train, onUpdate, onSelectStation }: TrainInfoProps) {
     const [delay, setDelay] = useState(5);
     const renderer = useRenderer();
 
@@ -60,7 +62,12 @@ export default function TrainInfo({ train, onUpdate }: TrainInfoProps) {
                         Show on map
                     </button>
                     {train.position instanceof Track && (
-                        <button className="btn btn-blue w-fit" onClick={() => {}}>
+                        <button
+                            className="btn btn-blue w-fit"
+                            onClick={() => {
+                                onSelectStation((train.position as Track).station);
+                            }}
+                        >
                             Show station
                         </button>
                     )}
