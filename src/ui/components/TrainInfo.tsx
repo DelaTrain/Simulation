@@ -82,6 +82,28 @@ export default function TrainInfo({ train, onUpdate, onSelectStation }: TrainInf
                         </button>
                     </span>
                 </div>
+                <table className="table-fixed w-full text-center text-sm border-collapse table-bordered mt-4">
+                    <thead>
+                        <tr className="text-base">
+                            <th>Station</th>
+                            <th>Platform (Track)</th>
+                            <th>Arrival</th>
+                            <th>Departure</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {train.getNextSchedules().map((schedule, i) => (
+                            <tr key={i}>
+                                <th>{schedule.track.station.name}</th>
+                                <th>
+                                    {schedule.track.platformNumber} ({schedule.track.trackNumber})
+                                </th>
+                                <td>{schedule.arrivalTime?.toShortString() ?? " - "}</td>
+                                <td>{schedule.departureTime?.toShortString() ?? " - "}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
             </div>
         </div>
     );
