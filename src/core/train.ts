@@ -438,13 +438,9 @@ export class Train {
      * @returns Position of the train - corrected if waiting for the station
      */
     getPosition(): Position {
-        if (this.#isWaiting) {
-            return this.#nextStation!.position;
+        if (this.#isWaiting && this.#nextStation) {
+            return this.#nextStation.position;
         }
-        if (this.#position instanceof TrainPositionOnRail) {
-            return this.#position.getPosition();
-        } else {
-            return this.#position.getPosition();
-        }
+        return this.#position.getPosition();
     }
 }
