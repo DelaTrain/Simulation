@@ -4,9 +4,11 @@ import Loading from "./Loading";
 import Stats from "./Stats";
 import InfoPanel from "./InfoPanel";
 import Search from "./Search";
+import Settings from "./Settings";
 
 export default function App() {
     const [openStats, setOpenStats] = useState(false);
+    const [openSettings, setOpenSettings] = useState(false);
 
     return (
         <>
@@ -15,8 +17,12 @@ export default function App() {
                 onToggleStats={() => {
                     setOpenStats((s) => !s);
                 }}
+                onToggleSettings={() => {
+                    setOpenSettings((s) => !s);
+                }}
             />
             {openStats && <Stats onClose={() => setOpenStats(false)} />}
+            {openSettings && <Settings onClose={() => setOpenSettings(false)} />}
             <InfoPanel />
             <Search />
         </>

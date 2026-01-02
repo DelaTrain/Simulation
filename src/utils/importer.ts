@@ -4,23 +4,7 @@ import { TrainCategory } from "../core/trainCategory";
 import { Position } from "./position";
 import { TrainTemplate } from "../core/trainTemplate";
 import { Time } from "./time";
-
-function mapCategory(category: string) {
-    switch (category) {
-        case "Bus":
-            return new TrainCategory("Bus", 0, 40 * 60, 16, 1); // maxWaitingTime conversion from minutes to seconds
-        case "BUS":
-            return new TrainCategory("BUS", 0, 40 * 60, 16, 1);
-        case "R":
-            return new TrainCategory("R", 1, 60 * 60, 30, 2);
-        case "KS":
-            return new TrainCategory("KS", 1, 60 * 60, 33, 2);
-        case "KML":
-            return new TrainCategory("KML", 1, 60 * 60, 33, 2);
-        default:
-            return new TrainCategory(category, 2, 10 * 60, 44, 3);
-    }
-}
+import { categoryManager } from "./categories";
 
 export class ImportedData {
     #stations: Map<string, Station> = new Map();
@@ -55,7 +39,12 @@ export class ImportedData {
 
                 let previousDepartureTime: Time | null = null;
                 let dayShift = false;
-                const trainTemplate = new TrainTemplate(t.number, mapCategory(t.category), t.name, t.params);
+                const trainTemplate = new TrainTemplate(
+                    t.number,
+                    categoryManager.mapCategory(t.category),
+                    t.name,
+                    t.params
+                );
 
                 for (let i = 0; i < t.stops.length; i++) {
                     [previousDepartureTime, dayShift] = this.#importStop(
