@@ -43,17 +43,17 @@ export default function TrainInfo({ train, onUpdate, onSelectStation }: TrainInf
                 )}
             </div>
 
-            <Collapsable title="Description" className="opacity-60 -translate-x-1 mb-1/2">
-                <p className="opacity-60 text-sm pl-2">
-                    {train.trainTemplate.description.map((e, i) => (
-                        <span key={i}>
-                            {e}
-                            <br />
-                        </span>
-                    ))}
-                </p>
-            </Collapsable>
-            <div className="overflow-y-auto max-h-[80vh] pr-3 pb-2">
+            <div className="overflow-y-auto h-panel pr-3 pb-2">
+                <Collapsable title="Description" className="opacity-60 -translate-x-1 mb-1/2">
+                    <p className="opacity-60 text-sm pl-2">
+                        {train.trainTemplate.description.map((e, i) => (
+                            <span key={i}>
+                                {e}
+                                <br />
+                            </span>
+                        ))}
+                    </p>
+                </Collapsable>
                 <div className="h-8 m-1/2 align-middle" style={{ lineHeight: "2rem" }}>
                     Category: <span className="font-bold">{train.trainTemplate.type.fullName}</span>
                 </div>
@@ -94,7 +94,18 @@ export default function TrainInfo({ train, onUpdate, onSelectStation }: TrainInf
                     <tbody>
                         {train.getNextSchedules().map((schedule, i) => (
                             <tr key={i}>
-                                <th>{schedule.track.station.name}</th>
+                                <th
+                                    className="text-blue-500 hover:underline cursor-pointer"
+                                    onClick={() => {
+                                        onSelectStation(schedule.track.station);
+                                        renderer.focusOnPosition(
+                                            schedule.track.station.position.latitude,
+                                            schedule.track.station.position.longitude
+                                        );
+                                    }}
+                                >
+                                    {schedule.track.station.name}
+                                </th>
                                 <th>
                                     {schedule.track.platformNumber} ({schedule.track.trackNumber})
                                 </th>

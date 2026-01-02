@@ -96,6 +96,15 @@ export class Simulation implements SimulationState {
         this.trainAddedEvent.emit(train);
     }
 
+    findTrainByTemplate(template: TrainTemplate): Train | null {
+        for (const train of this.trains) {
+            if (train.trainTemplate === template) {
+                return train;
+            }
+        }
+        return null;
+    }
+
     removeTrain(train: Train) {
         const index = this.trains.indexOf(train);
         if (index !== -1) {
