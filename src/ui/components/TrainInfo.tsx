@@ -18,10 +18,13 @@ export default function TrainInfo({ train, onUpdate, onSelectStation }: TrainInf
         <div className="flex flex-col gap-2 text-md">
             <h3 className="font-bold text-xl">{train.displayName()}</h3>
             <div className="overflow-y-auto max-h-[80vh] pr-3">
-                <p>Category: {train.trainTemplate.type.fullName}</p>
-                <p>Speed: {train.velocity.toFixed(2)} m/s</p>
-
-                <div className="flex flex-row items-center gap-2 justify-between">
+                <div className="h-8 m-1/2 align-middle" style={{ lineHeight: "2rem" }}>
+                    Category: {train.trainTemplate.type.fullName}
+                </div>
+                <div className="h-8 m-1/2 align-middle" style={{ lineHeight: "2rem" }}>
+                    Speed: {train.velocity.toFixed(2)} m/s
+                </div>
+                <div className="flex flex-row items-center gap-2 justify-between h-8 m-1/2">
                     <p>Delay: {(train.delay.UIDelayValue / 60).toFixed(2)} min</p>
                     <span>
                         <input

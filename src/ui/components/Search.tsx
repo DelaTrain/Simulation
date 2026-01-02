@@ -4,6 +4,7 @@ import { Station } from "../../core/station";
 import { simulation } from "../../core/simulation";
 import Fuse from "fuse.js";
 import useRenderer from "../hooks/useRenderer";
+import { FaLocationDot, FaTrainSubway } from "react-icons/fa6";
 
 type SearchResult = Train | Station;
 type SearchResultObject = {
@@ -56,14 +57,14 @@ export default function Search() {
                 placeholder="Search..."
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
-                className="mt-4 w-md p-2 rounded-lg border border-gray-300 pointer-events-auto bg-stone-900 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="mt-4 w-md p-2 rounded-lg  pointer-events-auto bg-stone-900 text-white focus:outline-none border-2 border-transparent focus:border-blue-500 "
             />
             {searchText.length > 0 && (
-                <div className="fixed top-0 mt-15 max-h-2/5 overflow-y-auto w-md bg-stone-800 border border-gray-300 rounded-lg pointer-events-auto">
+                <div className="fixed top-16 max-h-2/5 overflow-y-auto w-md bg-stone-800 rounded-lg pointer-events-auto">
                     {searchResults.map((result, index) => (
                         <div
                             key={index}
-                            className="p-2 hover:bg-stone-700 cursor-pointer text-white"
+                            className="p-2 hover:bg-stone-700 cursor-pointer text-white border-b border-stone-700 pt-3"
                             onClick={() => {
                                 if (result instanceof Station) {
                                     renderer.focusOnPosition(result.position.latitude, result.position.longitude);
@@ -76,7 +77,17 @@ export default function Search() {
                                 setSearchText("");
                             }}
                         >
-                            {result instanceof Station ? `Station: ${result.name}` : `Train: ${result.displayName()}`}
+                            {result instanceof Station ? (
+                                <span className="flex flex-row gap-1 items-center">
+                                    <FaLocationDot />
+                                    {result.name}
+                                </span>
+                            ) : (
+                                <span className="flex flex-row gap-1 items-center">
+                                    <FaTrainSubway />
+                                    {result.displayName()}
+                                </span>
+                            )}
                         </div>
                     ))}
                     {searchResults.length === 0 && <div className="p-2 text-white">No results found.</div>}
