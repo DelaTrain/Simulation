@@ -4,6 +4,31 @@ function getDataUrl(name: string): string {
     return new URL(`../../data/${name}.json`, import.meta.url).href;
 }
 
+function isObject(item: any): boolean {
+    return item && typeof item === "object" && !Array.isArray(item);
+}
+
+function deepMerge(target: any, ...sources: any[]) {
+    if (!sources.length) return target;
+    const source = sources.shift();
+
+    if (Array.isArray(target) && Array.isArray(source)) {
+        target.push(...source);
+    } else if (isObject(target) && isObject(source)) {
+        for (const key in source) {
+            if (Object.prototype.hasOwnProperty.call(source, key)) {
+                const sourceValue = source[key];
+                if (isObject(sourceValue) && isObject(target[key])) {
+                    target[key] = deepMerge(target[key], sourceValue);
+                } else {
+                    target[key] = sourceValue;
+                }
+            }
+        }
+    }
+    return deepMerge(target, ...sources);
+}
+
 enum LoadStatus {
     IDLE,
     LOADING,
@@ -76,17 +101,6 @@ export class Loader {
     }
 
     mergeData(chunks: any[]): any {
-        if (chunks.some((chunk) => chunk.day !== chunks[0].day)) {
-            throw new Error("Cannot merge chunks from different days");
-        }
-        return (chunks = chunks.reduce(
-            (merged, chunk) => {
-                if (chunk.stations !== undefined) merged.stations.push(...chunk.stations);
-                if (chunk.rails !== undefined) merged.rails.push(...chunk.rails);
-                if (chunk.trains !== undefined) merged.trains.push(...chunk.trains);
-                return merged;
-            },
-            { stations: [], rails: [], trains: [], day: this.chunks[0].day }
-        ));
+        return deepMerge({}, ...chunks);
     }
 }
