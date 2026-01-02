@@ -99,15 +99,15 @@ export class Renderer {
             .map((train) => {
                 const marker = this.trainMarkers.get(train);
                 if (marker) {
-                    marker.setLatLng(train.position.getPosition().toArray());
+                    marker.setLatLng(train.getPosition().toArray());
                     marker.getElement()!.style.backgroundColor = colorScale(
                         mapValue(0, MAX_DELAY_SECONDS, train.delay.UIDelayValue)
                     );
                     if (ENABLE_HEATMAP)
                         if (train.delay.UIDelayValue > MIN_RENDER_DELAY_SECONDS) {
                             return [
-                                train.position.getPosition().latitude,
-                                train.position.getPosition().longitude,
+                                train.getPosition().latitude,
+                                train.getPosition().longitude,
                                 train.delay.UIDelayValue * MAX_HEATMAP_INTENSITY,
                             ];
                         }
@@ -155,7 +155,7 @@ export class Renderer {
     }
 
     displayTrain(train: Train) {
-        const marker = L.marker(train.position!.getPosition().toArray(), {
+        const marker = L.marker(train.getPosition().toArray(), {
             zIndexOffset: 1000,
         }).addTo(this.map);
         marker.setIcon(trainIcon);
