@@ -13,3 +13,8 @@
 .btn-icon:disabled {
     @apply opacity-50 hover:scale-100 cursor-default;
 }
+
+.table-bordered th,
+.table-bordered td {
+    @apply border border-stone-700 p-1;
+}
