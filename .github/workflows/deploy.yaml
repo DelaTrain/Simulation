@@ -33,25 +33,20 @@ jobs:
         steps:
             - name: Checkout
               uses: actions/checkout@v5
-            - name: Download latest release from DelaTrain/scraper
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  REPO: DelaTrain/scraper
+            - name: Checkout datasets
+              uses: actions/checkout@v5
+              with:
+                  repository: DelaTrain/datasets
+                  path: datasets
+            - name: Copy datasets index
+              run: cp datasets/index.json public/data/index.json
+
+            - name: Process datasets
               run: |
-                  mkdir -p ./data
-                  api="https://api.github.com/repos/${REPO}/releases/latest"
-                  echo "Querying $api"
-                  browser_url=$(curl -sS -H "Authorization: token $GITHUB_TOKEN" "$api" | python3 -c 'import sys,json; j=json.load(sys.stdin); assets=j.get("assets",[]); print(next((a.get("browser_download_url") for a in assets if a.get("name")== "data.zip"), ""))')
-                  if [ -z "$browser_url" ]; then
-                      echo "data.zip asset not found in latest release" >&2
-                      exit 1
-                  fi
-                  echo "Downloading data.zip from $browser_url"
-                  curl -sS -L -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/octet-stream" -o ./data/data.zip "$browser_url"
-                  echo "Extracting data.zip"
-                  unzip -q ./data/data.zip -d ./data
-                  rm ./data/data.zip
-                  echo "Extracted data to ./data/"
+                  for folder in $(jq -r '.datasets[]' datasets/index.json); do
+                      mkdir -p public/data/$folder
+                      unzip -q datasets/$folder/delatrain.zip -d public/data/$folder
+                  done
             - uses: pnpm/action-setup@v4
               name: Install pnpm
               with:
