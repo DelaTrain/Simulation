@@ -34,12 +34,13 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v5
             - name: Checkout datasets
-              uses: actions/checkout@v4
+              uses: actions/checkout@v5
               with:
-                  ref: master
                   repository: DelaTrain/datasets
+                  ref: master
                   path: datasets
                   token: ${{ secrets.GITHUB_TOKEN }}
+
             - name: Copy datasets index
               run: cp datasets/index.json public/data/index.json
 
