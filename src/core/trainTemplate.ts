@@ -1,4 +1,5 @@
-import { TrainCategory } from "./trainCategory";
+import type { TrainCategory } from "./trainCategory";
+import type { Time } from "../utils/time";
 
 /**
  * For representation of each Train in the simulation
@@ -13,8 +14,8 @@ export class TrainTemplate {
     /** Additional description lines for the train */
     #description: Array<string>;
 
-    /** Indicates all stations from which the arrival is happening the next day compared to the departure time from the previous stations */
-    nextDayStations: Set<string> = new Set();
+    /** Indicates all stations from which the departure is happening the next day compared to the departure time from the previous stations */
+    nextDayStations: Map<string, Array<Time | null>> = new Map();
 
     constructor(
         number: number,

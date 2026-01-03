@@ -82,7 +82,10 @@ export class Station {
                     if (
                         track.train &&
                         simulation.currentTime.toSeconds() >= trainSchedule!.departureTime!.toSeconds() &&
-                        !track.train.delay.handleArrivalOrDepartureHappeningNextDay(trainSchedule!.departureTime!) &&
+                        !track.train.delay.handleArrivalOrDepartureHappeningNextDay(
+                            trainSchedule!.arrivalTime,
+                            trainSchedule!.departureTime
+                        ).nextDayDeparture &&
                         (!anyTrainToWaitFor ||
                             this.currentExceedingTimeInSeconds(track.train) >
                                 track.train.trainTemplate.type.maxWaitingTime)
@@ -244,7 +247,10 @@ export class Station {
                     schedule.departureTime &&
                     schedule.satisfied === false &&
                     schedule.departureTime.toSeconds() < simulation.currentTime.toSeconds() &&
-                    schedule.train.nextDayStations.has(this.#name) === false
+                    !schedule.train.nextDayStations
+                        .get(this.#name)
+                        ?.some((scheduleTime) => scheduleTime!.toSeconds() === schedule.departureTime!.toSeconds()) &&
+                    (schedule.arrivalTime ? schedule.arrivalTime.toSeconds() > 0 : true)
                 );
             })
             .map(([trainTemplate]) => trainTemplate);
@@ -265,13 +271,15 @@ export class Station {
             ?.find((schedule) => schedule.satisfied === false);
         if (schedule) {
             if (departure && schedule.departureTime) {
-                if (train.delay.handleArrivalOrDepartureHappeningNextDay(schedule.departureTime)) {
+                if (
+                    train.delay.handleArrivalOrDepartureHappeningNextDay(null, schedule.departureTime).nextDayDeparture
+                ) {
                     return 0;
                 } else {
                     return Math.max(0, simulation.currentTime.toSeconds() - schedule.departureTime.toSeconds());
                 }
             } else if (!departure && schedule.arrivalTime) {
-                if (train.delay.handleArrivalOrDepartureHappeningNextDay(schedule.arrivalTime)) {
+                if (train.delay.handleArrivalOrDepartureHappeningNextDay(schedule.arrivalTime, null).nextDayArrival) {
                     return 0;
                 } else {
                     return Math.max(0, simulation.currentTime.toSeconds() - schedule.arrivalTime.toSeconds());
