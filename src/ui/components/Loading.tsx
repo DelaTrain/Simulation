@@ -2,14 +2,23 @@ import { useEffect, useState } from "react";
 import { Loader } from "../../utils/loader";
 import { ImportedData } from "../../utils/importer";
 import { simulation } from "../../core/simulation";
+import { datasetsLoader } from "../../utils/datasets";
 
-export default function Loading() {
+interface LoadingProps {
+    dataset: string | null;
+}
+
+export default function Loading({ dataset }: LoadingProps) {
     const [progress, setProgress] = useState(0);
     const [error, setError] = useState<string | null>(null);
-    const [visible, setVisible] = useState(true);
+    const [visible, setVisible] = useState(false);
 
     useEffect(() => {
-        const loader = new Loader();
+        if (dataset === null) {
+            return;
+        }
+        setVisible(true);
+        const loader = datasetsLoader.makeLoader(dataset);
         loader.update.subscribe((info) => {
             setProgress(info.progress);
         });
@@ -23,7 +32,7 @@ export default function Loading() {
             .catch((err) => {
                 setError(err.message);
             });
-    }, []);
+    }, [dataset]);
 
     if (!visible) {
         return null;

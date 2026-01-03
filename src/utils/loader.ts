@@ -1,8 +1,5 @@
 import SimulationEvent from "./event";
-
-function getDataUrl(name: string): string {
-    return new URL(`../../data/${name}.json`, import.meta.url).href;
-}
+import { getDataUrl } from "./url";
 
 enum LoadStatus {
     IDLE,
@@ -24,16 +21,17 @@ export class Loader {
     status: LoadStatus = LoadStatus.IDLE;
     error: any = null;
     update: SimulationEvent<LoaderInfo> = new SimulationEvent();
+    constructor(private path: string) {}
 
     async loadIndex() {
-        const indexUrl = getDataUrl("index");
+        const indexUrl = getDataUrl(`${this.path}/index.json`);
         const response = await fetch(indexUrl);
         const indexData = await response.json();
         return indexData;
     }
 
     async loadChunk(chunkName: string) {
-        const chunkUrl = getDataUrl(chunkName);
+        const chunkUrl = getDataUrl(`${this.path}/${chunkName}.json`);
         const response = await fetch(chunkUrl);
         const chunkData = await response.json();
         this.progress += 1;

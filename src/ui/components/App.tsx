@@ -5,14 +5,17 @@ import Stats from "./Stats";
 import InfoPanel from "./InfoPanel";
 import Search from "./Search";
 import Settings from "./Settings/Settings";
+import DatasetPicker from "./DatasetPicker";
 
 export default function App() {
     const [openStats, setOpenStats] = useState(false);
     const [openSettings, setOpenSettings] = useState(false);
+    const [dataset, setDataset] = useState(null as string | null);
 
     return (
         <>
-            <Loading />
+            <DatasetPicker onPickDataset={setDataset} />
+            <Loading dataset={dataset} />
             <Controls
                 onToggleStats={() => {
                     setOpenStats((s) => !s);
