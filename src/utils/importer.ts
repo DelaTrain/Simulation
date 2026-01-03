@@ -9,11 +9,13 @@ export class ImportedData {
     #stations: Map<string, Station> = new Map();
     #trains: Array<TrainTemplate> = [];
     #rails: Map<string, Rail> = new Map();
+    #day: Date = new Date();
 
     constructor(jsonData: any) {
         this.#importStations(jsonData.stations);
         this.#importRails(jsonData.rails);
         this.#importTrains(jsonData.trains);
+        this.#day = new Date(jsonData.day);
     }
 
     #importStations(stations: any[]) {
@@ -170,5 +172,8 @@ export class ImportedData {
     }
     get rails() {
         return this.#rails;
+    }
+    get day() {
+        return this.#day;
     }
 }

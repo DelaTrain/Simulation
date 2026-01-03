@@ -1,6 +1,7 @@
 import type { Rail } from "./rail";
 import { Position } from "../utils/position";
 import type { Track } from "./track";
+import type { Station } from "./station";
 
 export enum TrainDirection {
     FromStartToEnd,
@@ -37,6 +38,14 @@ export class TrainPositionOnRail {
             return this.#rail.length() - this.#distance;
         } else {
             return this.#distance;
+        }
+    }
+
+    getTargetStation(): Station {
+        if (this.#direction === TrainDirection.FromStartToEnd) {
+            return this.#rail.toStation;
+        } else {
+            return this.#rail.fromStation;
         }
     }
 
