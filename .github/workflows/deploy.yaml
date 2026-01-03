@@ -38,6 +38,7 @@ jobs:
               with:
                   repository: DelaTrain/datasets
                   path: datasets
+                  token: ${{ secrets.GITHUB_TOKEN }}
             - name: Copy datasets index
               run: cp datasets/index.json public/data/index.json
 
