@@ -33,13 +33,23 @@ jobs:
         steps:
             - name: Checkout
               uses: actions/checkout@v5
+
+            - name: Generate GitHub App token
+              id: generate-token
+              uses: actions/create-github-app-token@v1
+              with:
+                  app-id: ${{ secrets. APP_ID }}
+                  private-key: ${{ secrets.APP_PRIVATE_KEY }}
+                  owner: DelaTrain
+                  repositories: "datasets"
+
             - name: Checkout datasets
               uses: actions/checkout@v5
               with:
                   repository: DelaTrain/datasets
                   ref: master
                   path: datasets
-                  token: ${{ secrets.GITHUB_TOKEN }}
+                  token: ${{ steps.generate-token.outputs.token }}
 
             - name: Copy datasets index
               run: cp datasets/index.json public/data/index.json
