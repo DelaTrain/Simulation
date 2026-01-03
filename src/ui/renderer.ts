@@ -95,15 +95,29 @@ export class Renderer {
     }
 
     update() {
-        const heatmap = this.simulation.trains
-            .map((train) => {
-                const marker = this.trainMarkers.get(train);
-                if (marker) {
+        this.simulation.trains.forEach((train) => {
+            const marker = this.trainMarkers.get(train);
+            if (marker) {
+                if (
+                    marker.getLatLng().lat !== train.getPosition().latitude ||
+                    marker.getLatLng().lng !== train.getPosition().longitude
+                )
                     marker.setLatLng(train.getPosition().toArray());
-                    marker.getElement()!.style.backgroundColor = colorScale(
-                        mapValue(0, MAX_DELAY_SECONDS, train.delay.UIDelayValue)
-                    );
-                    if (ENABLE_HEATMAP)
+                marker.getElement()!.style.backgroundColor = colorScale(
+                    mapValue(0, MAX_DELAY_SECONDS, train.delay.UIDelayValue)
+                );
+            }
+        });
+
+        if (ENABLE_HEATMAP) {
+            const heatmap = this.simulation.trains
+                .map((train) => {
+                    const marker = this.trainMarkers.get(train);
+                    if (marker) {
+                        marker.setLatLng(train.getPosition().toArray());
+                        marker.getElement()!.style.backgroundColor = colorScale(
+                            mapValue(0, MAX_DELAY_SECONDS, train.delay.UIDelayValue)
+                        );
                         if (train.delay.UIDelayValue > MIN_RENDER_DELAY_SECONDS) {
                             return [
                                 train.getPosition().latitude,
@@ -111,11 +125,12 @@ export class Renderer {
                                 train.delay.UIDelayValue * MAX_HEATMAP_INTENSITY,
                             ];
                         }
-                }
-                return null;
-            })
-            .filter((item) => item !== null);
-        if (ENABLE_HEATMAP) this.heatmap.setLatLngs(heatmap);
+                    }
+                    return null;
+                })
+                .filter((item) => item !== null);
+            this.heatmap.setLatLngs(heatmap);
+        }
     }
 
     trainAdded(train: Train) {
