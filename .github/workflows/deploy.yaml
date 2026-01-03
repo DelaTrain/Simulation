@@ -52,7 +52,9 @@ jobs:
                   token: ${{ steps.generate-token.outputs.token }}
 
             - name: Copy datasets index
-              run: cp datasets/index.json public/data/index.json
+              run: |
+                  mkdir -p public/data
+                  cp datasets/index.json public/data/index.json
 
             - name: Process datasets
               run: |
