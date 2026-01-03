@@ -1,3 +1,3 @@
 export function getDataUrl(path: string): string {
-    return `/data${path}`;
+    return `${import.meta.env.BASE_URL}/data${path}`;
 }
