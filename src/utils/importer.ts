@@ -5,17 +5,21 @@ import { TrainTemplate } from "../core/trainTemplate";
 import { Time } from "./time";
 import { categoryManager } from "./categories";
 
+const SHOW_REDUNDANT_RAILS = false;
+
 export class ImportedData {
     #stations: Map<string, Station> = new Map();
+    #routing: Map<string, [string]> = new Map();
     #trains: Array<TrainTemplate> = [];
     #rails: Map<string, Rail> = new Map();
     #day: Date = new Date();
 
     constructor(jsonData: any) {
         this.#importStations(jsonData.stations);
+        this.#importRouting(jsonData.routing);
         this.#importRails(jsonData.rails);
         this.#importTrains(jsonData.trains);
-        this.#day = new Date(jsonData.day);
+        this.#day = new Date(jsonData.params.day);
     }
 
     #importStations(stations: any[]) {
@@ -25,6 +29,10 @@ export class ImportedData {
                 new Station(station.name, new Position(station.location.latitude, station.location.longitude)),
             ])
         );
+    }
+
+    #importRouting(routing: any[]) {
+        this.#routing = new Map(routing.map((r) => [JSON.stringify([r.start_station, r.end_station]), r.via]));
     }
 
     #importTrains(trains: any[]) {
@@ -37,6 +45,32 @@ export class ImportedData {
                     // TODO fix properly train reappearance e.g. after changing the country
                     return null;
                 }
+
+                let routedStops = [];
+                for (let i = 0; i < t.stops.length - 1; i++) {
+                    const stop_current = t.stops[i];
+                    const stop_next = t.stops[i + 1];
+                    const stopsReversed = stop_current.station_name > stop_next.station_name;
+                    const stopsSorted = !stopsReversed ? [stop_current, stop_next] : [stop_next, stop_current];
+                    const railKey = JSON.stringify(stopsSorted.map((s) => s.station_name));
+                    routedStops.push(stop_current);
+                    if (!this.#rails.has(railKey)) {
+                        const viaStations = this.#routing.get(railKey);
+                        if (viaStations && viaStations.length > 0) {
+                            const viaStationsOrdered = stopsReversed ? viaStations.slice().reverse() : viaStations;
+                            for (const viaStationName of viaStationsOrdered) {
+                                routedStops.push({
+                                    station_name: viaStationName,
+                                    arrival_time: null,
+                                    departure_time: null,
+                                    track: null,
+                                });
+                            }
+                        }
+                    }
+                }
+                routedStops.push(t.stops[t.stops.length - 1]);
+                t.stops = routedStops;
 
                 let previousDepartureTime: Time | null = null;
                 let dayShift = false;
@@ -64,21 +98,23 @@ export class ImportedData {
 
     #importRails(rails: any[]) {
         this.#rails = new Map(
-            rails.map((r) => {
-                const stationA = this.#stations.get(r.start_station);
-                const stationB = this.#stations.get(r.end_station);
+            rails
+                .filter((r) => SHOW_REDUNDANT_RAILS || !r.redundant)
+                .map((r) => {
+                    const stationA = this.#stations.get(r.start_station);
+                    const stationB = this.#stations.get(r.end_station);
 
-                if (!stationA || !stationB) {
-                    throw new Error(`Invalid rail stations: ${r.start_station} -> ${r.end_station}`);
-                }
+                    if (!stationA || !stationB) {
+                        throw new Error(`Invalid rail stations: ${r.start_station} -> ${r.end_station}`);
+                    }
 
-                const positions = r.points.map((p: any) => new Position(p.latitude, p.longitude)).slice(1, -1);
-                const maxSpeeds = r.max_speed.map((s: number) => s / 3.6) ?? [];
-                return [
-                    JSON.stringify([stationA.name, stationB.name]),
-                    new Rail(stationA, positions, stationB, maxSpeeds),
-                ];
-            })
+                    const positions = r.points.map((p: any) => new Position(p.latitude, p.longitude)).slice(1, -1);
+                    const maxSpeeds = r.max_speed.map((s: number) => s / 3.6) ?? [];
+                    return [
+                        JSON.stringify([stationA.name, stationB.name]),
+                        new Rail(stationA, positions, stationB, maxSpeeds),
+                    ];
+                })
         );
     }
 
