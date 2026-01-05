@@ -16,12 +16,15 @@ export class Track {
     #trackNumber: string;
     /** A train currently present on the platform track */
     #currentTrain: Train | null;
+    /** Whether the track is hidden in the UI */
+    #isHidden: boolean = false;
 
-    constructor(station: Station, platformNumber: number, trackNumber: string) {
+    constructor(station: Station, platformNumber: number, trackNumber: string, isHidden: boolean = false) {
         this.#station = station;
         this.#platformNumber = platformNumber;
         this.#trackNumber = trackNumber;
         this.#currentTrain = null;
+        this.#isHidden = isHidden;
     }
 
     getPosition(): Position {
@@ -74,5 +77,8 @@ export class Track {
     }
     get station() {
         return this.#station;
+    }
+    get isHidden() {
+        return this.#isHidden;
     }
 }

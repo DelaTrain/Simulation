@@ -38,6 +38,7 @@ export default function StationInfo({ station, onSelectTrain }: StationInfoProps
                     </thead>
                     <tbody>
                         {station.tracks
+                            .filter((track) => !track.isHidden)
                             .sort((a, b) => {
                                 if (a.platformNumber === b.platformNumber) {
                                     return a.trackNumber.localeCompare(b.trackNumber);

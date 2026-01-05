@@ -63,7 +63,7 @@ export class ImportedData {
                                     station_name: viaStationName,
                                     arrival_time: null,
                                     departure_time: null,
-                                    track: null,
+                                    track: 1,
                                 });
                             }
                         }
@@ -151,7 +151,9 @@ export class ImportedData {
 
         const track =
             stop_current.track != null
-                ? sc.addTrack(stop_current.track.platform, stop_current.track.track)
+                ? stop_current.track === 1
+                    ? sc.addTrack(4.5, "🤡", true)
+                    : sc.addTrack(stop_current.track.platform, stop_current.track.track)
                 : sc.addTrack(0, "?");
 
         const arrival_time = stop_current.arrival_time == null ? null : Time.fromString(stop_current.arrival_time);

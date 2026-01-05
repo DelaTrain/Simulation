@@ -411,7 +411,7 @@ export class Train {
             if (schedules === undefined) break;
             const schedule = schedules
                 .filter((s) => !s.satisfied)
-                .filter((s) => (s.departureTime ? s.departureTime.toSeconds() > lastStopTime : s.arrivalTime !== null))
+                .filter((s) => (s.departureTime ? s.departureTime.toSeconds() > lastStopTime : true))
                 .sort((a, b) => {
                     const timeA = a.departureTime
                         ? a.departureTime.toSeconds()
@@ -431,7 +431,7 @@ export class Train {
             if (schedule.nextStation === null) break;
             station = schedule.nextStation;
         }
-        return results;
+        return results.filter((s) => s.departureTime !== null || s.arrivalTime !== null);
     }
 
     /*

@@ -333,12 +333,12 @@ export class Station {
     }
 
     /** Used in the {@link ImportedData} module */
-    addTrack(platformNumber: number, trackNumber: string): Track {
+    addTrack(platformNumber: number, trackNumber: string, isHidden = false): Track {
         const existingTrack = this.#tracks.filter(
             (t) => t.platformNumber === platformNumber && t.trackNumber === trackNumber
         );
         if (existingTrack.length > 0) return existingTrack[0];
-        const newTrack = new Track(this, platformNumber, trackNumber);
+        const newTrack = new Track(this, platformNumber, trackNumber, isHidden);
         this.#tracks.push(newTrack);
         return newTrack;
     }
