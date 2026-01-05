@@ -1,7 +1,6 @@
 import { FaLocationDot } from "react-icons/fa6";
 import type { Station } from "../../core/station";
 import type { Train } from "../../core/train";
-import useSimulation from "../hooks/useSimulation";
 import useRenderer from "../hooks/useRenderer";
 import type { TrainScheduleStep } from "../../core/trainScheduleStep";
 import { simulation } from "../../core/simulation";
@@ -12,7 +11,6 @@ interface StationInfoProps {
 }
 
 export default function StationInfo({ station, onSelectTrain }: StationInfoProps) {
-    const [simulation, _simulationState, _updateSimulationState] = useSimulation();
     const renderer = useRenderer();
 
     return (
@@ -63,12 +61,12 @@ export default function StationInfo({ station, onSelectTrain }: StationInfoProps
                                     </td>
 
                                     <TimeTrainInfo
-                                        schedule={station.nextArrivalForTrack(track, simulation.currentTime)}
+                                        schedule={station.nextArrivalForTrack(track)}
                                         isArrivalTime={true}
                                         onSelectTrain={onSelectTrain}
                                     />
                                     <TimeTrainInfo
-                                        schedule={station.nextDepartureForTrack(track, simulation.currentTime)}
+                                        schedule={station.nextDepartureForTrack(track)}
                                         isArrivalTime={false}
                                         onSelectTrain={onSelectTrain}
                                     />
