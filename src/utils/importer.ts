@@ -152,7 +152,7 @@ export class ImportedData {
         const track =
             stop_current.track != null
                 ? stop_current.track === 1
-                    ? sc.addTrack(4.5, "🤡", true)
+                    ? sc.addTrack(9.75, "🤡", true)
                     : sc.addTrack(stop_current.track.platform, stop_current.track.track)
                 : sc.addTrack(0, "?");
 
