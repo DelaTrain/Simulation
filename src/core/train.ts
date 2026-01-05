@@ -76,7 +76,6 @@ export class Train {
         return this.#destroyed;
     }
 
-    // TODO - think about delay calculations when moving between stations + correct statistic (graphs, etc.)
     /** {@link simulation} step for the train */
     step() {
         if (!this.#isWaiting) {
@@ -131,10 +130,15 @@ export class Train {
             if (arrived) {
                 if (nextSchedule) {
                     if (nextSchedule.arrivalTime) {
-                        if (simulation.currentTime.toSeconds() < nextSchedule.arrivalTime.toSeconds()) {
+                        if (
+                            simulation.currentTime.toSeconds() < nextSchedule.arrivalTime.toSeconds() ||
+                            this.delay.handleArrivalOrDepartureHappeningNextDay(nextSchedule.arrivalTime, null)
+                                .nextDayArrival
+                        ) {
                             // Early arrival - wait before entering the station
                             this.stop();
                             this.#isWaiting = true;
+                            this.delay.UIDelayValue = this.#nextStation.currentExceedingTimeInSeconds(this, false);
                             return;
                         }
                     }
@@ -179,8 +183,8 @@ export class Train {
             this.#velocity = Math.min(
                 this.#position.rail.getMaxSpeed(this.#position.distance),
                 this.trainTemplate.type.maxVelocity,
-                this.#velocity + this.trainTemplate.type.acceleration * simulation.timeStep
-                //velocityForcedByNextStation !== null ? velocityForcedByNextStation : Infinity // TODO - inspect
+                this.#velocity + this.trainTemplate.type.acceleration * simulation.timeStep,
+                velocityForcedByNextStation !== null ? velocityForcedByNextStation : Infinity // TODO - inspect
             );
 
             // Update acceleration status
@@ -198,45 +202,27 @@ export class Train {
      * Calculates the velocity needed to arrive at the next station
      */
     calculateArrivingVelocity(): number | null {
-        if (this.#nextStation && this.#position instanceof TrainPositionOnRail) {
-            let velocity = this.#velocity;
-            if (this.trainTemplate.type.maxVelocity < 33 && this.distanceToNextStation! < 1200) {
-                if (this.distanceToNextStation! > 600) {
-                    velocity -= (0.2 + Math.random() * (0.4 - 0.2)) * simulation.timeStep;
-                } else if (this.distanceToNextStation! > 150) {
-                    velocity -= (0.7 + Math.random() * (0.9 - 0.7)) * simulation.timeStep;
-                } else {
-                    velocity -= (0.2 + Math.random() * (0.3 - 0.2)) * simulation.timeStep;
-                }
-            } else if (
-                this.trainTemplate.type.maxVelocity >= 33 &&
-                this.trainTemplate.type.maxVelocity < 44 &&
-                this.distanceToNextStation! < 3000
-            ) {
-                if (this.distanceToNextStation! > 1800) {
-                    velocity -= (0.15 + Math.random() * (0.3 - 0.15)) * simulation.timeStep;
-                } else if (this.distanceToNextStation! > 400) {
-                    velocity -= (0.5 + Math.random() * (0.7 - 0.5)) * simulation.timeStep;
-                } else {
-                    velocity -= (0.15 + Math.random() * (0.25 - 0.15)) * simulation.timeStep;
-                }
-            } else if (
-                this.trainTemplate.type.maxVelocity >= 44 &&
-                this.trainTemplate.type.maxVelocity < 56 &&
-                this.distanceToNextStation! < 6000
-            ) {
-                if (this.distanceToNextStation! > 3500) {
-                    velocity -= (0.1 + Math.random() * (0.25 - 0.1)) * simulation.timeStep;
-                } else if (this.distanceToNextStation! > 800) {
-                    velocity -= (0.4 + Math.random() * (0.5 - 0.4)) * simulation.timeStep;
-                } else {
-                    velocity -= (0.1 + Math.random() * (0.2 - 0.1)) * simulation.timeStep;
-                }
-            } /*else if (this.distanceToNextStation! < 2000) { // for freight trains
-                velocity -= (0.3 + Math.random() * (0.5 - 0.3)) * simulation.timeStep;
-            }*/ else {
+        if (!this.#nextStation) {
+            return null;
+        }
+        const schedule = this.#nextStation.trainsSchedule.get(this.trainTemplate)?.find((s) => s.satisfied === false);
+        if (
+            this.#position instanceof TrainPositionOnRail &&
+            !(schedule?.arrivalTime == null && schedule?.departureTime == null)
+        ) {
+            let acceleration = 0;
+            if (this.#velocity >= 44.4 && this.distanceToNextStation! <= 965) {
+                acceleration = -0.7;
+            } else if (this.#velocity < 44.4 && this.#velocity >= 33.3 && this.distanceToNextStation! <= 710) {
+                acceleration = -0.55;
+            } else if (this.#velocity < 33.3 && this.distanceToNextStation! <= 375) {
+                acceleration = -0.6;
+            } else {
                 return null; // no need to reduce speed yet
             }
+
+            const road = this.#velocity * simulation.timeStep;
+            const velocity = Math.sqrt(Math.max(0, this.#velocity * this.#velocity - 2 * acceleration * road));
             return Math.max(
                 velocity,
                 Math.min(this.trainTemplate.type.maxVelocity, this.distanceToNextStation! < 200 ? 6 : 18)

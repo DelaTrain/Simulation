@@ -1,6 +1,9 @@
 import { simulation } from "./simulation";
 import { Time } from "../utils/time";
 
+/**
+ * Class representing delay information for a train & storing delay-related data (including actual arrival time, user delays, current waiting time at a station, previous departure time, and day shift information - to be useful while at stations)
+ */
 export class Delay {
     #actualTrainArrival: Time = new Time(
         simulation.currentTime.hours,

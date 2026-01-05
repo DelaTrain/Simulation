@@ -19,13 +19,13 @@ class StatsCollector {
         const aliveTrainsNumber = aliveTrains.length;
         this.trainsAlive.push(aliveTrainsNumber);
 
-        // calculate average latency only for trains that are at stations (i.e. their position is Track) - because only those trains have meaningful delay values
+        // calculate average latency for trains
         // TODO - think if there are better ways? - calculate by collecting data from a period of time instead of single step
         const trainsCountedInTermsOfDelay = aliveTrains.filter((train) => train.position instanceof Track);
         const latency =
-            trainsCountedInTermsOfDelay.reduce((sum, train) => {
+            aliveTrains.reduce((sum, train) => {
                 return sum + train.delay.UIDelayValue;
-            }, 0) / Math.max(trainsCountedInTermsOfDelay.length, 1); // average latency
+            }, 0) / Math.max(aliveTrains.length, 1); // average latency
         this.averageLatency.push(latency / 60); // in minutes
 
         // record time step
