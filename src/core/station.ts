@@ -344,38 +344,34 @@ export class Station {
     }
 
     /** Used in the other module */
-    nextArrivalForTrack(track: Track, time: Time): TrainScheduleStep | null {
-        let nextSchedule: TrainScheduleStep | null = null;
-        this.#trainsSchedule.forEach((schedules) => {
-            const schedule = schedules.find((schedule) => schedule.satisfied === false);
-            if (
-                schedule &&
-                schedule.track === track &&
-                schedule.arrivalTime &&
-                schedule.arrivalTime.toSeconds() >= time.toSeconds() &&
-                (nextSchedule === null || schedule.arrivalTime.toSeconds() < nextSchedule.arrivalTime!.toSeconds())
-            ) {
-                nextSchedule = schedule;
-            }
-        });
-        return nextSchedule;
+    nextArrivalForTrack(track: Track): TrainScheduleStep | null {
+        return Array.from(this.#trainsSchedule.values())
+            .map((schedules: TrainScheduleStep[]) =>
+                schedules.find((schedule: TrainScheduleStep) => schedule.satisfied === false)
+            )
+            .filter((schedule): schedule is TrainScheduleStep => schedule !== undefined)
+            .filter((schedule: TrainScheduleStep) => schedule.track === track)
+            .filter((schedule: TrainScheduleStep) => schedule.arrivalTime !== null)
+            .sort((a, b) => {
+                const at = a.arrivalTime ? a.arrivalTime.toSeconds() : Infinity;
+                const bt = b.arrivalTime ? b.arrivalTime.toSeconds() : Infinity;
+                return at - bt;
+            })[0];
     }
 
     /** Used in the other module */
-    nextDepartureForTrack(track: Track, time: Time): TrainScheduleStep | null {
-        let nextSchedule: TrainScheduleStep | null = null;
-        this.#trainsSchedule.forEach((schedules) => {
-            const schedule = schedules.find((schedule) => schedule.satisfied === false);
-            if (
-                schedule &&
-                schedule.track === track &&
-                schedule.departureTime &&
-                schedule.departureTime.toSeconds() >= time.toSeconds() &&
-                (nextSchedule === null || schedule.departureTime.toSeconds() < nextSchedule.departureTime!.toSeconds())
-            ) {
-                nextSchedule = schedule;
-            }
-        });
-        return nextSchedule;
+    nextDepartureForTrack(track: Track): TrainScheduleStep | null {
+        return Array.from(this.#trainsSchedule.values())
+            .map((schedules: TrainScheduleStep[]) =>
+                schedules.find((schedule: TrainScheduleStep) => schedule.satisfied === false)
+            )
+            .filter((schedule): schedule is TrainScheduleStep => schedule !== undefined)
+            .filter((schedule: TrainScheduleStep) => schedule.track === track)
+            .filter((schedule: TrainScheduleStep) => schedule.departureTime !== null)
+            .sort((a, b) => {
+                const at = a.departureTime ? a.departureTime.toSeconds() : Infinity;
+                const bt = b.departureTime ? b.departureTime.toSeconds() : Infinity;
+                return at - bt;
+            })[0];
     }
 }
