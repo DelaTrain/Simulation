@@ -27,6 +27,7 @@ export default function StationInfo({ station, onSelectTrain }: StationInfoProps
                 </button>
             </div>
             <div className="overflow-y-auto h-panel pr-2">
+                <p className="text-sm pb-2">Importance: {station.importance}</p>
                 <table className="table-fixed w-full text-center text-sm border-collapse table-bordered">
                     <thead>
                         <tr className="text-base">

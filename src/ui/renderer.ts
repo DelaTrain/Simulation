@@ -20,7 +20,7 @@ const colorScale = (value: number): string => {
 
 const stationIcon = (importance: number): L.DivIcon => {
     if (importance >= 120) return L.divIcon({ className: "station-icon-large" });
-    if (importance >= 50) return L.divIcon({ className: "station-icon" });
+    if (importance >= 52) return L.divIcon({ className: "station-icon" });
     return L.divIcon({ className: "station-icon-small" });
 };
 
