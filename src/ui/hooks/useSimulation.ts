@@ -1,4 +1,4 @@
-import { use, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { simulation } from "../../core/simulation";
 
 export default function useSimulation() {
@@ -6,18 +6,22 @@ export default function useSimulation() {
 
     useEffect(() => {
         const update = () => {
+            console.log("Updating simulation state in hook");
             setSimulationState(simulation.getState());
         };
         simulation.stepEvent.subscribe(update);
         simulation.resetEvent.subscribe(update);
+        simulation.valueChangedEvent.subscribe(update);
         return () => {
             simulation.stepEvent.unsubscribe(update);
             simulation.resetEvent.unsubscribe(update);
+            simulation.valueChangedEvent.unsubscribe(update);
         };
     }, []);
 
     const updateState = useCallback(() => {
         setSimulationState(simulation.getState());
+        simulation.valueChangedEvent.emit();
     }, []);
 
     return [simulation, simulationState, updateState] as const;

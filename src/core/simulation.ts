@@ -30,6 +30,7 @@ export class Simulation implements SimulationState {
     trainAddedEvent: SimulationEvent<Train> = new SimulationEvent();
     trainRemovedEvent: SimulationEvent<Train> = new SimulationEvent();
     resetEvent: SimulationEvent = new SimulationEvent();
+    valueChangedEvent: SimulationEvent = new SimulationEvent();
 
     stations: Map<string, Station> = new Map();
     trains: Train[] = [];

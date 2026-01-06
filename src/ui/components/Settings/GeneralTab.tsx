@@ -41,9 +41,8 @@ export default function GeneralTab() {
                     min="1"
                     value={simulationState.timeStep}
                     max="60"
-                    onChange={() => {
-                        const step = parseInt((document.getElementById("step") as HTMLInputElement).value);
-                        simulation.timeStep = step;
+                    onChange={(e) => {
+                        simulation.timeStep = e.currentTarget.valueAsNumber;
                         updateSimulationState();
                     }}
                 />
@@ -60,9 +59,8 @@ export default function GeneralTab() {
                     min="0"
                     value={simulationState.autoRunSpeed}
                     max="1000"
-                    onChange={() => {
-                        const speed = parseInt((document.getElementById("speed") as HTMLInputElement).value);
-                        simulation.autoRunSpeed = speed;
+                    onChange={(e) => {
+                        simulation.autoRunSpeed = e.currentTarget.valueAsNumber;
                         updateSimulationState();
                     }}
                 />
