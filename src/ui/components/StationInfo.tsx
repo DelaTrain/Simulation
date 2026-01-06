@@ -98,7 +98,13 @@ function TimeTrainInfo({
     const renderer = useRenderer();
     return (
         <td>
-            {(isArrivalTime ? schedule.arrivalTime?.toShortString() : schedule.departureTime?.toShortString()) ?? " - "}
+            <span className="flex items-center justify-center">
+                {(isArrivalTime ? schedule.arrivalTime?.toShortString() : schedule.departureTime?.toShortString()) ??
+                    " - "}
+                {train !== null && train.delay.UIDelayValue >= 60 && (
+                    <span className="text-red-500 ml-1 text-xs">+{(train?.delay.UIDelayValue / 60).toFixed(0)}min</span>
+                )}
+            </span>
             <div
                 className={`text-xs opacity-70 ${train !== null ? "text-blue-500 cursor-pointer hover:underline" : ""}`}
                 onClick={() => {
