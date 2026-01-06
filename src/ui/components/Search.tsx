@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Train } from "../../core/train";
 import { Station } from "../../core/station";
 import { simulation } from "../../core/simulation";
@@ -40,6 +40,15 @@ export default function Search() {
     const [searchText, setSearchText] = useState("");
     const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
     const renderer = useRenderer();
+    const ref = useRef<HTMLInputElement>(null);
+
+    const keyDownHandler = (event: KeyboardEvent) => {
+        if (event.ctrlKey && event.key === "/") ref.current?.focus();
+    };
+
+    useEffect(() => {
+        window.addEventListener("keydown", keyDownHandler);
+    });
 
     useEffect(() => {
         if (searchText.length > 0) {
@@ -57,6 +66,25 @@ export default function Search() {
                 placeholder="Search..."
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
+                onKeyDown={(e) => {
+                    if (e.key === "Escape") {
+                        setSearchText("");
+                        ref.current?.blur();
+                    } else if (e.key === "Enter" && searchResults.length > 0) {
+                        const result = searchResults[0];
+                        if (result instanceof Station) {
+                            renderer.focusOnPosition(result.position.latitude, result.position.longitude);
+                        } else if (result instanceof Train) {
+                            renderer.focusOnPosition(
+                                result.position.getPosition().latitude,
+                                result.position.getPosition().longitude
+                            );
+                        }
+                        setSearchText("");
+                        ref.current?.blur();
+                    }
+                }}
+                ref={ref}
                 className="mt-4 w-md p-2 rounded-lg  pointer-events-auto bg-stone-900 text-white focus:outline-none border-2 border-transparent focus:border-blue-500 "
             />
             {searchText.length > 0 && (

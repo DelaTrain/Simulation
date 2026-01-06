@@ -1,9 +1,8 @@
 import { FaTimes } from "react-icons/fa";
-import { categoryManager } from "../../../utils/categories";
-import CategorySettings from "./CategorySetting";
 import { useState } from "react";
 import CategoryTab from "./CategoryTab";
 import GeneralTab from "./GeneralTab";
+import KeybindsTab from "./KeybindsTab";
 
 interface SettingsProps {
     onClose?: () => void;
@@ -17,6 +16,10 @@ const SETTINGS_TABS = [
     {
         name: "Categories",
         component: CategoryTab,
+    },
+    {
+        name: "Keybinds",
+        component: KeybindsTab,
     },
 ];
 

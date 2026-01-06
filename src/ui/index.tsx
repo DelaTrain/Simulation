@@ -10,9 +10,19 @@ createRoot(document.getElementById("ui")!).render(
 );
 
 document.getElementById("map")!.onkeyup = (e) => {
+    const simulation = (window as any).simulation as Simulation;
     if (e.key === " ") {
-        const simulation = (window as any).simulation as Simulation;
         simulation.autoRun = !simulation.autoRun;
         simulation.runAutomatically();
+    }
+    if (e.key === "r") {
+        simulation.reset();
+        simulation.autoRun = false;
+    }
+    if (e.key === "Enter") {
+        e.stopPropagation();
+        e.preventDefault();
+        simulation.autoRun = false;
+        simulation.step();
     }
 };
