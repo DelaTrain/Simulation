@@ -6,6 +6,7 @@ import { Time } from "./time";
 import { categoryManager } from "./categories";
 
 const SHOW_REDUNDANT_RAILS = false;
+const ALLOW_RAIL_GENERATION = false;
 
 export class ImportedData {
     #stations: Map<string, Station> = new Map();
@@ -26,7 +27,11 @@ export class ImportedData {
         this.#stations = new Map(
             stations.map((station) => [
                 station.name,
-                new Station(station.name, new Position(station.location.latitude, station.location.longitude)),
+                new Station(
+                    station.name,
+                    new Position(station.location.latitude, station.location.longitude),
+                    station.importance
+                ),
             ])
         );
     }
@@ -194,6 +199,11 @@ export class ImportedData {
             const stationKey = JSON.stringify([stationsSorted[0].name, stationsSorted[1].name]);
             rail = this.#rails.get(stationKey) ?? null;
             if (!rail) {
+                if (!ALLOW_RAIL_GENERATION) {
+                    throw new Error(
+                        `Train ${t.name} ${t.number} has no rail between ${sc.name} and ${sn.name}, and rail generation is disabled`
+                    );
+                }
                 rail = new Rail(stationsSorted[0], [], stationsSorted[1], [120 / 3.6]); // default max speed 120 km/h
                 this.#rails.set(stationKey, rail);
             }

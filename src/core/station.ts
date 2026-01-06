@@ -17,6 +17,8 @@ export class Station {
     #name: string;
     /** Indicates the geographical position of the station */
     #position: Position;
+    /** Importance of the station (number of trains using it) */
+    #importance: number;
     /** Contains info about each train next goal */
     #trainsSchedule: Map<TrainTemplate, Array<TrainScheduleStep>> = new Map();
     /** Platform units of the station */
@@ -26,9 +28,10 @@ export class Station {
     /** Already spawned trains to avoid multiple spawns */
     #alreadySpawnedTrains: Set<TrainTemplate> = new Set();
 
-    constructor(name: string, position: Position) {
+    constructor(name: string, position: Position, importance: number = 0) {
         this.#name = name;
         this.#position = position;
+        this.#importance = importance;
     }
 
     get trainsSchedule() {
@@ -45,6 +48,9 @@ export class Station {
     }
     get position(): Position {
         return this.#position;
+    }
+    get importance(): number {
+        return this.#importance;
     }
 
     /** {@link simulation} step for the station */

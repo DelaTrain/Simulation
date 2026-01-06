@@ -7,7 +7,6 @@ import type { Train } from "../core/train";
 import { mapValue } from "../utils/math";
 import SimulationEvent from "../utils/event";
 
-const stationIcon = L.divIcon({ className: "station-icon" });
 const trainIcon = L.divIcon({ className: "train-icon" });
 const MIN_RENDER_DELAY_SECONDS = 30;
 const MAX_DELAY_SECONDS = 3600;
@@ -18,6 +17,12 @@ const colorScale = (value: number): string => {
     const clampedValue = Math.max(0, Math.min(1, value));
     const hue = Math.floor(120 * (1 - clampedValue));
     return `hsl(${hue}, 100%, 50%)`;
+};
+
+const stationIcon = (importance: number): L.DivIcon => {
+    if (importance >= 120) return L.divIcon({ className: "station-icon-large" });
+    if (importance >= 50) return L.divIcon({ className: "station-icon" });
+    return L.divIcon({ className: "station-icon-small" });
 };
 
 export interface RendererClickEvent {
@@ -147,9 +152,10 @@ export class Renderer {
 
     displayStation(station: Station) {
         const marker = L.marker(station.position.toArray(), {
-            icon: stationIcon,
+            icon: stationIcon(station.importance),
             title: station.name,
             alt: station.name,
+            zIndexOffset: station.importance,
         }).addTo(this.map);
         marker.bindTooltip(station.name, { direction: "top" });
         marker.on("click", () => {
@@ -165,7 +171,7 @@ export class Renderer {
 
     displayRail(rail: Rail) {
         const pos = rail.allPositions().map((pos) => pos.toArray());
-        const polyline = L.polyline(pos, { color: "blue" }).addTo(this.map);
+        const polyline = L.polyline(pos, { color: "var(--color-blue-400)" }).addTo(this.map);
         this.railLines.set(rail, polyline);
     }
 
