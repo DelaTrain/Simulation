@@ -29,11 +29,11 @@ export default function Settings({ onClose }: SettingsProps) {
     const TabComponent = SETTINGS_TABS[selectedTab].component;
     return (
         <div
-            className="fixed top-0 left-0 h-screen w-screen bg-black/50 backdrop-blur-sm flex justify-center z-20 "
+            className="fixed top-0 left-0 h-screen w-screen bg-black/50 backdrop-blur-sm flex justify-center items-center z-20 "
             onClick={onClose}
         >
             <div
-                className="bg-stone-900 text-white rounded-lg p-6 mt-20 lg:w-1/2 lg:h-2/3 w-11/12 h-10/12 shadow-lg relative"
+                className="bg-stone-900 text-white rounded-lg p-6 lg:w-1/2 lg:h-2/3 w-11/12 h-10/12 shadow-lg relative"
                 onClick={(e) => e.stopPropagation()}
             >
                 <button className="absolute top-2 right-2 btn btn-icon btn-sm " onClick={onClose}>
