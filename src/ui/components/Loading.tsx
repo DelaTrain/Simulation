@@ -40,9 +40,9 @@ export default function Loading({ dataset }: LoadingProps) {
 
     return (
         <div className="fixed flex flex-col justify-center items-center top-0 left-0 w-full h-full bg-black/80 text-white z-50">
-            <div className="flex flex-col gap-4 items-center">
+            <div className="flex flex-col gap-4 items-center max-w-11/12">
                 <h2 className="text-xl">Loading...</h2>
-                <div className="w-sm bg-stone-700 rounded h-4 overflow-hidden">
+                <div className="w-sm max-w-11/12 bg-stone-700 rounded h-4 overflow-hidden">
                     <div className="bg-blue-500 h-4 rounded" style={{ width: `${Math.floor(progress * 100)}%` }}></div>
                 </div>
                 <p className="text-lg text-red-600" id="error">
