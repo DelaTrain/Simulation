@@ -36,6 +36,7 @@ export class Simulation implements SimulationState {
     trainTemplates: TrainTemplate[] = [];
     // map from (JSON of tuple of station names in alphabetical order) to Rail
     rails: Map<string, Rail> = new Map();
+    redundantRails: Map<string, Rail> = new Map();
     deltaTime: number = 0;
     lastStepTime: number = -1;
 
@@ -47,6 +48,7 @@ export class Simulation implements SimulationState {
         this.stations = data.stations;
         this.trainTemplates = data.trains;
         this.rails = data.rails;
+        this.redundantRails = data.redundantRails;
         this.day = data.day;
         this.reset();
     }

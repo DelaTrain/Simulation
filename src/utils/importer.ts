@@ -5,7 +5,6 @@ import { TrainTemplate } from "../core/trainTemplate";
 import { Time } from "./time";
 import { categoryManager } from "./categories";
 
-const SHOW_REDUNDANT_RAILS = false;
 const ALLOW_RAIL_GENERATION = false;
 
 export class ImportedData {
@@ -13,6 +12,7 @@ export class ImportedData {
     #routing: Map<string, [string]> = new Map();
     #trains: Array<TrainTemplate> = [];
     #rails: Map<string, Rail> = new Map();
+    #redundantRails: Map<string, Rail> = new Map();
     #day: Date = new Date();
 
     constructor(jsonData: any) {
@@ -102,25 +102,32 @@ export class ImportedData {
     }
 
     #importRails(rails: any[]) {
-        this.#rails = new Map(
-            rails
-                .filter((r) => SHOW_REDUNDANT_RAILS || !r.redundant)
-                .map((r) => {
-                    const stationA = this.#stations.get(r.start_station);
-                    const stationB = this.#stations.get(r.end_station);
+        const allRails = new Map(
+            rails.map((r) => {
+                const stationA = this.#stations.get(r.start_station);
+                const stationB = this.#stations.get(r.end_station);
 
-                    if (!stationA || !stationB) {
-                        throw new Error(`Invalid rail stations: ${r.start_station} -> ${r.end_station}`);
-                    }
+                if (!stationA || !stationB) {
+                    throw new Error(`Invalid rail stations: ${r.start_station} -> ${r.end_station}`);
+                }
 
-                    const positions = r.points.map((p: any) => new Position(p.latitude, p.longitude)).slice(1, -1);
-                    const maxSpeeds = r.max_speed.map((s: number) => s / 3.6) ?? [];
-                    return [
-                        JSON.stringify([stationA.name, stationB.name]),
-                        new Rail(stationA, positions, stationB, maxSpeeds),
-                    ];
-                })
+                const positions = r.points.map((p: any) => new Position(p.latitude, p.longitude)).slice(1, -1);
+                const maxSpeeds = r.max_speed.map((s: number) => s / 3.6) ?? [];
+                return [
+                    JSON.stringify([stationA.name, stationB.name]),
+                    { rail: new Rail(stationA, positions, stationB, maxSpeeds), isRedundant: r.redundant ?? false },
+                ];
+            })
         );
+        this.#rails = new Map();
+        this.#redundantRails = new Map();
+        for (const [key, { rail, isRedundant }] of allRails) {
+            if (isRedundant) {
+                this.#redundantRails.set(key, rail);
+            } else {
+                this.#rails.set(key, rail);
+            }
+        }
     }
 
     #importStop(
@@ -223,5 +230,8 @@ export class ImportedData {
     }
     get day() {
         return this.#day;
+    }
+    get redundantRails() {
+        return this.#redundantRails;
     }
 }

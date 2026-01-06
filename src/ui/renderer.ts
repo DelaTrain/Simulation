@@ -35,8 +35,10 @@ export class Renderer {
     trainMarkers: Map<Train, L.Marker>;
     stationMarkers: Map<Station, L.Marker>;
     railLines: Map<Rail, L.Polyline>;
+    redundantRailsLines: Map<Rail, L.Polyline>;
     heatmap: any;
     clickEvent: SimulationEvent<RendererClickEvent> = new SimulationEvent();
+    enableRedundantRails: boolean = true;
 
     constructor(protected simulation: Simulation) {
         this.simulation.stepEvent.subscribe(this.update.bind(this));
@@ -48,6 +50,7 @@ export class Renderer {
         this.trainMarkers = new Map();
         this.stationMarkers = new Map();
         this.railLines = new Map();
+        this.redundantRailsLines = new Map();
         this.setup();
         this.heatmap = null;
     }
@@ -64,7 +67,34 @@ export class Renderer {
         this.map.setView([latitude, longitude], zoom);
     }
 
+    showRedundantRails() {
+        if (this.enableRedundantRails) return;
+        this.enableRedundantRails = true;
+        this.simulation.redundantRails.forEach((rail) => {
+            this.displayRedundantRail(rail);
+        });
+    }
+
+    hideRedundantRails() {
+        if (!this.enableRedundantRails) return;
+        this.redundantRailsLines.forEach((polyline) => {
+            this.map.removeLayer(polyline);
+        });
+        this.redundantRailsLines.clear();
+        this.enableRedundantRails = false;
+    }
+
+    isRedundantRailsVisible(): boolean {
+        return this.enableRedundantRails;
+    }
+
     initialDraw() {
+        if (this.enableRedundantRails) {
+            this.simulation.redundantRails.forEach((rail) => {
+                this.displayRedundantRail(rail);
+            });
+        }
+
         this.simulation.rails.forEach((rail) => {
             this.displayRail(rail);
         });
@@ -93,6 +123,11 @@ export class Renderer {
             this.map.removeLayer(polyline);
         });
         this.railLines.clear();
+
+        this.redundantRailsLines.forEach((polyline) => {
+            this.map.removeLayer(polyline);
+        });
+        this.redundantRailsLines.clear();
 
         this.initialDraw();
     }
@@ -189,6 +224,13 @@ export class Renderer {
         const pos = rail.allPositions().map((pos) => pos.toArray());
         const polyline = L.polyline(pos, { color: "var(--color-blue-400)" }).addTo(this.map);
         this.railLines.set(rail, polyline);
+    }
+
+    displayRedundantRail(rail: Rail) {
+        const pos = rail.allPositions().map((pos) => pos.toArray());
+        const polyline = L.polyline(pos, { color: "var(--color-gray-400)" }).addTo(this.map);
+        polyline.bringToBack();
+        this.redundantRailsLines.set(rail, polyline);
     }
 
     displayTrain(train: Train) {

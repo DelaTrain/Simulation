@@ -3,16 +3,28 @@ import { Rail } from "../../../core/rail";
 import useRenderer from "../../hooks/useRenderer";
 
 export default function GeneralTab() {
-    const [railMaxSpeedPercentage, setRailMaxSpeedPercentage] = useState(Rail.maxSpeedPercentage * 100);
     const renderer = useRenderer();
-    const [enableHeatmap, setEnableHeatmap] = useState(renderer.isHeatmapEnabled());
+
+    const [railMaxSpeedPercentage, setRailMaxSpeedPercentage] = useState(Rail.maxSpeedPercentage * 100);
     useEffect(() => {
         Rail.maxSpeedPercentage = railMaxSpeedPercentage / 100;
     }, [railMaxSpeedPercentage]);
+
+    const [enableHeatmap, setEnableHeatmap] = useState(renderer.isHeatmapEnabled());
     useEffect(() => {
         if (enableHeatmap) renderer.enableHeatmap();
         else renderer.disableHeatmap();
     }, [enableHeatmap, renderer]);
+
+    const [showRedundantRails, setShowRedundantRails] = useState(renderer.isRedundantRailsVisible());
+    useEffect(() => {
+        if (showRedundantRails) {
+            renderer.showRedundantRails();
+        } else {
+            renderer.hideRedundantRails();
+        }
+    }, [showRedundantRails, renderer]);
+
     return (
         <div className="flex flex-col gap-4 w-full">
             <label className="flex flex-row justify-between items-center w-full">
@@ -37,6 +49,16 @@ export default function GeneralTab() {
                     checked={enableHeatmap}
                     onChange={(e) => {
                         setEnableHeatmap(e.currentTarget.checked);
+                    }}
+                />
+            </label>
+            <label className="flex flex-row justify-between items-center w-full">
+                <span>Show Redundant Rails</span>
+                <input
+                    type="checkbox"
+                    checked={showRedundantRails}
+                    onChange={(e) => {
+                        setShowRedundantRails(e.currentTarget.checked);
                     }}
                 />
             </label>
