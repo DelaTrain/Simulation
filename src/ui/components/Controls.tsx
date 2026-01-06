@@ -15,7 +15,7 @@ export default function Controls({ onToggleStats, onToggleSettings }: ControlsPr
     return (
         <div className="fixed bottom-0 left-0 h-fit w-screen flex flex-row justify-center items-end pointer-events-none">
             <div className="flex flex-row items-center justify-between bg-stone-900 flex-1 text-white py-1 px-3 rounded-lg shadow-md pointer-events-auto m-2  z-10">
-                <div className="flex gap-3 m-2 w-sm">
+                <div className="flex gap-3 m-2 lg:w-sm ">
                     <button
                         disabled={!simulation.canStep()}
                         className="btn btn-icon"
@@ -56,7 +56,7 @@ export default function Controls({ onToggleStats, onToggleSettings }: ControlsPr
                     </button>
                 </div>
 
-                <div className="text-center">
+                <div className="text-center px-3">
                     <p className="text-xs mt-1">{simulation.day.toLocaleDateString()}</p>
                     <p className="text-2xl">
                         <span className="font-bold">{simulationState.currentTime.toString()}</span>
@@ -64,7 +64,7 @@ export default function Controls({ onToggleStats, onToggleSettings }: ControlsPr
                     <p className="text-xs opacity-70">{simulationState.deltaTime.toFixed(2)}ms</p>
                 </div>
 
-                <div className="flex flex-col gap-1 w-sm py-1">
+                <div className="md:flex flex-col gap-1 w-sm py-1 hidden">
                     <label className="flex flex-row items-center justify-between w-full">
                         <span>
                             Step size: <span className="font-bold">{simulationState.timeStep}s</span>

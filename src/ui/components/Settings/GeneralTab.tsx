@@ -1,9 +1,11 @@
 import { use, useEffect, useState } from "react";
 import { Rail } from "../../../core/rail";
 import useRenderer from "../../hooks/useRenderer";
+import useSimulation from "../../hooks/useSimulation";
 
 export default function GeneralTab() {
     const renderer = useRenderer();
+    const [simulation, simulationState, updateSimulationState] = useSimulation();
 
     const [railMaxSpeedPercentage, setRailMaxSpeedPercentage] = useState(Rail.maxSpeedPercentage * 100);
     useEffect(() => {
@@ -27,6 +29,44 @@ export default function GeneralTab() {
 
     return (
         <div className="flex flex-col gap-4 w-full">
+            <label className="flex flex-row items-center justify-between w-full">
+                <span>
+                    Step size: <span className="font-bold">{simulationState.timeStep}s</span>
+                </span>
+                <input
+                    className="w-50"
+                    type="range"
+                    id="step"
+                    step="1"
+                    min="1"
+                    value={simulationState.timeStep}
+                    max="60"
+                    onChange={() => {
+                        const step = parseInt((document.getElementById("step") as HTMLInputElement).value);
+                        simulation.timeStep = step;
+                        updateSimulationState();
+                    }}
+                />
+            </label>
+            <label className="flex flex-row items-center justify-between w-full">
+                <span>
+                    Play speed: <span className="font-bold">{simulationState.autoRunSpeed}ms</span>
+                </span>
+                <input
+                    className="w-50"
+                    type="range"
+                    id="speed"
+                    step="10"
+                    min="0"
+                    value={simulationState.autoRunSpeed}
+                    max="1000"
+                    onChange={() => {
+                        const speed = parseInt((document.getElementById("speed") as HTMLInputElement).value);
+                        simulation.autoRunSpeed = speed;
+                        updateSimulationState();
+                    }}
+                />
+            </label>
             <label className="flex flex-row justify-between items-center w-full">
                 <span>
                     Rail Max Speed Percentage: <span className="font-bold">{railMaxSpeedPercentage.toFixed(0)}%</span>

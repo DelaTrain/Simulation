@@ -9,7 +9,7 @@ interface StatsProps {
 export default function Stats({ onClose }: StatsProps) {
     const { trainsAlive, averageLatency } = useStatsCollectorTotal();
     return (
-        <div className="fixed top-0 right-0 m-4 p-3 bg-stone-900 w-lg text-white backdrop-blur-md rounded-lg shadow-md z-10">
+        <div className="fixed top-0 right-0 m-4 p-3 bg-stone-900 md:w-lg max-w-11/12  text-white backdrop-blur-md rounded-lg shadow-md z-10">
             <button className="absolute top-2 right-2 btn btn-icon btn-sm" onClick={onClose}>
                 <FaTimes />
             </button>

@@ -49,7 +49,7 @@ export default function InfoPanel() {
     if (selected === null) return null;
 
     return (
-        <div className="fixed top-4 left-4 w-lg p-4 bg-stone-900 text-white rounded shadow-lg z-10">
+        <div className="fixed top-4 left-4 md:w-lg w-11/12 p-4 bg-stone-900 text-white rounded shadow-lg z-10">
             <button className="absolute top-2 right-2 btn btn-icon btn-sm" onClick={() => setSelected(null)}>
                 <FaTimes />
             </button>
