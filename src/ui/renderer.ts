@@ -11,7 +11,6 @@ const trainIcon = L.divIcon({ className: "train-icon" });
 const MIN_RENDER_DELAY_SECONDS = 30;
 const MAX_DELAY_SECONDS = 3600;
 const MAX_HEATMAP_INTENSITY = 1.0;
-const ENABLE_HEATMAP = false;
 
 const colorScale = (value: number): string => {
     const clampedValue = Math.max(0, Math.min(1, value));
@@ -50,6 +49,7 @@ export class Renderer {
         this.stationMarkers = new Map();
         this.railLines = new Map();
         this.setup();
+        this.heatmap = null;
     }
 
     setup() {
@@ -57,8 +57,6 @@ export class Renderer {
             maxZoom: 19,
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
         }).addTo(this.map);
-        if (ENABLE_HEATMAP)
-            this.heatmap = (L as any).heatLayer([], { radius: 50, blur: 50, maxZoom: 1 }).addTo(this.map);
         this.initialDraw();
     }
 
@@ -99,6 +97,24 @@ export class Renderer {
         this.initialDraw();
     }
 
+    enableHeatmap() {
+        if (this.heatmap === null) {
+            this.heatmap = (L as any).heatLayer([], { radius: 50, blur: 50, maxZoom: 1 }).addTo(this.map);
+            this.update();
+        }
+    }
+
+    disableHeatmap() {
+        if (this.heatmap !== null) {
+            this.map.removeLayer(this.heatmap);
+            this.heatmap = null;
+        }
+    }
+
+    isHeatmapEnabled(): boolean {
+        return this.heatmap !== null;
+    }
+
     update() {
         this.simulation.trains.forEach((train) => {
             const marker = this.trainMarkers.get(train);
@@ -114,7 +130,7 @@ export class Renderer {
             }
         });
 
-        if (ENABLE_HEATMAP) {
+        if (this.isHeatmapEnabled()) {
             const heatmap = this.simulation.trains
                 .map((train) => {
                     const marker = this.trainMarkers.get(train);
