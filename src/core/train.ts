@@ -399,18 +399,32 @@ export class Train {
     }
 
     /**
-     * Returns next schedules for train at its current station
-     * @returns Array<TrainScheduleStep>
+     * Gets the full schedule of the train
+     * @returns array of TrainScheduleStep
      */
-    getNextSchedules(): TrainScheduleStep[] {
-        let station = this.#position instanceof Track ? this.#position.station : this.#position.getTargetStation();
-        let lastStopTime: number = 0;
+    getSchedules(): TrainScheduleStep[] {
+        const starting = Array.from(simulation.stations.values()).filter((s: Station) =>
+            s.startingTrains.has(this.trainTemplate)
+        );
+        if (starting.length !== 1) {
+            console.error("Train starting station not found or multiple found");
+            return [];
+        }
+
+        let count = 0;
         const results: TrainScheduleStep[] = [];
-        while (true) {
+        let station: Station = starting[0];
+        let lastStopTime: number = 0;
+        let visited: Set<TrainScheduleStep> = new Set();
+        while (station) {
+            count++;
+            if (count > 200) {
+                console.error("Infinite loop detected in getSchedules for train " + this.displayName());
+                break;
+            }
             const schedules = station.trainsSchedule.get(this.trainTemplate);
             if (schedules === undefined) break;
             const schedule = schedules
-                .filter((s) => !s.satisfied)
                 .filter((s) => (s.departureTime ? s.departureTime.toSeconds() > lastStopTime : true))
                 .sort((a, b) => {
                     const timeA = a.departureTime
@@ -424,9 +438,11 @@ export class Train {
                         ? b.arrivalTime.toSeconds()
                         : Infinity;
                     return timeA - timeB;
-                })[0];
+                })
+                .find((s) => !visited.has(s));
             if (!schedule) break;
             results.push(schedule);
+            visited.add(schedule);
             lastStopTime = schedule.departureTime === null ? lastStopTime : schedule.departureTime.toSeconds();
             if (schedule.nextStation === null) break;
             station = schedule.nextStation;

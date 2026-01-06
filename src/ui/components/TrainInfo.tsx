@@ -103,8 +103,8 @@ export default function TrainInfo({ train, onUpdate, onSelectStation }: TrainInf
                         </tr>
                     </thead>
                     <tbody>
-                        {train.getNextSchedules().map((schedule, i) => (
-                            <tr key={i}>
+                        {train.getSchedules().map((schedule, i) => (
+                            <tr key={i} className={schedule.satisfied ? "opacity-50" : ""}>
                                 <th
                                     className="text-blue-500 hover:underline cursor-pointer"
                                     onClick={() => {

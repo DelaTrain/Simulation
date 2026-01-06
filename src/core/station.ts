@@ -34,6 +34,9 @@ export class Station {
     get trainsSchedule() {
         return this.#trainsSchedule;
     }
+    get startingTrains() {
+        return this.#startingTrains;
+    }
     get tracks() {
         return this.#tracks;
     }
