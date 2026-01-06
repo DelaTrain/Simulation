@@ -85,10 +85,10 @@ export default function Search() {
                     }
                 }}
                 ref={ref}
-                className="mt-4 w-md p-2 rounded-lg  pointer-events-auto bg-stone-900 text-white focus:outline-none border-2 border-transparent focus:border-blue-500 "
+                className="mt-4 w-md p-2 rounded-lg max-w-11/12 pointer-events-auto bg-stone-900 text-white focus:outline-none border-2 border-transparent focus:border-blue-500 "
             />
             {searchText.length > 0 && (
-                <div className="fixed top-16 max-h-2/5 overflow-y-auto w-md max-w-full bg-stone-800 rounded-lg pointer-events-auto">
+                <div className="fixed top-16 max-h-2/5 overflow-y-auto w-md max-w-11/12 bg-stone-800 rounded-lg pointer-events-auto">
                     {searchResults.map((result, index) => (
                         <div
                             key={index}
