@@ -37,6 +37,22 @@ class StatsCollector {
         this.averageLatency = [];
         this.timeSteps = [];
     }
+
+    totalStats() {
+        let totalTrainsAlive = 0;
+        let totalAverageLatency = 0;
+        let totalTime = 0;
+        for (let i = 1; i < this.timeSteps.length; i++) {
+            const td = this.timeSteps[i].toSeconds() - this.timeSteps[i - 1].toSeconds();
+            totalTrainsAlive += this.trainsAlive[i] * td;
+            totalAverageLatency += this.averageLatency[i] * td;
+            totalTime += td;
+        }
+        return {
+            trainsAlive: totalTrainsAlive / totalTime,
+            averageLatency: totalAverageLatency / totalTime,
+        };
+    }
 }
 
 export const statsCollector = new StatsCollector();
