@@ -38,7 +38,7 @@ export class Delay {
      * Gets the user-visible delay value in seconds
      */
     get UIDelayValue(): number {
-        return this.#UIDelayValue + (this.#dExternal - this.#dExternalAlreadyHandled);
+        return this.#UIDelayValue;
     }
 
     /**
@@ -61,6 +61,7 @@ export class Delay {
      */
     addDelay(dExternal: number) {
         this.#dExternal += dExternal;
+        this.#UIDelayValue += dExternal;
     }
 
     /**
