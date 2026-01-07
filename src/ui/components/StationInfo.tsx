@@ -1,11 +1,11 @@
-import { FaLocationDot, FaLock, FaUnlock } from "react-icons/fa6";
+import { FaEye, FaEyeSlash, FaLocationDot, FaLock, FaUnlock } from "react-icons/fa6";
 import type { Station } from "../../core/station";
 import type { Train } from "../../core/train";
 import useRenderer from "../hooks/useRenderer";
 import type { TrainScheduleStep } from "../../core/trainScheduleStep";
 import type { TrainTemplate } from "../../core/trainTemplate";
-import { useState } from "react";
-
+import { statsCollector } from "../../utils/stats";
+import Tooltip from "./Tooltip";
 interface StationInfoProps {
     station: Station;
     onSelectTrain: (train: Train | TrainTemplate) => void;
@@ -19,24 +19,52 @@ export default function StationInfo({ station, onSelectTrain, onUpdate }: Statio
         <div className="flex flex-col gap-2">
             <div className="flex flex-row items-center gap-2 mb-2">
                 <h3 className="font-bold text-xl">{station.name}</h3>
-                <button
-                    className="btn btn-icon"
-                    onClick={() => {
-                        renderer.focusOnPosition(station.position.latitude, station.position.longitude);
-                    }}
+                <Tooltip content="Focus on station">
+                    <button
+                        className="btn btn-icon"
+                        onClick={() => {
+                            renderer.focusOnPosition(station.position.latitude, station.position.longitude);
+                        }}
+                    >
+                        <FaLocationDot size={16} />
+                    </button>
+                </Tooltip>
+                <Tooltip content={station.isBlocked() ? "Unblock all tracks" : "Block all tracks"}>
+                    <button
+                        className="btn btn-icon"
+                        onClick={() => {
+                            if (!station.isBlocked()) station.blockAllTracks();
+                            else station.unblockAllTracks();
+                            onUpdate();
+                        }}
+                    >
+                        {station.isBlocked() ? <FaLock size={16} /> : <FaUnlock size={16} />}
+                    </button>
+                </Tooltip>
+                <Tooltip
+                    content={
+                        statsCollector.isCollectingStatsForStation(station)
+                            ? "Stop collecting statistics"
+                            : "Start collecting statistics"
+                    }
                 >
-                    <FaLocationDot size={16} />
-                </button>
-                <button
-                    className="btn btn-icon"
-                    onClick={() => {
-                        if (!station.isBlocked()) station.blockAllTracks();
-                        else station.unblockAllTracks();
-                        onUpdate();
-                    }}
-                >
-                    {station.isBlocked() ? <FaLock size={16} /> : <FaUnlock size={16} />}
-                </button>
+                    <button
+                        className="btn btn-icon"
+                        onClick={() => {
+                            statsCollector.switchCollectStatsForStation(
+                                station,
+                                !statsCollector.isCollectingStatsForStation(station)
+                            );
+                            onUpdate();
+                        }}
+                    >
+                        {statsCollector.isCollectingStatsForStation(station) ? (
+                            <FaEye size={16} />
+                        ) : (
+                            <FaEyeSlash size={16} />
+                        )}
+                    </button>
+                </Tooltip>
             </div>
             <div className="overflow-y-auto h-panel pr-2">
                 <p className="text-sm pb-2">Importance: {station.importance}</p>

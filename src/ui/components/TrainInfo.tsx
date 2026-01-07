@@ -6,6 +6,7 @@ import type { Station } from "../../core/station";
 import Collapsable from "./Collapsable";
 import { FaLocationDot, FaSchool } from "react-icons/fa6";
 import type { TrainTemplate } from "../../core/trainTemplate";
+import Tooltip from "./Tooltip";
 
 interface TrainInfoProps {
     train: Train;
@@ -37,26 +38,30 @@ export default function TrainInfo({ train, onUpdate, onSelectStation, onSelectTr
         <div className="flex flex-col text-md">
             <div className="flex flex-row items-center gap-2 mb-2">
                 <h3 className="font-bold text-xl">{train.displayName()}</h3>
-                <button
-                    className="btn btn-icon"
-                    onClick={() => {
-                        renderer.focusOnPosition(
-                            train.position.getPosition().latitude,
-                            train.position.getPosition().longitude
-                        );
-                    }}
-                >
-                    <FaLocationDot size={16} />
-                </button>
-                {train.position instanceof Track && (
+                <Tooltip content="Focus on train">
                     <button
                         className="btn btn-icon"
                         onClick={() => {
-                            onSelectStation((train.position as Track).station);
+                            renderer.focusOnPosition(
+                                train.position.getPosition().latitude,
+                                train.position.getPosition().longitude
+                            );
                         }}
                     >
-                        <FaSchool size={20} />
+                        <FaLocationDot size={16} />
                     </button>
+                </Tooltip>
+                {train.position instanceof Track && (
+                    <Tooltip content="Show station">
+                        <button
+                            className="btn btn-icon"
+                            onClick={() => {
+                                onSelectStation((train.position as Track).station);
+                            }}
+                        >
+                            <FaSchool size={20} />
+                        </button>
+                    </Tooltip>
                 )}
             </div>
 

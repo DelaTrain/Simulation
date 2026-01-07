@@ -53,17 +53,6 @@ export default function Search({ setInfoPanelObject }: SearchProps) {
     const [searchObject, setSearchObject] = useState<Fuse<SearchResultObject>>(makeSearch());
     const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
 
-    useSimulationEvent("trainAddedEvent", () => {
-        setSearchObject(makeSearch());
-    });
-    useSimulationEvent("trainRemovedEvent", () => {
-        setSearchObject(makeSearch());
-    });
-    useSimulationEvent("resetEvent", () => {
-        setSearchObject(makeSearch());
-    });
-
-    const renderer = useRenderer();
     const ref = useRef<HTMLInputElement>(null);
 
     const keyDownHandler = (event: KeyboardEvent) => {
@@ -100,6 +89,9 @@ export default function Search({ setInfoPanelObject }: SearchProps) {
                         setSearchText("");
                         ref.current?.blur();
                     }
+                }}
+                onFocus={() => {
+                    setSearchObject(makeSearch());
                 }}
                 ref={ref}
                 className="mt-4 w-md p-2 rounded-lg max-w-11/12 pointer-events-auto bg-stone-900 text-white focus:outline-none border-2 border-transparent focus:border-blue-500 "
