@@ -1,17 +1,18 @@
-import { FaLocationDot } from "react-icons/fa6";
+import { FaLocationDot, FaLock, FaUnlock } from "react-icons/fa6";
 import type { Station } from "../../core/station";
 import type { Train } from "../../core/train";
 import useRenderer from "../hooks/useRenderer";
 import type { TrainScheduleStep } from "../../core/trainScheduleStep";
-import { simulation } from "../../core/simulation";
 import type { TrainTemplate } from "../../core/trainTemplate";
+import { useState } from "react";
 
 interface StationInfoProps {
     station: Station;
     onSelectTrain: (train: Train | TrainTemplate) => void;
+    onUpdate: () => void;
 }
 
-export default function StationInfo({ station, onSelectTrain }: StationInfoProps) {
+export default function StationInfo({ station, onSelectTrain, onUpdate }: StationInfoProps) {
     const renderer = useRenderer();
 
     return (
@@ -26,9 +27,20 @@ export default function StationInfo({ station, onSelectTrain }: StationInfoProps
                 >
                     <FaLocationDot size={16} />
                 </button>
+                <button
+                    className="btn btn-icon"
+                    onClick={() => {
+                        if (!station.isBlocked()) station.blockAllTracks();
+                        else station.unblockAllTracks();
+                        onUpdate();
+                    }}
+                >
+                    {station.isBlocked() ? <FaLock size={16} /> : <FaUnlock size={16} />}
+                </button>
             </div>
             <div className="overflow-y-auto h-panel pr-2">
                 <p className="text-sm pb-2">Importance: {station.importance}</p>
+
                 <table className="table-fixed w-full text-center text-sm border-collapse table-bordered">
                     <thead>
                         <tr className="text-base">

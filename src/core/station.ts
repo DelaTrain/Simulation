@@ -31,11 +31,14 @@ export class Station {
     minWaitingTimeAtTheStation: number = 15;
     /** Percentage of the scheduled waiting time required to be waited */
     requiredWaitingTimePercentage: number = 0.3; // 30% of the scheduled waiting time
+    /** External block track - as taken */
+    #block: boolean = false;
 
     constructor(name: string, position: Position, importance: number = 0) {
         this.#name = name;
         this.#position = position;
         this.#importance = importance;
+        this.#block = false;
     }
 
     get trainsSchedule() {
@@ -76,6 +79,7 @@ export class Station {
                 schedule.reset();
             });
         });
+        this.#block = false;
     }
 
     /**
@@ -229,6 +233,15 @@ export class Station {
                 } does not belong to station ${this.#name}.`
             );
         }
+
+        // Handle blocked station
+        if (this.#block) {
+            console.warn(
+                `Station ${this.#name} is blocked. No track can be assigned to train ${trainTemplate.displayName()}.`
+            );
+            return null;
+        }
+
         // Special handling for buses and default type ?trains?
         if (trainTemplate.type.name === "BUS" || trainTemplate.type.name === "DEFAULT") {
             if (preferredTrack.train == null) {
@@ -403,5 +416,17 @@ export class Station {
                 const bt = b.departureTime ? b.departureTime.toSeconds() : Infinity;
                 return at - bt;
             })[0];
+    }
+
+    blockAllTracks() {
+        this.#block = true;
+    }
+
+    unblockAllTracks() {
+        this.#block = false;
+    }
+
+    isBlocked(): boolean {
+        return this.#block;
     }
 }

@@ -70,7 +70,11 @@ const InfoPanel = forwardRef((_props, ref) => {
                     onSelectTrainTemplate={(t: TrainTemplate) => setSelected(t)}
                 />
             ) : selected instanceof Station ? (
-                <StationInfo station={selected} onSelectTrain={(t: Train | TrainTemplate) => setSelected(t)} />
+                <StationInfo
+                    station={selected}
+                    onUpdate={updateSelected}
+                    onSelectTrain={(t: Train | TrainTemplate) => setSelected(t)}
+                />
             ) : selected instanceof TrainTemplate ? (
                 <TrainTemplateInfo
                     train={selected}

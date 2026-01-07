@@ -143,7 +143,6 @@ export class Train {
                         }
                     }
                     const trackAtTheStation = this.#nextStation.assignTrack(nextSchedule.track, this.trainTemplate);
-
                     if (trackAtTheStation == null) {
                         // Cannot arrive at the station - track full; waiting
                         this.stop();
