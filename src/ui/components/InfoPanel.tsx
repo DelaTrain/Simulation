@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useState } from "react";
 import useRenderer from "../hooks/useRenderer";
 import { Train } from "../../core/train";
 import { Station } from "../../core/station";
@@ -13,6 +13,9 @@ import { TrainTemplate } from "../../core/trainTemplate";
 import TrainTemplateInfo from "./TrainTemplateInfo";
 
 type ClickedObject = Train | TrainTemplate | Station;
+export interface InfoPanelRef {
+    setSelected: (obj: ClickedObject | null) => void;
+}
 
 function calculateClickedObject(event: RendererClickEvent): ClickedObject | null {
     const obj = event.object;
@@ -25,7 +28,7 @@ function calculateClickedObject(event: RendererClickEvent): ClickedObject | null
     return obj;
 }
 
-export default function InfoPanel() {
+const InfoPanel = forwardRef((_props, ref) => {
     const [selectedHistory, updateSelectedHistory, addSelected] = useDummyHistoryNavigation<ClickedObject | null>([
         null,
     ]);
@@ -48,9 +51,12 @@ export default function InfoPanel() {
         updateSelected();
     }, [simulationState]);
 
+    useImperativeHandle(ref, () => ({
+        setSelected,
+    }));
+
     if (selected === null) return null;
 
-    console.log("Rendering info panel for", selected);
     return (
         <div className="fixed top-4 left-4 md:w-lg w-11/12 p-4 bg-stone-900 text-white rounded shadow-lg z-10">
             <button className="absolute top-2 right-2 btn btn-icon btn-sm" onClick={() => setSelected(null)}>
@@ -76,4 +82,6 @@ export default function InfoPanel() {
             )}
         </div>
     );
-}
+});
+
+export default InfoPanel;
