@@ -1,6 +1,5 @@
 import type { Simulation } from "../core/simulation";
 import * as L from "leaflet";
-import "leaflet.heat/dist/leaflet-heat.js";
 import type { Station } from "../core/station";
 import type { Rail } from "../core/rail";
 import type { Train } from "../core/train";
@@ -132,9 +131,14 @@ export class Renderer {
         this.initialDraw();
     }
 
-    enableHeatmap() {
+    async enableHeatmap() {
         if (this.heatmap === null) {
-            this.heatmap = (L as any).heatLayer([], { radius: 50, blur: 50, maxZoom: 1 }).addTo(this.map);
+            const heatModule = await import("leaflet.heat");
+            let heatLayer =
+                (L as any).heatLayer || (heatModule as any).heatLayer || (heatModule as any).default?.heatLayer;
+            if (!heatLayer) heatLayer = (window as any).L?.heatLayer;
+            if (!heatLayer) throw new Error("Could not find heatLayer function after importing leaflet.heat");
+            this.heatmap = heatLayer.call(L, [], { radius: 50, blur: 50, maxZoom: 1 }).addTo(this.map);
             this.update();
         }
     }
