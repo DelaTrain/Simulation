@@ -249,4 +249,18 @@ export class Renderer {
         });
         this.trainMarkers.set(train, marker);
     }
+
+    switchToBetterTrainIcons() {
+        this.trainMarkers.forEach((marker) => {
+            marker.getElement()!.classList.toggle("better-train-icon");
+        });
+    }
+
+    getIsUsingBetterTrainIcons(): boolean {
+        const firstMarker = this.trainMarkers.values().next().value;
+        if (firstMarker) {
+            return firstMarker.getElement()!.classList.contains("better-train-icon");
+        }
+        return false;
+    }
 }

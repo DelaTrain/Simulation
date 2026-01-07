@@ -27,6 +27,11 @@ export default function GeneralTab() {
         }
     }, [showRedundantRails, renderer]);
 
+    const [useBetterTrainIcons, setUseBetterTrainIcons] = useState(renderer.getIsUsingBetterTrainIcons());
+    useEffect(() => {
+        renderer.switchToBetterTrainIcons();
+    }, [useBetterTrainIcons, renderer]);
+
     return (
         <div className="flex flex-col gap-4 w-full">
             <label className="flex flex-row items-center justify-between w-full">
@@ -97,6 +102,16 @@ export default function GeneralTab() {
                     checked={showRedundantRails}
                     onChange={(e) => {
                         setShowRedundantRails(e.currentTarget.checked);
+                    }}
+                />
+            </label>
+            <label className="flex flex-row justify-between items-center w-full">
+                <span>Use better train icons</span>
+                <input
+                    type="checkbox"
+                    checked={useBetterTrainIcons}
+                    onChange={(e) => {
+                        setUseBetterTrainIcons(e.currentTarget.checked);
                     }}
                 />
             </label>
