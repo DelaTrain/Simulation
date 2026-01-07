@@ -22,3 +22,22 @@
 .h-panel {
     max-height: calc(100vh - 12rem);
 }
+
+.tooltip-container .tooltip {
+    @apply absolute invisible transition-opacity;
+}
+
+.tooltip-container:hover .tooltip {
+    @apply opacity-100 visible;
+}
+
+.tooltip::after {
+    content: " ";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: var(--color-stone-700) transparent transparent transparent;
+}
