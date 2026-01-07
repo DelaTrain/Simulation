@@ -76,7 +76,6 @@ export class Train {
         return this.#destroyed;
     }
 
-    // TODO - think about delay calculations when moving between stations + correct statistic (graphs, etc.)
     /** {@link simulation} step for the train */
     step() {
         if (!this.#isWaiting) {
@@ -131,10 +130,15 @@ export class Train {
             if (arrived) {
                 if (nextSchedule) {
                     if (nextSchedule.arrivalTime) {
-                        if (simulation.currentTime.toSeconds() < nextSchedule.arrivalTime.toSeconds()) {
+                        if (
+                            simulation.currentTime.toSeconds() < nextSchedule.arrivalTime.toSeconds() ||
+                            this.delay.handleArrivalOrDepartureHappeningNextDay(nextSchedule.arrivalTime, null)
+                                .nextDayArrival
+                        ) {
                             // Early arrival - wait before entering the station
                             this.stop();
                             this.#isWaiting = true;
+                            this.delay.UIDelayValue = this.#nextStation.currentExceedingTimeInSeconds(this, false);
                             return;
                         }
                     }
@@ -144,7 +148,8 @@ export class Train {
                         // Cannot arrive at the station - track full; waiting
                         this.stop();
                         this.#isWaiting = true;
-                        //this.#delay.addConflictDelay(this.calculateConflictDelay());  // TODO - is it needed? Depends on how we want to present delays data #2
+                        // Increase delay due to waiting for the track to be free
+                        this.delay.UIDelayValue += simulation.timeStep;
                         return;
                     } else {
                         // Arriving at the station
@@ -180,7 +185,7 @@ export class Train {
                 this.#position.rail.getMaxSpeed(this.#position.distance),
                 this.trainTemplate.type.maxVelocity,
                 this.#velocity + this.trainTemplate.type.acceleration * simulation.timeStep,
-                velocityForcedByNextStation !== null ? velocityForcedByNextStation : Infinity
+                velocityForcedByNextStation !== null ? velocityForcedByNextStation : Infinity // TODO - inspect
             );
 
             // Update acceleration status
@@ -198,27 +203,27 @@ export class Train {
      * Calculates the velocity needed to arrive at the next station
      */
     calculateArrivingVelocity(): number | null {
-        if (this.#nextStation && this.#position instanceof TrainPositionOnRail) {
-            let velocity = this.#velocity;
-            if (this.trainTemplate.type.maxVelocity < 33 && this.distanceToNextStation! < 1200) {
-                velocity -= (0.7 + Math.random() * (0.9 - 0.7)) * simulation.timeStep;
-            } else if (
-                this.trainTemplate.type.maxVelocity >= 33 &&
-                this.trainTemplate.type.maxVelocity < 44 &&
-                this.distanceToNextStation! < 3000
-            ) {
-                velocity -= (0.5 + Math.random() * (0.7 - 0.5)) * simulation.timeStep;
-            } else if (
-                this.trainTemplate.type.maxVelocity >= 44 &&
-                this.trainTemplate.type.maxVelocity < 56 &&
-                this.distanceToNextStation! < 6000
-            ) {
-                velocity -= (0.4 + Math.random() * (0.5 - 0.4)) * simulation.timeStep;
-            } /*else if (this.distanceToNextStation! < 2000) { // for freight trains
-                velocity -= (0.3 + Math.random() * (0.5 - 0.3)) * simulation.timeStep;
-            }*/ else {
+        if (!this.#nextStation) {
+            return null;
+        }
+        const schedule = this.#nextStation.trainsSchedule.get(this.trainTemplate)?.find((s) => s.satisfied === false);
+        if (
+            this.#position instanceof TrainPositionOnRail &&
+            !(schedule?.arrivalTime == null && schedule?.departureTime == null)
+        ) {
+            let acceleration = 0;
+            if (this.#velocity >= 44.4 && this.distanceToNextStation! <= 965) {
+                acceleration = -0.7;
+            } else if (this.#velocity < 44.4 && this.#velocity >= 33.3 && this.distanceToNextStation! <= 710) {
+                acceleration = -0.55;
+            } else if (this.#velocity < 33.3 && this.distanceToNextStation! <= 375) {
+                acceleration = -0.6;
+            } else {
                 return null; // no need to reduce speed yet
             }
+
+            const road = this.#velocity * simulation.timeStep;
+            const velocity = Math.sqrt(Math.max(0, this.#velocity * this.#velocity - 2 * acceleration * road));
             return Math.max(
                 velocity,
                 Math.min(this.trainTemplate.type.maxVelocity, this.distanceToNextStation! < 200 ? 6 : 18)
@@ -252,7 +257,7 @@ export class Train {
     }
 
     /**
-     * Calculates delay due to (track occupancy) conflicts at the next station
+     * Calculates delay due to (track occupancy) conflicts at the next station // TODO - decision not to predict the delay
      * @returns delay time in seconds
      */
     calculateConflictDelay(): number {
@@ -309,7 +314,7 @@ export class Train {
         // Determine if the train should wait longer based on delay and priority
         if (
             timeLeft > 0 &&
-            otherTrain.delay.UIDelayValue < timeLeft && // TODO - consider delayTimeInSeconds or some other metric #1
+            otherTrain.delay.UIDelayValue < timeLeft &&
             otherTrain.trainTemplate.type.priority >= this.trainTemplate.type.priority
         ) {
             // If both trains are at the same station, consider their departure times to avoid excessive waiting
@@ -340,12 +345,12 @@ export class Train {
             }
             return true;
         } else if (
-            otherTrain.delay.UIDelayValue < timeLeft && // TODO - consider delayTimeInSeconds or some other metric #2
+            otherTrain.delay.UIDelayValue < timeLeft &&
             otherTrain.trainTemplate.type.priority < this.trainTemplate.type.priority
         ) {
             // TODO - randomness; for now - priority really matters
             return false;
-        } /*if (otherTrain.delay.delayTimeInSeconds >= timeLeft) */ else {
+        } /*if (otherTrain.delay.UIDelayValue >= timeLeft) */ else {
             return false;
         }
     }

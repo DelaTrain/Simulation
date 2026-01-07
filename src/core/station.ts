@@ -110,7 +110,8 @@ export class Station {
                             );
                         }
                     } else if (anyTrainToWaitFor) {
-                        //track.train!.delay.addWaitingDelay(simulation.timeStep); // TODO - is it needed? Depends on how we want to present delays data #1
+                        // Train has to wait longer for other delayed trains - increase UI delay value
+                        track.train.delay.UIDelayValue += simulation.timeStep;
                     }
                 } else if (trainSchedule && trainSchedule.arrivalTime && !trainSchedule.departureTime) {
                     // no departure time - train ends here
@@ -167,10 +168,11 @@ export class Station {
                     ? TrainDirection.FromStartToEnd
                     : TrainDirection.FromEndToStart;
             train.position = new TrainPositionOnRail(trainSchedule.nextRail!, direction, 0);
-            // Update delay info
-            train.delay.UIDelayValue = this.currentExceedingTimeInSeconds(train);
+
             if (trainSchedule.departureTime) {
                 train.delay.previousDepartureTime = trainSchedule.departureTime;
+                // Update delay info
+                train.delay.UIDelayValue = this.currentExceedingTimeInSeconds(train);
             }
         } else {
             this.destroyTrain(train);
@@ -230,8 +232,11 @@ export class Station {
         if ((this.#tracks[0].platformNumber !== 0 || this.#tracks.length === 1) && preferredTrack.train == null) {
             return preferredTrack;
         }
+        const schedule = this.#trainsSchedule.get(trainTemplate)?.find((s) => s.satisfied === false);
         const track = (
-            this.#tracks.length > 1 ? this.#tracks.filter((track) => track.platformNumber !== 0) : this.#tracks
+            this.#tracks.length > 1 && !(schedule?.departureTime == null && schedule?.arrivalTime == null)
+                ? this.#tracks.filter((track) => track.platformNumber !== 0)
+                : this.#tracks
         ).find((track) => track.train == null);
         if (!track) {
             /*console.warn(
