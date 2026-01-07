@@ -69,7 +69,7 @@ export class Station {
         });
         this.#trainsSchedule.forEach((schedules) => {
             schedules.forEach((schedule) => {
-                schedule.satisfied = false;
+                schedule.reset();
             });
         });
     }
@@ -175,7 +175,7 @@ export class Station {
         } else {
             this.destroyTrain(train);
         }
-        trainSchedule.satisfied = true;
+        trainSchedule.setDeparture(simulation.currentTime); // this marks the schedule as satisfied
         return train;
     }
 

@@ -120,8 +120,16 @@ export default function TrainInfo({ train, onUpdate, onSelectStation }: TrainInf
                                 <th>
                                     {schedule.track.platformNumber} ({schedule.track.trackNumber})
                                 </th>
-                                <td>{schedule.arrivalTime?.toShortString() ?? " - "}</td>
-                                <td>{schedule.departureTime?.toShortString() ?? " - "}</td>
+                                <td>
+                                    {schedule.arrivalTime?.toShortString() ?? " - "}{" "}
+                                    {schedule.realArrivalTime !== null &&
+                                        ` (${schedule.realArrivalTime.toShortString()})`}
+                                </td>
+                                <td>
+                                    {schedule.departureTime?.toShortString() ?? " - "}
+                                    {schedule.realDepartureTime !== null &&
+                                        ` (${schedule.realDepartureTime.toShortString()})`}
+                                </td>
                             </tr>
                         ))}
                     </tbody>

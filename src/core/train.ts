@@ -151,6 +151,7 @@ export class Train {
                         this.#isWaiting = false;
                         this.#position = trackAtTheStation; // TrainPositionOnRail no longer useful
                         this.#nextStation = null;
+                        nextSchedule.setArrival(simulation.currentTime); // Mark arrival time
 
                         // Only if this is a real stop
                         if (nextSchedule.arrivalTime) {

@@ -6,7 +6,8 @@ import type { TrainTemplate } from "./trainTemplate";
 
 export class TrainScheduleStep {
     /** Whether the Schedule has been completed (in order to check whether the train is delayed) */
-    satisfied: boolean = false;
+    realArrivalTime: Time | null = null;
+    realDepartureTime: Time | null = null;
 
     constructor(
         public train: TrainTemplate,
@@ -16,6 +17,25 @@ export class TrainScheduleStep {
         public nextRail: Rail | null,
         public track: Track
     ) {}
+
+    setArrival(time: Time) {
+        this.realArrivalTime = time.copy();
+        return this;
+    }
+
+    setDeparture(time: Time) {
+        this.realDepartureTime = time.copy();
+        return this;
+    }
+
+    get satisfied(): boolean {
+        return this.realDepartureTime !== null;
+    }
+
+    reset() {
+        this.realArrivalTime = null;
+        this.realDepartureTime = null;
+    }
 }
 
 export class SpawnTrainScheduleStep {
