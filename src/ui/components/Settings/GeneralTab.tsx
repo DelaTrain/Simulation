@@ -27,7 +27,7 @@ export default function GeneralTab() {
         }
     }, [showRedundantRails, renderer]);
 
-    const [useBetterTrainIcons, setUseBetterTrainIcons] = useState(renderer.getIsUsingBetterTrainIcons());
+    const [useBetterTrainIcons, setUseBetterTrainIcons] = useState(renderer.useBetterTrainIcons);
     useEffect(() => {
         renderer.switchToBetterTrainIcons();
     }, [useBetterTrainIcons, renderer]);

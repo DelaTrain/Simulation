@@ -6,7 +6,6 @@ export default function useSimulation() {
 
     useEffect(() => {
         const update = () => {
-            console.log("Updating simulation state in hook");
             setSimulationState(simulation.getState());
         };
         simulation.stepEvent.subscribe(update);

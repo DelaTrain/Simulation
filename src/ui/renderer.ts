@@ -7,7 +7,6 @@ import type { Train } from "../core/train";
 import { mapValue } from "../utils/math";
 import SimulationEvent from "../utils/event";
 
-const trainIcon = L.divIcon({ className: "train-icon" });
 const MIN_RENDER_DELAY_SECONDS = 30;
 const MAX_DELAY_SECONDS = 3600;
 const MAX_HEATMAP_INTENSITY = 1.0;
@@ -39,6 +38,7 @@ export class Renderer {
     heatmap: any;
     clickEvent: SimulationEvent<RendererClickEvent> = new SimulationEvent();
     enableRedundantRails: boolean = true;
+    useBetterTrainIcons: boolean = false;
 
     constructor(protected simulation: Simulation) {
         this.simulation.stepEvent.subscribe(this.update.bind(this));
@@ -234,6 +234,7 @@ export class Renderer {
     }
 
     displayTrain(train: Train) {
+        const trainIcon = L.divIcon({ className: this.useBetterTrainIcons ? "better-train-icon" : "train-icon" });
         const marker = L.marker(train.getPosition().toArray(), {
             zIndexOffset: 1000,
         }).addTo(this.map);
@@ -251,16 +252,13 @@ export class Renderer {
     }
 
     switchToBetterTrainIcons() {
+        this.useBetterTrainIcons = !this.useBetterTrainIcons;
         this.trainMarkers.forEach((marker) => {
-            marker.getElement()!.classList.toggle("better-train-icon");
+            this.map.removeLayer(marker);
         });
-    }
-
-    getIsUsingBetterTrainIcons(): boolean {
-        const firstMarker = this.trainMarkers.values().next().value;
-        if (firstMarker) {
-            return firstMarker.getElement()!.classList.contains("better-train-icon");
-        }
-        return false;
+        this.trainMarkers.clear();
+        this.simulation.trains.forEach((train) => {
+            this.displayTrain(train);
+        });
     }
 }
