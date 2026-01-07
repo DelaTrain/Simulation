@@ -115,10 +115,6 @@ export default function TrainInfo({ train, onUpdate, onSelectStation, onSelectTr
                                     className="text-blue-500 hover:underline cursor-pointer"
                                     onClick={() => {
                                         onSelectStation(schedule.track.station);
-                                        renderer.focusOnPosition(
-                                            schedule.track.station.position.latitude,
-                                            schedule.track.station.position.longitude
-                                        );
                                     }}
                                 >
                                     {schedule.track.station.name}

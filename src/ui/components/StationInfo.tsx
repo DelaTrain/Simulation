@@ -112,10 +112,6 @@ function TimeTrainInfo({
                 onClick={() => {
                     if (train !== null) {
                         onSelectTrain(train);
-                        renderer.focusOnPosition(
-                            train.position.getPosition().latitude,
-                            train.position.getPosition().longitude
-                        );
                     } else {
                         onSelectTrain(trainTemplate);
                     }

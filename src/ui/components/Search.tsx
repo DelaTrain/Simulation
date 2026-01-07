@@ -97,14 +97,7 @@ export default function Search({ setInfoPanelObject }: SearchProps) {
                         ref.current?.blur();
                     } else if (e.key === "Enter" && searchResults.length > 0) {
                         const result = searchResults[0];
-                        if (result instanceof Station) {
-                            renderer.focusOnPosition(result.position.latitude, result.position.longitude);
-                        } else if (result instanceof Train) {
-                            renderer.focusOnPosition(
-                                result.position.getPosition().latitude,
-                                result.position.getPosition().longitude
-                            );
-                        }
+                        setInfoPanelObject(result);
                         setSearchText("");
                         ref.current?.blur();
                     }
@@ -121,6 +114,7 @@ export default function Search({ setInfoPanelObject }: SearchProps) {
                             onClick={() => {
                                 setInfoPanelObject(result);
                                 setSearchText("");
+                                ref.current?.blur();
                             }}
                         >
                             {result instanceof Station ? (
