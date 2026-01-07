@@ -204,6 +204,7 @@ export class Station {
         const track = this.assignTrack(preferredTrack, trainTemplate);
         if (track) {
             const train = new Train(track, trainTemplate);
+            trainTemplate.assignTrain(train);
             train.delay.actualTrainArrival = simulation.currentTime;
             simulation.addTrain(train);
             track.trainArrival(train, null);

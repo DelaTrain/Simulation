@@ -393,6 +393,7 @@ export class Train {
         if (this.#position instanceof Track) {
             this.#position.trainDepart();
         }
+        this.trainTemplate.reset();
         simulation.removeTrain(this);
     }
 

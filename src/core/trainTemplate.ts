@@ -3,6 +3,7 @@ import type { Time } from "../utils/time";
 import type { TrainScheduleStep } from "./trainScheduleStep";
 import { simulation } from "./simulation";
 import type { Station } from "./station";
+import type { Train } from "./train";
 
 /**
  * For representation of each Train in the simulation
@@ -16,9 +17,10 @@ export class TrainTemplate {
     #customName: string | null;
     /** Additional description lines for the train */
     #description: Array<string>;
-
     /** Indicates all stations from which the departure is happening the next day compared to the departure time from the previous stations */
     nextDayStations: Map<string, Array<Time | null>> = new Map();
+
+    #train: Train | null = null;
 
     constructor(
         number: number,
@@ -30,6 +32,7 @@ export class TrainTemplate {
         this.#type = trainType;
         this.#customName = customName;
         this.#description = description;
+        this.#train = null;
     }
 
     displayName(): string {
@@ -44,6 +47,17 @@ export class TrainTemplate {
     }
     get description() {
         return this.#description;
+    }
+
+    get train() {
+        return this.#train;
+    }
+
+    assignTrain(t: Train) {
+        this.#train = t;
+    }
+    reset() {
+        this.#train = null;
     }
 
     /**

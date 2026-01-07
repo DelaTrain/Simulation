@@ -67,6 +67,9 @@ export class Simulation implements SimulationState {
         this.stations.forEach((station) => {
             station.reset();
         });
+        this.trainTemplates.forEach((trainTemplate) => {
+            trainTemplate.reset();
+        });
         this.resetEvent.emit();
     }
 
@@ -104,15 +107,6 @@ export class Simulation implements SimulationState {
     addTrain(train: Train) {
         this.trains.push(train);
         this.trainAddedEvent.emit(train);
-    }
-
-    findTrainByTemplate(template: TrainTemplate): Train | null {
-        for (const train of this.trains) {
-            if (train.trainTemplate === template) {
-                return train;
-            }
-        }
-        return null;
     }
 
     removeTrain(train: Train) {

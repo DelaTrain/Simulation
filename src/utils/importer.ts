@@ -21,6 +21,11 @@ export class ImportedData {
         this.#importRails(jsonData.rails);
         this.#importTrains(jsonData.trains);
         this.#day = new Date(jsonData.params.day);
+        console.log(
+            `Imported ${this.#stations.size} stations, ${this.#rails.size} rails (+${
+                this.#redundantRails.size
+            } redundant), ${this.#trains.length} trains`
+        );
     }
 
     #importStations(stations: any[]) {

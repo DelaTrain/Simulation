@@ -96,8 +96,7 @@ function TimeTrainInfo({
     }
 
     const trainTemplate = schedule.train;
-    const train = simulation.findTrainByTemplate(trainTemplate);
-    const renderer = useRenderer();
+    const train = trainTemplate.train;
     return (
         <td>
             <span className="flex items-center justify-center">

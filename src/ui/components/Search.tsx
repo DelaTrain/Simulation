@@ -21,10 +21,9 @@ function makeSearch(): Fuse<SearchResultObject> {
     }));
 
     const trains = simulation.trainTemplates.map((train) => {
-        const t = simulation.findTrainByTemplate(train);
         return {
             name: train.displayName(),
-            value: { exists: t !== null, value: t || train },
+            value: { exists: train.train !== null, value: train.train || train },
         };
     });
 
