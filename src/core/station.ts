@@ -28,7 +28,7 @@ export class Station {
     /** Already spawned trains to avoid multiple spawns */
     #alreadySpawnedTrains: Set<TrainTemplate> = new Set();
     /** Minimum waiting time at the station in seconds */
-    minWaitingTimeAtTheStation: number = 0;
+    minWaitingTimeAtTheStation: number = 15;
     /** Percentage of the scheduled waiting time required to be waited */
     requiredWaitingTimePercentage: number = 0.3; // 30% of the scheduled waiting time
 

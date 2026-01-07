@@ -135,6 +135,28 @@ export class Simulation implements SimulationState {
         this.deltaTime = state.deltaTime;
         this.day = this.day;
     }
+
+    /** @jakseluz says it should be like that */
+    getMinWaitingTimeAtTheStation(): number {
+        return this.stations.values().next().value?.minWaitingTimeAtTheStation ?? 0;
+    }
+
+    setMinWaitingTimeAtTheStation(value: number) {
+        this.stations.forEach((station) => {
+            station.minWaitingTimeAtTheStation = value;
+        });
+    }
+
+    /** @jakseluz says it should be like that */
+    getRequiredStopTimePercentage(): number {
+        return this.stations.values().next().value?.requiredWaitingTimePercentage ?? 0;
+    }
+
+    setRequiredStopTimePercentage(value: number) {
+        this.stations.forEach((station) => {
+            station.requiredWaitingTimePercentage = value;
+        });
+    }
 }
 
 export const simulation = new Simulation();

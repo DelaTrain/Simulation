@@ -32,6 +32,20 @@ export default function GeneralTab() {
         renderer.switchToBetterTrainIcons(useBetterTrainIcons);
     }, [useBetterTrainIcons, renderer]);
 
+    const [minWaitingTimeAtTheStation, setMinWaitingTimeAtTheStation] = useState(
+        simulation.getMinWaitingTimeAtTheStation()
+    );
+    useEffect(() => {
+        simulation.setMinWaitingTimeAtTheStation(minWaitingTimeAtTheStation);
+    }, [minWaitingTimeAtTheStation]);
+
+    const [requiredStopTimePercentage, setRequiredStopTimePercentage] = useState(
+        simulation.getRequiredStopTimePercentage()
+    );
+    useEffect(() => {
+        simulation.setRequiredStopTimePercentage(requiredStopTimePercentage);
+    }, [requiredStopTimePercentage]);
+
     return (
         <div className="flex flex-col gap-4 w-full">
             <label className="flex flex-row items-center justify-between w-full">
@@ -112,6 +126,38 @@ export default function GeneralTab() {
                     checked={useBetterTrainIcons}
                     onChange={(e) => {
                         setUseBetterTrainIcons(e.currentTarget.checked);
+                    }}
+                />
+            </label>
+            <label className="flex flex-row justify-between items-center w-full">
+                <span>
+                    Minimum stop time: <span className="font-bold">{minWaitingTimeAtTheStation.toFixed(0)}s</span>
+                </span>
+                <input
+                    className="w-50"
+                    type="range"
+                    step="5"
+                    min="0"
+                    value={minWaitingTimeAtTheStation}
+                    max="600"
+                    onChange={(e) => {
+                        setMinWaitingTimeAtTheStation(e.currentTarget.valueAsNumber);
+                    }}
+                />
+            </label>
+            <label className="flex flex-row justify-between items-center w-full">
+                <span>
+                    Required stop time percentage:{" "}
+                    <span className="font-bold">{(requiredStopTimePercentage * 100).toFixed(0)}%</span>
+                </span>
+                <input
+                    className="w-50"
+                    type="range"
+                    min="0"
+                    value={requiredStopTimePercentage * 100}
+                    max="100"
+                    onChange={(e) => {
+                        setRequiredStopTimePercentage(e.currentTarget.valueAsNumber / 100);
                     }}
                 />
             </label>
