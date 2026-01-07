@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useState } from "react";
 import useRenderer from "../hooks/useRenderer";
 import { Train } from "../../core/train";
 import { Station } from "../../core/station";
@@ -9,8 +9,13 @@ import { Track } from "../../core/track";
 import { FaTimes } from "react-icons/fa";
 import type { RendererClickEvent } from "../renderer";
 import { useDummyHistoryNavigation } from "../hooks/useHistoryNavigation";
+import { TrainTemplate } from "../../core/trainTemplate";
+import TrainTemplateInfo from "./TrainTemplateInfo";
 
-type ClickedObject = Train | Station;
+type ClickedObject = Train | TrainTemplate | Station;
+export interface InfoPanelRef {
+    setSelected: (obj: ClickedObject | null) => void;
+}
 
 function calculateClickedObject(event: RendererClickEvent): ClickedObject | null {
     const obj = event.object;
@@ -23,7 +28,7 @@ function calculateClickedObject(event: RendererClickEvent): ClickedObject | null
     return obj;
 }
 
-export default function InfoPanel() {
+const InfoPanel = forwardRef((_props, ref) => {
     const [selectedHistory, updateSelectedHistory, addSelected] = useDummyHistoryNavigation<ClickedObject | null>([
         null,
     ]);
@@ -46,6 +51,10 @@ export default function InfoPanel() {
         updateSelected();
     }, [simulationState]);
 
+    useImperativeHandle(ref, () => ({
+        setSelected,
+    }));
+
     if (selected === null) return null;
 
     return (
@@ -58,12 +67,21 @@ export default function InfoPanel() {
                     train={selected}
                     onUpdate={updateSelected}
                     onSelectStation={(s: Station) => setSelected(s)}
+                    onSelectTrainTemplate={(t: TrainTemplate) => setSelected(t)}
                 />
             ) : selected instanceof Station ? (
-                <StationInfo station={selected} onSelectTrain={(t: Train) => setSelected(t)} />
+                <StationInfo station={selected} onSelectTrain={(t: Train | TrainTemplate) => setSelected(t)} />
+            ) : selected instanceof TrainTemplate ? (
+                <TrainTemplateInfo
+                    train={selected}
+                    onSelectStation={(s: Station) => setSelected(s)}
+                    onSelectTrain={(t: Train) => setSelected(t)}
+                />
             ) : (
                 <div>Unknown object</div>
             )}
         </div>
     );
-}
+});
+
+export default InfoPanel;

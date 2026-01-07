@@ -1,20 +1,26 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Train } from "../../core/train";
 import useRenderer from "../hooks/useRenderer";
 import { Track } from "../../core/track";
 import type { Station } from "../../core/station";
 import Collapsable from "./Collapsable";
 import { FaLocationDot, FaSchool } from "react-icons/fa6";
+import type { TrainTemplate } from "../../core/trainTemplate";
 
 interface TrainInfoProps {
     train: Train;
     onUpdate: () => void;
     onSelectStation: (train: Station) => void;
+    onSelectTrainTemplate: (train: TrainTemplate) => void;
 }
 
-export default function TrainInfo({ train, onUpdate, onSelectStation }: TrainInfoProps) {
+export default function TrainInfo({ train, onUpdate, onSelectStation, onSelectTrainTemplate }: TrainInfoProps) {
     const [delay, setDelay] = useState(5);
     const renderer = useRenderer();
+
+    useEffect(() => {
+        if (train.destroyed) onSelectTrainTemplate(train.trainTemplate);
+    }, [train, onSelectTrainTemplate]);
 
     if (train.destroyed) {
         return (
@@ -109,10 +115,6 @@ export default function TrainInfo({ train, onUpdate, onSelectStation }: TrainInf
                                     className="text-blue-500 hover:underline cursor-pointer"
                                     onClick={() => {
                                         onSelectStation(schedule.track.station);
-                                        renderer.focusOnPosition(
-                                            schedule.track.station.position.latitude,
-                                            schedule.track.station.position.longitude
-                                        );
                                     }}
                                 >
                                     {schedule.track.station.name}

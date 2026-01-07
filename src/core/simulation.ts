@@ -19,6 +19,13 @@ export interface SimulationState {
     day: Date;
 }
 
+export type SimulationEvents =
+    | "stepEvent"
+    | "trainAddedEvent"
+    | "trainRemovedEvent"
+    | "resetEvent"
+    | "valueChangedEvent";
+
 export class Simulation implements SimulationState {
     timeStep: number = 15; // in seconds
     currentTime: Time = START_TIME.copy();

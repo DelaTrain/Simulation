@@ -5,40 +5,65 @@ import { simulation } from "../../core/simulation";
 import Fuse from "fuse.js";
 import useRenderer from "../hooks/useRenderer";
 import { FaLocationDot, FaTrainSubway } from "react-icons/fa6";
+import { TrainTemplate } from "../../core/trainTemplate";
+import useSimulationEvent from "../hooks/useSimulationEvent";
 
-type SearchResult = Train | Station;
+type SearchResult = Train | Station | TrainTemplate;
 type SearchResultObject = {
     name: string;
-    value: SearchResult;
+    value: { exists: boolean; value: SearchResult };
 };
 
 function makeSearch(): Fuse<SearchResultObject> {
     const stations = Array.from(simulation.stations.entries()).map(([key, station]) => ({
         name: key,
-        value: station,
+        value: { exists: false, value: station },
     }));
 
-    const trains = simulation.trains.map((train) => ({
-        name: train.displayName(),
-        value: train,
-    }));
+    const trains = simulation.trainTemplates.map((train) => {
+        const t = simulation.findTrainByTemplate(train);
+        return {
+            name: train.displayName(),
+            value: { exists: t !== null, value: t || train },
+        };
+    });
+
     const fuse = new Fuse([...stations, ...trains], {
         keys: ["name"],
         threshold: 0.3,
+        useExtendedSearch: true,
     });
     return fuse;
 }
 
-function search(query: string): Array<SearchResult> {
-    return makeSearch() // TODO: Cache Fuse instance
+function search(query: string, searchObject: Fuse<SearchResultObject>): Array<SearchResult> {
+    return searchObject
         .search(query)
-        .sort((a, b) => a.score! - b.score!)
-        .map((result) => result.item.value);
+        .sort((a, b) =>
+            a.item.value.exists == b.item.value.exists ? a.score! - b.score! : a.item.value.exists ? -1 : 1
+        )
+        .map((result) => result.item.value.value);
 }
 
-export default function Search() {
+interface SearchProps {
+    setInfoPanelObject: (obj: SearchResult | null) => void;
+}
+
+export default function Search({ setInfoPanelObject }: SearchProps) {
     const [searchText, setSearchText] = useState("");
+    const [searchObject, setSearchObject] = useState<Fuse<SearchResultObject>>(makeSearch());
     const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+
+    useSimulationEvent("trainAddedEvent", () => {
+        setSearchObject(makeSearch());
+    });
+    useSimulationEvent("trainRemovedEvent", () => {
+        setSearchObject(makeSearch());
+    });
+    useSimulationEvent("resetEvent", () => {
+        setSearchObject(makeSearch());
+    });
+
     const renderer = useRenderer();
     const ref = useRef<HTMLInputElement>(null);
 
@@ -52,12 +77,12 @@ export default function Search() {
 
     useEffect(() => {
         if (searchText.length > 0) {
-            const results = search(searchText);
+            const results = search(searchText, searchObject);
             setSearchResults(results);
         } else {
             setSearchResults([]);
         }
-    }, [searchText]);
+    }, [searchText, searchObject]);
 
     return (
         <div className="fixed top-0 left-0 w-full flex items-center justify-center pointer-events-none">
@@ -72,14 +97,7 @@ export default function Search() {
                         ref.current?.blur();
                     } else if (e.key === "Enter" && searchResults.length > 0) {
                         const result = searchResults[0];
-                        if (result instanceof Station) {
-                            renderer.focusOnPosition(result.position.latitude, result.position.longitude);
-                        } else if (result instanceof Train) {
-                            renderer.focusOnPosition(
-                                result.position.getPosition().latitude,
-                                result.position.getPosition().longitude
-                            );
-                        }
+                        setInfoPanelObject(result);
                         setSearchText("");
                         ref.current?.blur();
                     }
@@ -94,15 +112,9 @@ export default function Search() {
                             key={index}
                             className="p-2 hover:bg-stone-700 cursor-pointer text-white border-b border-stone-700 pt-3"
                             onClick={() => {
-                                if (result instanceof Station) {
-                                    renderer.focusOnPosition(result.position.latitude, result.position.longitude);
-                                } else if (result instanceof Train) {
-                                    renderer.focusOnPosition(
-                                        result.position.getPosition().latitude,
-                                        result.position.getPosition().longitude
-                                    );
-                                }
+                                setInfoPanelObject(result);
                                 setSearchText("");
+                                ref.current?.blur();
                             }}
                         >
                             {result instanceof Station ? (
@@ -112,7 +124,7 @@ export default function Search() {
                                 </span>
                             ) : (
                                 <span className="flex flex-row gap-1 items-center">
-                                    <FaTrainSubway />
+                                    <FaTrainSubway className={result instanceof Train ? "" : "opacity-50"} />
                                     {result.displayName()}
                                 </span>
                             )}

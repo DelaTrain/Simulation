@@ -4,10 +4,11 @@ import type { Train } from "../../core/train";
 import useRenderer from "../hooks/useRenderer";
 import type { TrainScheduleStep } from "../../core/trainScheduleStep";
 import { simulation } from "../../core/simulation";
+import type { TrainTemplate } from "../../core/trainTemplate";
 
 interface StationInfoProps {
     station: Station;
-    onSelectTrain: (train: Train) => void;
+    onSelectTrain: (train: Train | TrainTemplate) => void;
 }
 
 export default function StationInfo({ station, onSelectTrain }: StationInfoProps) {
@@ -88,7 +89,7 @@ function TimeTrainInfo({
 }: {
     schedule: TrainScheduleStep | null;
     isArrivalTime: boolean;
-    onSelectTrain: (train: Train) => void;
+    onSelectTrain: (train: Train | TrainTemplate) => void;
 }) {
     if (!schedule) {
         return <td> - </td>;
@@ -107,14 +108,12 @@ function TimeTrainInfo({
                 )}
             </span>
             <div
-                className={`text-xs opacity-70 ${train !== null ? "text-blue-500 cursor-pointer hover:underline" : ""}`}
+                className="text-xs opacity-70 text-blue-500 cursor-pointer hover:underline"
                 onClick={() => {
                     if (train !== null) {
                         onSelectTrain(train);
-                        renderer.focusOnPosition(
-                            train.position.getPosition().latitude,
-                            train.position.getPosition().longitude
-                        );
+                    } else {
+                        onSelectTrain(trainTemplate);
                     }
                 }}
             >
