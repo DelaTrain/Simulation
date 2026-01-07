@@ -1,5 +1,8 @@
 import type { TrainCategory } from "./trainCategory";
 import type { Time } from "../utils/time";
+import type { TrainScheduleStep } from "./trainScheduleStep";
+import { simulation } from "./simulation";
+import type { Station } from "./station";
 
 /**
  * For representation of each Train in the simulation
@@ -41,5 +44,55 @@ export class TrainTemplate {
     }
     get description() {
         return this.#description;
+    }
+
+    /**
+     * Gets the full schedule of the train
+     * @returns array of TrainScheduleStep
+     */
+    getSchedules(): TrainScheduleStep[] {
+        const starting = Array.from(simulation.stations.values()).filter((s: Station) => s.startingTrains.has(this));
+        if (starting.length !== 1) {
+            console.error("Train starting station not found or multiple found");
+            return [];
+        }
+
+        let count = 0;
+        const results: TrainScheduleStep[] = [];
+        let station: Station = starting[0];
+        let lastStopTime: number = 0;
+        let visited: Set<TrainScheduleStep> = new Set();
+        while (station) {
+            count++;
+            if (count > 200) {
+                console.error("Infinite loop detected in getSchedules for train " + this.displayName());
+                break;
+            }
+            const schedules = station.trainsSchedule.get(this);
+            if (schedules === undefined) break;
+            const schedule = schedules
+                .filter((s) => (s.departureTime ? s.departureTime.toSeconds() > lastStopTime : true))
+                .sort((a, b) => {
+                    const timeA = a.departureTime
+                        ? a.departureTime.toSeconds()
+                        : a.arrivalTime
+                        ? a.arrivalTime.toSeconds()
+                        : Infinity;
+                    const timeB = b.departureTime
+                        ? b.departureTime.toSeconds()
+                        : b.arrivalTime
+                        ? b.arrivalTime.toSeconds()
+                        : Infinity;
+                    return timeA - timeB;
+                })
+                .find((s) => !visited.has(s));
+            if (!schedule) break;
+            results.push(schedule);
+            visited.add(schedule);
+            lastStopTime = schedule.departureTime === null ? lastStopTime : schedule.departureTime.toSeconds();
+            if (schedule.nextStation === null) break;
+            station = schedule.nextStation;
+        }
+        return results.filter((s) => s.departureTime !== null || s.arrivalTime !== null);
     }
 }
