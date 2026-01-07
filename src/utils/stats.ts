@@ -1,6 +1,7 @@
 import { simulation } from "../core/simulation";
 import type { Time } from "../utils/time";
 import { Track } from "../core/track";
+import type { Station } from "../core/station";
 
 export type StatsKey = "trainsAlive" | "averageLatency";
 
@@ -8,10 +9,19 @@ class StatsCollector {
     trainsAlive: Array<number> = [];
     averageLatency: Array<number> = []; // in minutes
     timeSteps: Array<Time> = [];
+    stationsStats: Map<string, StationStatsCollector> = new Map();
 
     constructor() {
         simulation.stepEvent.subscribe(this.collectStats.bind(this));
         simulation.resetEvent.subscribe(this.resetStats.bind(this));
+    }
+
+    switchCollectStatsForStation(station: Station, collect: boolean) {
+        if (!this.stationsStats.has(station.name) && collect) {
+            this.stationsStats.set(station.name, new StationStatsCollector(station));
+        } else if (this.stationsStats.has(station.name) && !collect) {
+            this.stationsStats.delete(station.name);
+        }
     }
 
     collectStats() {
@@ -30,12 +40,20 @@ class StatsCollector {
 
         // record time step
         this.timeSteps.push(simulation.currentTime.copy());
+
+        // collect stats for each station
+        this.stationsStats.forEach((collector) => {
+            collector.collectStats();
+        });
     }
 
     resetStats() {
         this.trainsAlive = [];
         this.averageLatency = [];
         this.timeSteps = [];
+        this.stationsStats.forEach((collector) => {
+            collector.resetStats();
+        });
     }
 
     totalStats() {
@@ -52,6 +70,60 @@ class StatsCollector {
             trainsAlive: totalTrainsAlive / totalTime,
             averageLatency: totalAverageLatency / totalTime,
         };
+    }
+
+    isCollectingStatsForStation(station: Station): boolean {
+        return this.stationsStats.has(station.name);
+    }
+}
+
+export type StationStatsKey = "trainsArrived" | "trainsDeparted" | "trainsInStation" | "trainsDelayed" | "sumOfDelays";
+
+class StationStatsCollector {
+    station: Station;
+    trainsArrived: Array<number> = [];
+    trainsDeparted: Array<number> = [];
+    trainsInStation: Array<number> = [];
+    trainsDelayed: Array<number> = [];
+    sumOfDelays: Array<number> = [];
+    timeSteps: Array<Time> = [];
+
+    constructor(station: Station) {
+        this.station = station;
+        simulation.stepEvent.subscribe(this.collectStats.bind(this));
+        simulation.resetEvent.subscribe(this.resetStats.bind(this));
+    }
+
+    collectStats() {
+        const schedules = Array.from(this.station.trainsSchedule.values()).flatMap((sch) => sch);
+        const arrived = schedules.filter((sch) => sch.realArrivalTime !== null).length;
+        const departed = schedules.filter((sch) => sch.realDepartureTime !== null).length;
+        const inStation = this.station.tracks.filter((track) => track.train !== null).length;
+        const delayedTrains = schedules.filter((sch) => {
+            const train = sch.train.train;
+            return train !== null && train.delay.UIDelayValue > 0 && !train.destroyed;
+        });
+        const delayedCount = delayedTrains.length;
+        const totalDelay = delayedTrains.reduce((sum: number, sch) => {
+            const train = sch.train.train;
+            return sum + (train ? train.delay.UIDelayValue : 0);
+        }, 0);
+
+        this.trainsArrived.push(arrived);
+        this.trainsDeparted.push(departed);
+        this.trainsInStation.push(inStation);
+        this.trainsDelayed.push(delayedCount);
+        this.sumOfDelays.push(totalDelay / 60); // in minutes
+        this.timeSteps.push(simulation.currentTime.copy());
+    }
+
+    resetStats() {
+        this.trainsArrived = [];
+        this.trainsDeparted = [];
+        this.trainsInStation = [];
+        this.trainsDelayed = [];
+        this.sumOfDelays = [];
+        this.timeSteps = [];
     }
 }
 

@@ -1,10 +1,11 @@
-import { FaLocationDot, FaLock, FaUnlock } from "react-icons/fa6";
+import { FaEye, FaEyeSlash, FaLocationDot, FaLock, FaUnlock } from "react-icons/fa6";
 import type { Station } from "../../core/station";
 import type { Train } from "../../core/train";
 import useRenderer from "../hooks/useRenderer";
 import type { TrainScheduleStep } from "../../core/trainScheduleStep";
 import type { TrainTemplate } from "../../core/trainTemplate";
 import { useState } from "react";
+import { statsCollector } from "../../utils/stats";
 
 interface StationInfoProps {
     station: Station;
@@ -36,6 +37,22 @@ export default function StationInfo({ station, onSelectTrain, onUpdate }: Statio
                     }}
                 >
                     {station.isBlocked() ? <FaLock size={16} /> : <FaUnlock size={16} />}
+                </button>
+                <button
+                    className="btn btn-icon"
+                    onClick={() => {
+                        statsCollector.switchCollectStatsForStation(
+                            station,
+                            !statsCollector.isCollectingStatsForStation(station)
+                        );
+                        onUpdate();
+                    }}
+                >
+                    {statsCollector.isCollectingStatsForStation(station) ? (
+                        <FaEye size={16} />
+                    ) : (
+                        <FaEyeSlash size={16} />
+                    )}
                 </button>
             </div>
             <div className="overflow-y-auto h-panel pr-2">
