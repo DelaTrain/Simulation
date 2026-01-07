@@ -138,10 +138,14 @@ export class ImportedData {
         dayShift: boolean = false
     ): [Time | null, boolean] {
         const stop_current = t.stops[i];
+        let minWaitingTime: number = 0;
 
         // maybe not necessary but good for clarity; less chance of mistakes
         // null arrival/departure times for first/last stops for trains changing numbers and being treated as separate ones
         if (i == 0) {
+            if (stop_current.arrival_time != null) {
+                minWaitingTime = 10 * 60;
+            }
             stop_current.arrival_time = null;
         } else if (i == t.stops.length - 1) {
             stop_current.departure_time = null;
@@ -215,7 +219,7 @@ export class ImportedData {
                 this.#rails.set(stationKey, rail);
             }
         }
-        sc.addScheduleInfo(trainTemplate, track, arrival_time, departure_time, sn ?? null, rail);
+        sc.addScheduleInfo(trainTemplate, track, arrival_time, departure_time, sn ?? null, rail, minWaitingTime);
         return [departure_time, dayShift];
     }
 

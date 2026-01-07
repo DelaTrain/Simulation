@@ -27,6 +27,10 @@ export class Station {
     #startingTrains: Map<TrainTemplate, SpawnTrainScheduleStep> = new Map();
     /** Already spawned trains to avoid multiple spawns */
     #alreadySpawnedTrains: Set<TrainTemplate> = new Set();
+    /** Minimum waiting time at the station in seconds */
+    minWaitingTimeAtTheStation: number = 0;
+    /** Percentage of the scheduled waiting time required to be waited */
+    requiredWaitingTimePercentage: number = 0.3; // 30% of the scheduled waiting time
 
     constructor(name: string, position: Position, importance: number = 0) {
         this.#name = name;
@@ -89,15 +93,24 @@ export class Station {
                         .filter((t) => t !== track.train)
                         .some((t) => track.train!.shouldWaitLonger(t, schedules));
                     if (
-                        track.train &&
-                        simulation.currentTime.toSeconds() >= trainSchedule!.departureTime!.toSeconds() &&
+                        track.train && // train is still at the track
+                        simulation.currentTime.toSeconds() >= trainSchedule!.departureTime!.toSeconds() && // departure time reached
                         !track.train.delay.handleArrivalOrDepartureHappeningNextDay(
                             trainSchedule!.arrivalTime,
                             trainSchedule!.departureTime
-                        ).nextDayDeparture &&
+                        ).nextDayDeparture && // not next day departure
                         (!anyTrainToWaitFor ||
                             this.currentExceedingTimeInSeconds(track.train) >
-                                track.train.trainTemplate.type.maxWaitingTime)
+                                track.train.trainTemplate.type.maxWaitingTime) && // no other delayed trains to wait for or exceeded max waiting time
+                        track.train.delay.currentWaitingTimeAtTheStationInSeconds >=
+                            Math.max(
+                                trainSchedule.arrivalTime
+                                    ? (trainSchedule.departureTime.toSeconds() -
+                                          trainSchedule.arrivalTime.toSeconds()) *
+                                          this.requiredWaitingTimePercentage
+                                    : 0,
+                                this.minWaitingTimeAtTheStation + trainSchedule.minWaitingTimeAtStation
+                            ) // ensure minimum waiting time at the station
                     ) {
                         // Normal departure
                         const train = this.departTrain(track, trainSchedule);
@@ -325,7 +338,8 @@ export class Station {
         arrivalTime: Time | null,
         departureTime: Time | null,
         nextStation: Station | null,
-        railToNextStation: Rail | null
+        railToNextStation: Rail | null,
+        minWaitingTimeAtTheStation: number = 0
     ) {
         const scheduleStep = new TrainScheduleStep(
             train,
@@ -333,7 +347,8 @@ export class Station {
             departureTime,
             nextStation,
             railToNextStation,
-            track
+            track,
+            minWaitingTimeAtTheStation
         );
         if (!this.#trainsSchedule.has(train)) {
             this.#trainsSchedule.set(train, []);

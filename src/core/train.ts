@@ -185,7 +185,7 @@ export class Train {
                 this.#position.rail.getMaxSpeed(this.#position.distance),
                 this.trainTemplate.type.maxVelocity,
                 this.#velocity + this.trainTemplate.type.acceleration * simulation.timeStep,
-                velocityForcedByNextStation !== null ? velocityForcedByNextStation : Infinity // TODO - inspect
+                velocityForcedByNextStation !== null ? velocityForcedByNextStation : Infinity
             );
 
             // Update acceleration status

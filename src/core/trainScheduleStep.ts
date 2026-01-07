@@ -15,7 +15,8 @@ export class TrainScheduleStep {
         public departureTime: Time | null,
         public nextStation: Station | null,
         public nextRail: Rail | null,
-        public track: Track
+        public track: Track,
+        public minWaitingTimeAtStation: number = 0
     ) {}
 
     setArrival(time: Time) {
