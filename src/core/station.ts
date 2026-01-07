@@ -280,7 +280,7 @@ export class Station {
      * @returns array of late trains at the station and the full trains schedule map
      */
     lateTrainsToArrive(): [Train[], Map<TrainTemplate, TrainScheduleStep[]>] {
-        const delayedTrainsTemplates = Array.from(this.#trainsSchedule.entries())
+        const delayedTrains = Array.from(this.#trainsSchedule.entries())
             .filter(([_, schedules]) => {
                 const schedule = schedules.find((schedule) => schedule.satisfied === false);
                 return (
@@ -294,9 +294,8 @@ export class Station {
                     (schedule.arrivalTime ? schedule.arrivalTime.toSeconds() > 0 : true)
                 );
             })
-            .map(([trainTemplate]) => trainTemplate);
-
-        const delayedTrains = simulation.trains.filter((train) => delayedTrainsTemplates.includes(train.trainTemplate));
+            .map(([trainTemplate]) => trainTemplate.train)
+            .filter((train) => train !== null);
         return [delayedTrains, this.#trainsSchedule];
     }
 
