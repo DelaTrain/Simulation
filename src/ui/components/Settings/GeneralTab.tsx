@@ -1,4 +1,4 @@
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Rail } from "../../../core/rail";
 import useRenderer from "../../hooks/useRenderer";
 import useSimulation from "../../hooks/useSimulation";
@@ -27,9 +27,9 @@ export default function GeneralTab() {
         }
     }, [showRedundantRails, renderer]);
 
-    const [useBetterTrainIcons, setUseBetterTrainIcons] = useState(renderer.useBetterTrainIcons);
+    const [useBetterTrainIcons, setUseBetterTrainIcons] = useState(renderer.getIsUsingBetterTrainIcons());
     useEffect(() => {
-        renderer.switchToBetterTrainIcons();
+        renderer.switchToBetterTrainIcons(useBetterTrainIcons);
     }, [useBetterTrainIcons, renderer]);
 
     return (

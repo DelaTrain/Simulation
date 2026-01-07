@@ -251,8 +251,8 @@ export class Renderer {
         this.trainMarkers.set(train, marker);
     }
 
-    switchToBetterTrainIcons() {
-        this.useBetterTrainIcons = !this.useBetterTrainIcons;
+    switchToBetterTrainIcons(value: boolean) {
+        this.useBetterTrainIcons = value;
         this.trainMarkers.forEach((marker) => {
             this.map.removeLayer(marker);
         });
@@ -260,5 +260,9 @@ export class Renderer {
         this.simulation.trains.forEach((train) => {
             this.displayTrain(train);
         });
+    }
+
+    getIsUsingBetterTrainIcons(): boolean {
+        return this.useBetterTrainIcons;
     }
 }
