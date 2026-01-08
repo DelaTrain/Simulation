@@ -1,5 +1,8 @@
 export class Time {
-    constructor(private hour: number, private minute: number, private second: number) {}
+    private second: number;
+    constructor(hour: number, minute: number, second: number) {
+        this.second = second + minute * 60 + hour * 3600;
+    }
 
     static fromString(timeString: string): Time {
         const [hours, minutes, seconds] = timeString.split(":").map((x: string) => parseInt(x, 10));
@@ -7,67 +10,40 @@ export class Time {
     }
 
     copy(): Time {
-        return new Time(this.hour, this.minute, this.second);
+        return new Time(0, 0, this.second);
     }
 
     toSeconds(): number {
-        return this.hour * 3600 + this.minute * 60 + this.second;
+        return this.second;
     }
 
     addSeconds(secondsToAdd: number) {
         this.second += secondsToAdd;
-        this.normalize();
         return this;
     }
 
-    normalize() {
-        if (this.second >= 60) {
-            this.minute += Math.floor(this.second / 60);
-            this.second = this.second % 60;
-        }
-        if (this.minute >= 60) {
-            this.hour += Math.floor(this.minute / 60);
-            this.minute = this.minute % 60;
-        }
-        if (this.second < 0) {
-            const minuteBorrow = Math.ceil(Math.abs(this.second) / 60);
-            this.minute -= minuteBorrow;
-            this.second += minuteBorrow * 60;
-        }
-        if (this.minute < 0) {
-            const hourBorrow = Math.ceil(Math.abs(this.minute) / 60);
-            this.hour -= hourBorrow;
-            this.minute += hourBorrow * 60;
-        }
-        if (this.hour < 0) {
-            this.hour = 0;
-            this.minute = 0;
-            this.second = 0;
-        }
-    }
-
     get seconds(): number {
-        return this.second;
+        return this.second % 60;
     }
 
     get minutes(): number {
-        return this.minute;
+        return Math.floor((this.second % 3600) / 60);
     }
 
     get hours(): number {
-        return this.hour;
+        return Math.floor(this.second / 3600);
     }
 
     toString(): string {
-        const hh = this.hour.toString().padStart(2, "0");
-        const mm = this.minute.toString().padStart(2, "0");
-        const ss = this.second.toString().padStart(2, "0");
+        const hh = this.hours.toString().padStart(2, "0");
+        const mm = this.minutes.toString().padStart(2, "0");
+        const ss = this.seconds.toString().padStart(2, "0");
         return `${hh}:${mm}:${ss}`;
     }
 
     toShortString(): string {
-        const hh = this.hour.toString().padStart(2, "0");
-        const mm = this.minute.toString().padStart(2, "0");
+        const hh = this.hours.toString().padStart(2, "0");
+        const mm = this.minutes.toString().padStart(2, "0");
         return `${hh}:${mm}`;
     }
 }
