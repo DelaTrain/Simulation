@@ -7,6 +7,7 @@ import {
     Title,
     Tooltip,
     Legend,
+    Filler,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
 import type { StationStatsKey } from "../../utils/stats";
@@ -14,7 +15,7 @@ import useStationStatsCollector from "../hooks/useStationStatsCollector";
 import type { Station } from "../../core/station";
 import { makeMultipleData } from "../../utils/chartUtils";
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
 
 interface ChartProps {
     station: Station;
