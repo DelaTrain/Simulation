@@ -296,26 +296,13 @@ export class Train {
         const schedule = schedules.get(otherTrain.trainTemplate)?.find((s) => s.satisfied === false);
         if (!schedule) {
             return false;
-        } else if (
-            schedule.arrivalTime
-                ? schedule.arrivalTime?.toSeconds()
-                : (schedule.departureTime ? schedule.departureTime.toSeconds() : 0) >
-                      simulation.currentTime.toSeconds() ||
-                  (schedule.departureTime ? schedule.departureTime?.toSeconds() : 0) >
-                      simulation.currentTime.toSeconds()
-        ) {
-            return false;
         }
 
         // Calculate time left before this train exceeds its max waiting time at the station
         const timeLeft =
             this.trainTemplate.type.maxWaitingTime - this.position.station.currentExceedingTimeInSeconds(this);
         // Determine if the train should wait longer based on delay and priority
-        if (
-            timeLeft > 0 &&
-            otherTrain.delay.UIDelayValue < timeLeft &&
-            otherTrain.trainTemplate.type.priority >= this.trainTemplate.type.priority
-        ) {
+        if (timeLeft > 0 && otherTrain.trainTemplate.type.priority >= this.trainTemplate.type.priority) {
             // If both trains are at the same station, consider their departure times to avoid excessive waiting
             if (otherTrain.position instanceof Track) {
                 const trainStation = otherTrain.position.station;
@@ -343,10 +330,7 @@ export class Train {
                 }
             }
             return true;
-        } else if (
-            otherTrain.delay.UIDelayValue < timeLeft &&
-            otherTrain.trainTemplate.type.priority < this.trainTemplate.type.priority
-        ) {
+        } else if (otherTrain.trainTemplate.type.priority < this.trainTemplate.type.priority) {
             // TODO - randomness; for now - priority really matters
             return false;
         } /*if (otherTrain.delay.UIDelayValue >= timeLeft) */ else {
