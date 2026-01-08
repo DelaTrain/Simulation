@@ -132,7 +132,7 @@ export class Train {
                     if (nextSchedule.arrivalTime) {
                         if (
                             simulation.currentTime.toSeconds() < nextSchedule.arrivalTime.toSeconds() ||
-                            this.delay.handleArrivalOrDepartureHappeningNextDay(nextSchedule.arrivalTime, null)
+                            this.delay.handleArrivalOrDepartureHappeningNextDay(true, nextSchedule.arrivalTime, null)
                                 .nextDayArrival
                         ) {
                             // Early arrival - wait before entering the station

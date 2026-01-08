@@ -100,6 +100,7 @@ export class Station {
                     if (
                         simulation.currentTime.toSeconds() >= trainSchedule.departureTime.toSeconds() && // departure time reached
                         !track.train.delay.handleArrivalOrDepartureHappeningNextDay(
+                            true,
                             trainSchedule.arrivalTime,
                             trainSchedule.departureTime
                         ).nextDayDeparture && // not next day departure
@@ -271,16 +272,22 @@ export class Station {
     lateTrainsToArrive(): TrainScheduleStep[] {
         const delayedTrains = Array.from(this.#trainsSchedule.values())
             .flatMap((schedules) => schedules)
-            .filter(
-                (schedule) =>
+            .filter((schedule) => {
+                const nextDay = simulation.trains
+                    .find((train) => train.trainTemplate === schedule.train)
+                    ?.delay.handleArrivalOrDepartureHappeningNextDay(
+                        false,
+                        schedule.arrivalTime,
+                        schedule.departureTime
+                    );
+                return (
                     schedule.realArrivalTime === null &&
                     schedule.arrivalTime !== null &&
                     schedule.arrivalTime.toSeconds() < simulation.currentTime.toSeconds() &&
-                    !simulation.trains
-                        .find((train) => train.trainTemplate === schedule.train)
-                        ?.delay.handleArrivalOrDepartureHappeningNextDay(schedule.arrivalTime, schedule.departureTime)
-                        .nextDayArrival
-            );
+                    !nextDay?.nextDayArrival &&
+                    !nextDay?.nextDayDeparture
+                );
+            });
         return delayedTrains;
     }
 
@@ -297,14 +304,18 @@ export class Station {
         if (schedule) {
             if (departure && schedule.departureTime) {
                 if (
-                    train.delay.handleArrivalOrDepartureHappeningNextDay(null, schedule.departureTime).nextDayDeparture
+                    train.delay.handleArrivalOrDepartureHappeningNextDay(true, null, schedule.departureTime)
+                        .nextDayDeparture
                 ) {
                     return 0;
                 } else {
                     return Math.max(0, simulation.currentTime.toSeconds() - schedule.departureTime.toSeconds());
                 }
             } else if (!departure && schedule.arrivalTime) {
-                if (train.delay.handleArrivalOrDepartureHappeningNextDay(schedule.arrivalTime, null).nextDayArrival) {
+                if (
+                    train.delay.handleArrivalOrDepartureHappeningNextDay(true, schedule.arrivalTime, null)
+                        .nextDayArrival
+                ) {
                     return 0;
                 } else {
                     return Math.max(0, simulation.currentTime.toSeconds() - schedule.arrivalTime.toSeconds());

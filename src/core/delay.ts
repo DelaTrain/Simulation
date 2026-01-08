@@ -1,5 +1,6 @@
 import { simulation } from "./simulation";
 import { Time } from "../utils/time";
+import type { Station } from "./station";
 
 /**
  * Class representing delay information for a train & storing delay-related data (including actual arrival time, user delays, current waiting time at a station, previous departure time, and day shift information - to be useful while at stations)
@@ -89,6 +90,7 @@ export class Delay {
      *  - nextDayDeparture: true if departure happens the next day
      */
     handleArrivalOrDepartureHappeningNextDay(
+        rememberState: boolean,
         arrivalTime: Time | null,
         departureTime: Time | null
     ): { nextDayArrival: boolean; nextDayDeparture: boolean } {
@@ -98,10 +100,14 @@ export class Delay {
         }
         if (this.#previousDepartureTime) {
             if (arrivalTime && arrivalTime.toSeconds() < this.#previousDepartureTime.toSeconds()) {
-                this.#dayShift = true;
+                if (rememberState) {
+                    this.#dayShift = true;
+                }
                 return { nextDayArrival: true, nextDayDeparture: true };
             } else if (departureTime && departureTime.toSeconds() < this.#previousDepartureTime.toSeconds()) {
-                this.#dayShift = true;
+                if (rememberState) {
+                    this.#dayShift = true;
+                }
                 return { nextDayArrival: false, nextDayDeparture: true };
             }
         }
