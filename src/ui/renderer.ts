@@ -2,7 +2,7 @@ import type { Simulation } from "../core/simulation";
 import * as L from "leaflet";
 import type { Station } from "../core/station";
 import type { Rail } from "../core/rail";
-import type { Train } from "../core/train";
+import { Train } from "../core/train";
 import { mapValue } from "../utils/math";
 import SimulationEvent from "../utils/event";
 
@@ -46,6 +46,8 @@ export class Renderer {
         this.simulation.resetEvent.subscribe(this.reset.bind(this));
 
         this.map = L.map("map", { zoomControl: false }).setView([50.061389, 19.938333], 12);
+        this.map.on("zoomend", this.render.bind(this));
+        this.map.on("moveend", this.render.bind(this));
         this.trainMarkers = new Map();
         this.stationMarkers = new Map();
         this.railLines = new Map();
@@ -105,6 +107,7 @@ export class Renderer {
         this.simulation.trains.forEach((train) => {
             this.displayTrain(train);
         });
+        this.render();
     }
 
     reset() {
@@ -155,42 +158,57 @@ export class Renderer {
     }
 
     update() {
-        this.simulation.trains.forEach((train) => {
-            const marker = this.trainMarkers.get(train);
-            if (marker) {
-                if (
-                    marker.getLatLng().lat !== train.getPosition().latitude ||
-                    marker.getLatLng().lng !== train.getPosition().longitude
-                )
-                    marker.setLatLng(train.getPosition().toArray());
-                marker.getElement()!.style.backgroundColor = colorScale(
-                    mapValue(0, MAX_DELAY_SECONDS, train.delay.UIDelayValue)
-                );
+        const bounds = this.map.getBounds();
+        const entries = Array.from(this.trainMarkers.entries());
+        entries.forEach(([train, marker]) => {
+            if (
+                marker.getLatLng().lat !== train.getPosition().latitude ||
+                marker.getLatLng().lng !== train.getPosition().longitude
+            ) {
+                marker.setLatLng(train.getPosition().toArray());
+                if (bounds.contains(marker.getLatLng())) {
+                    if (!marker.getElement()) marker.addTo(this.map);
+                } else {
+                    if (marker.getElement()) this.map.removeLayer(marker);
+                }
             }
+            this.setTrainColor(marker, train);
         });
 
         if (this.isHeatmapEnabled()) {
-            const heatmap = this.simulation.trains
-                .map((train) => {
-                    const marker = this.trainMarkers.get(train);
-                    if (marker) {
-                        marker.setLatLng(train.getPosition().toArray());
-                        marker.getElement()!.style.backgroundColor = colorScale(
-                            mapValue(0, MAX_DELAY_SECONDS, train.delay.UIDelayValue)
-                        );
-                        if (train.delay.UIDelayValue > MIN_RENDER_DELAY_SECONDS) {
-                            return [
-                                train.getPosition().latitude,
-                                train.getPosition().longitude,
-                                train.delay.UIDelayValue * MAX_HEATMAP_INTENSITY,
-                            ];
-                        }
+            const heatmap = entries
+                .map(([train, marker]) => {
+                    if (train.delay.UIDelayValue > MIN_RENDER_DELAY_SECONDS) {
+                        return [
+                            marker.getLatLng().lat,
+                            marker.getLatLng().lng,
+                            train.delay.UIDelayValue * MAX_HEATMAP_INTENSITY,
+                        ];
                     }
                     return null;
                 })
                 .filter((item) => item !== null);
             this.heatmap.setLatLngs(heatmap);
         }
+    }
+
+    setTrainColor(marker: L.Marker, train: Train) {
+        const color = mapValue(0, MAX_DELAY_SECONDS, train.delay.UIDelayValue);
+        const ele = marker.getElement();
+        if (ele) ele.style.backgroundColor = colorScale(color);
+    }
+
+    render() {
+        const markers = [...this.trainMarkers.entries(), ...this.stationMarkers.entries()];
+        const bounds = this.map.getBounds();
+        markers.forEach(([obj, marker]) => {
+            if (bounds.contains(marker.getLatLng())) {
+                if (!marker.getElement()) marker.addTo(this.map);
+                if (obj instanceof Train) this.setTrainColor(marker, obj);
+            } else {
+                if (marker.getElement()) this.map.removeLayer(marker);
+            }
+        });
     }
 
     trainAdded(train: Train) {
@@ -211,7 +229,7 @@ export class Renderer {
             title: station.name,
             alt: station.name,
             zIndexOffset: station.importance,
-        }).addTo(this.map);
+        });
         marker.bindTooltip(station.name, { direction: "top" });
         marker.on("click", () => {
             const { lat, lng } = marker.getLatLng();
@@ -241,7 +259,7 @@ export class Renderer {
         const trainIcon = L.divIcon({ className: this.useBetterTrainIcons ? "better-train-icon" : "train-icon" });
         const marker = L.marker(train.getPosition().toArray(), {
             zIndexOffset: 1000,
-        }).addTo(this.map);
+        });
         marker.setIcon(trainIcon);
         marker.bindTooltip(train.displayName(), { direction: "top" });
         marker.on("click", () => {
