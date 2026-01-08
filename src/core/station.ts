@@ -217,6 +217,10 @@ export class Station {
         return null;
     }
 
+    #areNormalTracksAvailable(): boolean {
+        return this.#tracks.some((track) => track.platformNumber !== 0);
+    }
+
     /**
      * Used by trains to get assigned to a track at the station
      * @param preferredTrack preferred track to assign to the train
@@ -242,37 +246,22 @@ export class Station {
             return null;
         }
 
-        // Special handling for buses and default type ?trains?
-        if (trainTemplate.type.name === "BUS" || trainTemplate.type.name === "DEFAULT") {
-            if (preferredTrack.train == null) {
-                return preferredTrack;
-            } else {
-                /*console.warn(
-                    `No available track for train ${trainTemplate.displayName()} at station ${this.#name}`,
-                    this.#tracks
-                );*/
-                return null;
-            }
-        }
-
-        // Try to assign preferred and not a fictitious track if possible (fictitious track has platformNumber 0 and is used if a station has no real tracks)
-        if ((this.#tracks[0].platformNumber !== 0 || this.#tracks.length === 1) && preferredTrack.train == null) {
+        if (preferredTrack.train == null) {
             return preferredTrack;
+        } else if (trainTemplate.type.isBus) {
+            return null; // no other tracks for buses
         }
         const schedule = this.#trainsSchedule.get(trainTemplate)?.find((s) => s.satisfied === false);
-        const track = (
-            this.#tracks.length > 1 && !(schedule?.departureTime == null && schedule?.arrivalTime == null)
-                ? this.#tracks.filter((track) => track.platformNumber !== 0)
-                : this.#tracks
-        ).find((track) => track.train == null);
-        if (!track) {
-            /*console.warn(
-                `No available track for train ${trainTemplate.displayName()} at station ${this.#name}`,
-                this.#tracks
-            );*/
-            return null;
-        }
-        return track;
+        const trainSkipsStation = schedule?.departureTime == null && schedule?.arrivalTime == null;
+        const track = this.#tracks
+            .filter((track) => {
+                if (!this.#areNormalTracksAvailable() || trainSkipsStation) {
+                    return true; // allow reserve track usage
+                }
+                return track.platformNumber !== 0; // exclude abnormal tracks
+            })
+            .find((track) => track.train == null);
+        return track ?? null;
     }
 
     /**
@@ -383,6 +372,12 @@ export class Station {
         const newTrack = new Track(this, platformNumber, trackNumber, isHidden);
         this.#tracks.push(newTrack);
         return newTrack;
+    }
+
+    addReserveTrack() {
+        if (!this.#areNormalTracksAvailable()) {
+            this.addTrack(0, "R");
+        }
     }
 
     /** Used in the other module */

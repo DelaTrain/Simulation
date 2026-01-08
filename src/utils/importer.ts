@@ -21,6 +21,7 @@ export class ImportedData {
         this.#importRails(jsonData.rails);
         this.#importTrains(jsonData.trains);
         this.#day = new Date(jsonData.params.day);
+        this.#stations.forEach((station) => station.addReserveTrack());
         console.log(
             `Imported ${this.#stations.size} stations, ${this.#rails.size} rails (+${
                 this.#redundantRails.size
@@ -173,7 +174,7 @@ export class ImportedData {
         const track =
             stop_current.track != null
                 ? stop_current.track === 1
-                    ? sc.addTrack(9.75, "🤡", true)
+                    ? sc.addTrack(0, "H", true)
                     : sc.addTrack(stop_current.track.platform, stop_current.track.track)
                 : sc.addTrack(0, "?");
 
@@ -217,7 +218,7 @@ export class ImportedData {
             if (!rail) {
                 if (!ALLOW_RAIL_GENERATION) {
                     throw new Error(
-                        `Train ${t.name} ${t.number} has no rail between ${sc.name} and ${sn.name}, and rail generation is disabled`
+                        `Train ${t.category} ${t.number} has no rail between ${sc.name} and ${sn.name}, and rail generation is disabled`
                     );
                 }
                 rail = new Rail(stationsSorted[0], [], stationsSorted[1], [120 / 3.6]); // default max speed 120 km/h

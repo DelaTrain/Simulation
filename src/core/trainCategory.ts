@@ -15,6 +15,8 @@ export class TrainCategory {
     #maxVelocity: number = 0;
     /** Parameter describing capability of gaining the above speed in m/s^2 (maximal acceleration value) */
     #acceleration: number = 0;
+    /** Whether this train category represents buses */
+    #isBus: boolean = false;
 
     constructor(
         name: string,
@@ -22,7 +24,8 @@ export class TrainCategory {
         priority: number,
         maxWaitingTime: number,
         maxVelocity: number,
-        acceleration: number
+        acceleration: number,
+        isBus: boolean = false
     ) {
         this.#name = name;
         this.#fullName = fullName;
@@ -30,6 +33,7 @@ export class TrainCategory {
         this.#maxWaitingTime = maxWaitingTime;
         this.#maxVelocity = maxVelocity;
         this.#acceleration = acceleration;
+        this.#isBus = isBus;
     }
 
     // getters to use in the simulation logic and not to allow direct modification
@@ -50,6 +54,9 @@ export class TrainCategory {
     }
     get acceleration() {
         return this.#acceleration;
+    }
+    get isBus() {
+        return this.#isBus;
     }
 
     // getters for the editable fields in the UI
