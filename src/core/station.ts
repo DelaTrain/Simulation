@@ -93,23 +93,10 @@ export class Station {
                     ?.find((schedule) => schedule.satisfied === false);
                 if (trainSchedule && trainSchedule.departureTime) {
                     const schedules = this.lateTrainsToArrive();
-                    console.log(
-                        `Station ${this.#name} - delayed trains to arrive: ${schedules
-                            .map((t) => t.train.displayName())
-                            .join(", ")}`
-                    );
                     const anyTrainToWaitFor = schedules
                         .filter((t) => t.train.train !== null)
                         .filter((t) => t.train.train !== track.train)
-                        .some((t) => {
-                            const val = track.train!.shouldWaitLonger(t.train.train!, this.#trainsSchedule);
-                            console.log(val);
-                            return val;
-                        });
-                    console.log(
-                        !anyTrainToWaitFor,
-                        this.currentExceedingTimeInSeconds(track.train) > track.train.trainTemplate.type.maxWaitingTime
-                    );
+                        .some((t) => track.train!.shouldWaitLonger(t.train.train!, this.#trainsSchedule));
                     if (
                         simulation.currentTime.toSeconds() >= trainSchedule.departureTime.toSeconds() && // departure time reached
                         !track.train.delay.handleArrivalOrDepartureHappeningNextDay(

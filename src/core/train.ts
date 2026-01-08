@@ -232,14 +232,6 @@ export class Train {
     }
 
     /**
-     *
-     * @returns current possible acceleration value in m/s^2
-     */
-    #currentAcceleration(): number {
-        return this.trainTemplate.type.acceleration;
-    }
-
-    /**
      * Stops the train (sets velocity to 0)
      */
     stop() {
@@ -344,6 +336,7 @@ export class Train {
             if (this.#position.station.currentExceedingTimeInSeconds(this) > 10 * 60) {
                 const schedules = this.#position.station.lateTrainsToArrive();
                 const trainsToWaitFor = schedules
+                    .filter((t) => t.train.train !== null)
                     .filter((t) => t.train.train !== this)
                     .filter((t) =>
                         this.shouldWaitLonger(t.train.train!, (this.#position as Track).station.trainsSchedule)
