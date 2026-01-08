@@ -4,9 +4,16 @@ import { FaTimes } from "react-icons/fa";
 import Collapsable from "./Collapsable";
 import StationChart from "./StationChart";
 import { statsCollector } from "../../utils/stats";
+import { TrainScheduleStep } from "../../core/trainScheduleStep";
 
 interface StatsProps {
     onClose?: () => void;
+}
+
+function scendsToString(seconds: number) {
+    const mm = Math.floor(seconds / 60).toString();
+    const ss = (seconds % 60).toString();
+    return ss === "0" ? `${mm}min` : mm === "0" ? `${ss}s` : mm === "0" && ss === "0" ? `0s` : `${mm}min ${ss}s`;
 }
 
 export default function Stats({ onClose }: StatsProps) {
@@ -19,6 +26,15 @@ export default function Stats({ onClose }: StatsProps) {
             <h3 className="text-xl font-bold mb-2">Simulation Stats</h3>
             <div className="overflow-y-auto h-panel">
                 <div className="flex flex-col gap-1">
+                    <div>
+                        {TrainScheduleStep.arrivedDelayed.map((range) => (
+                            <div key={range.min}>
+                                Trains arrived late between {range.min == -1 ? "0s" : scendsToString(range.min)} and{" "}
+                                {range.max === Infinity ? "∞" : scendsToString(range.max)} seconds:{" "}
+                                <span className="font-bold">{range.count}</span>
+                            </div>
+                        ))}
+                    </div>
                     <Chart statistic="trainsAlive" title="Trains Count" />
                     <div>
                         Average Trains Alive: <span className="font-bold">{trainsAlive.toFixed(3)}</span>

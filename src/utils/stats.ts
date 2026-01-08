@@ -2,6 +2,8 @@ import { simulation } from "../core/simulation";
 import type { Time } from "../utils/time";
 import { Track } from "../core/track";
 import type { Station } from "../core/station";
+import type { TrainCategory } from "../core/trainCategory";
+import { categoryManager } from "./categories";
 
 export type StatsKey = "trainsAlive" | "averageLatency";
 
@@ -10,10 +12,35 @@ class StatsCollector {
     averageLatency: Array<number> = []; // in minutes
     timeSteps: Array<Time> = [];
     stationsStats: Map<string, StationStatsCollector> = new Map();
+    categoryStats: Map<string, CategoryStatsCollector> = new Map();
 
     constructor() {
         simulation.stepEvent.subscribe(this.collectStats.bind(this));
         simulation.resetEvent.subscribe(this.resetStats.bind(this));
+    }
+
+    all() {
+        this.allStations();
+        this.allCategories();
+    }
+
+    allStations() {
+        simulation.stations.forEach((station) => {
+            this.switchCollectStatsForStation(station, true);
+        });
+    }
+    allCategories() {
+        categoryManager.getCategories().forEach((cat) => {
+            this.switchCollectStatsForCategory(categoryManager.mapCategory(cat.name), true);
+        });
+    }
+
+    switchCollectStatsForCategory(category: TrainCategory, collect: boolean) {
+        if (!this.categoryStats.has(category.name) && collect) {
+            this.categoryStats.set(category.name, new CategoryStatsCollector(category));
+        } else if (this.categoryStats.has(category.name) && !collect) {
+            this.categoryStats.delete(category.name);
+        }
     }
 
     switchCollectStatsForStation(station: Station, collect: boolean) {
@@ -31,7 +58,6 @@ class StatsCollector {
 
         // calculate average latency for trains
         // TODO - think if there are better ways? - calculate by collecting data from a period of time instead of single step
-        const trainsCountedInTermsOfDelay = aliveTrains.filter((train) => train.position instanceof Track);
         const latency =
             aliveTrains.reduce((sum, train) => {
                 return sum + train.delay.UIDelayValue;
@@ -43,6 +69,10 @@ class StatsCollector {
 
         // collect stats for each station
         this.stationsStats.forEach((collector) => {
+            collector.collectStats();
+        });
+        // collect stats for each train category
+        this.categoryStats.forEach((collector) => {
             collector.collectStats();
         });
     }
@@ -74,6 +104,38 @@ class StatsCollector {
 
     isCollectingStatsForStation(station: Station): boolean {
         return this.stationsStats.has(station.name);
+    }
+
+    dumpStatsToJsonString(): string {
+        const stats: any = {
+            overall: this.totalStats(),
+            stations: {},
+            categories: {},
+            trainsAlive: this.trainsAlive,
+            averageLatency: this.averageLatency,
+            timeSteps: this.timeSteps.map((t) => t.toString()),
+        };
+
+        this.stationsStats.forEach((collector, stationName) => {
+            stats.stations[stationName] = {
+                trainsArrived: collector.trainsArrived,
+                trainsDeparted: collector.trainsDeparted,
+                trainsInStation: collector.trainsInStation,
+                trainsDelayed: collector.trainsDelayed,
+                sumOfDelays: collector.sumOfDelays,
+                timeSteps: collector.timeSteps.map((t) => t.toString()),
+            };
+        });
+
+        this.categoryStats.forEach((collector, categoryName) => {
+            stats.categories[categoryName] = {
+                trainsCount: collector.trainsCount,
+                averageLatency: collector.averageLatency,
+                timeSteps: collector.timeSteps.map((t) => t.toString()),
+            };
+        });
+
+        return JSON.stringify(stats);
     }
 }
 
@@ -127,4 +189,54 @@ class StationStatsCollector {
     }
 }
 
+class CategoryStatsCollector {
+    category: TrainCategory;
+    trainsCount: Array<number> = [];
+    averageLatency: Array<number> = [];
+    timeSteps: Array<Time> = [];
+
+    constructor(category: TrainCategory) {
+        this.category = category;
+        simulation.stepEvent.subscribe(this.collectStats.bind(this));
+        simulation.resetEvent.subscribe(this.resetStats.bind(this));
+    }
+
+    collectStats() {
+        const categoryTrains = simulation.trains.filter((train) => !train.destroyed && train.type === this.category);
+        const trainsNumber = categoryTrains.length;
+        this.trainsCount.push(trainsNumber);
+
+        const latency =
+            categoryTrains.reduce((sum, train) => {
+                return sum + train.delay.UIDelayValue;
+            }, 0) / Math.max(categoryTrains.length, 1); // average latency
+        this.averageLatency.push(latency / 60); // in minutes
+
+        this.timeSteps.push(simulation.currentTime.copy());
+    }
+
+    resetStats() {
+        this.trainsCount = [];
+        this.averageLatency = [];
+        this.timeSteps = [];
+    }
+
+    totalStats() {
+        let totalTrainsCount = 0;
+        let totalAverageLatency = 0;
+        let totalTime = 0;
+        for (let i = 1; i < this.timeSteps.length; i++) {
+            const td = this.timeSteps[i].toSeconds() - this.timeSteps[i - 1].toSeconds();
+            totalTrainsCount += this.trainsCount[i] * td;
+            totalAverageLatency += this.averageLatency[i] * td;
+            totalTime += td;
+        }
+        return {
+            trainsCount: totalTrainsCount / totalTime,
+            averageLatency: totalAverageLatency / totalTime,
+        };
+    }
+}
+
 export const statsCollector = new StatsCollector();
+(window as any).statsCollector = statsCollector;
