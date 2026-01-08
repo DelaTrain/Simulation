@@ -282,6 +282,7 @@ export class Renderer {
         this.simulation.trains.forEach((train) => {
             this.displayTrain(train);
         });
+        this.render();
     }
 
     getIsUsingBetterTrainIcons(): boolean {
