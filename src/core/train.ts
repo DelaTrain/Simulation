@@ -232,14 +232,6 @@ export class Train {
     }
 
     /**
-     *
-     * @returns current possible acceleration value in m/s^2
-     */
-    #currentAcceleration(): number {
-        return this.trainTemplate.type.acceleration;
-    }
-
-    /**
      * Stops the train (sets velocity to 0)
      */
     stop() {
@@ -287,35 +279,40 @@ export class Train {
      * @param otherTrain train to wait for (or not to wait for)
      * @returns boolean indicating whether to wait longer
      */
-    shouldWaitLonger(otherTrain: Train, schedules: Map<TrainTemplate, TrainScheduleStep[]>): boolean | null {
+    shouldWaitLonger(otherTrain: Train): boolean | null {
         // Check if this train is at a station
         if (!(this.position instanceof Track)) {
             return null;
         }
+        const schedules = this.position.station.trainsSchedule;
+
         // Check if the other train has a schedule at a station in which the train has a schedule time later than the current simulation time
-        const schedule = schedules.get(otherTrain.trainTemplate)?.find((s) => s.satisfied === false);
-        if (!schedule) {
-            return false;
-        } else if (
-            schedule.arrivalTime
-                ? schedule.arrivalTime?.toSeconds()
-                : (schedule.departureTime ? schedule.departureTime.toSeconds() : 0) >
-                      simulation.currentTime.toSeconds() ||
-                  (schedule.departureTime ? schedule.departureTime?.toSeconds() : 0) >
-                      simulation.currentTime.toSeconds()
-        ) {
+        const scheduleOther = schedules.get(otherTrain.trainTemplate)?.find((s) => s.satisfied === false);
+        const schedule = schedules.get(this.trainTemplate)?.find((s) => s.satisfied === false);
+
+        const otherTime = scheduleOther
+            ? Math.max(
+                  scheduleOther.arrivalTime ? scheduleOther.arrivalTime.toSeconds() : 0,
+                  scheduleOther.departureTime ? scheduleOther.departureTime.toSeconds() : 0
+              )
+            : null;
+        const thisTime = schedule
+            ? Math.max(
+                  schedule.arrivalTime ? schedule.arrivalTime.toSeconds() : 0,
+                  schedule.departureTime ? schedule.departureTime.toSeconds() : 0
+              )
+            : null;
+        if (!otherTime || !thisTime) {
             return false;
         }
+
+        if (thisTime > thisTime) return false;
 
         // Calculate time left before this train exceeds its max waiting time at the station
         const timeLeft =
             this.trainTemplate.type.maxWaitingTime - this.position.station.currentExceedingTimeInSeconds(this);
         // Determine if the train should wait longer based on delay and priority
-        if (
-            timeLeft > 0 &&
-            otherTrain.delay.UIDelayValue < timeLeft &&
-            otherTrain.trainTemplate.type.priority >= this.trainTemplate.type.priority
-        ) {
+        if (timeLeft > 0 && otherTrain.trainTemplate.type.priority >= this.trainTemplate.type.priority) {
             // If both trains are at the same station, consider their departure times to avoid excessive waiting
             if (otherTrain.position instanceof Track) {
                 const trainStation = otherTrain.position.station;
@@ -343,10 +340,7 @@ export class Train {
                 }
             }
             return true;
-        } else if (
-            otherTrain.delay.UIDelayValue < timeLeft &&
-            otherTrain.trainTemplate.type.priority < this.trainTemplate.type.priority
-        ) {
+        } else if (otherTrain.trainTemplate.type.priority < this.trainTemplate.type.priority) {
             // TODO - randomness; for now - priority really matters
             return false;
         } /*if (otherTrain.delay.UIDelayValue >= timeLeft) */ else {
@@ -358,10 +352,11 @@ export class Train {
     warnIfLateAtStation() {
         if (this.#position instanceof Track) {
             if (this.#position.station.currentExceedingTimeInSeconds(this) > 10 * 60) {
-                const [delayedTrains, schedules] = this.#position.station.lateTrainsToArrive();
-                const trainsToWaitFor = delayedTrains
-                    .filter((t) => t !== this)
-                    .filter((t) => this.shouldWaitLonger(t, schedules));
+                const schedules = this.#position.station.lateTrainsToArrive();
+                const trainsToWaitFor = schedules
+                    .filter((t) => t.train.train !== null)
+                    .filter((t) => t.train.train !== this)
+                    .filter((t) => this.shouldWaitLonger(t.train.train!));
 
                 console.warn(
                     `${simulation.currentTime} Train ${this.displayName()} at station ${
@@ -373,9 +368,9 @@ export class Train {
                     } and is waiting for other trains: ${trainsToWaitFor
                         .map(
                             (t) =>
-                                t.displayName() +
+                                t.train.train!.displayName() +
                                 (this.#position as Track).station.trainsSchedule
-                                    .get(t.trainTemplate)
+                                    .get(t.train.train!.trainTemplate)
                                     ?.find((s) => s.satisfied === false)?.arrivalTime
                         )
                         .join(", ")}.`

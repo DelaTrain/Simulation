@@ -78,7 +78,7 @@ export class TrainTemplate {
         let visited: Set<TrainScheduleStep> = new Set();
         while (station) {
             count++;
-            if (count > 200) {
+            if (count > 64_000) {
                 console.error("Infinite loop detected in getSchedules for train " + this.displayName());
                 break;
             }
