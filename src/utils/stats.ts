@@ -123,15 +123,13 @@ class StatsCollector {
                 trainsInStation: collector.trainsInStation,
                 trainsDelayed: collector.trainsDelayed,
                 sumOfDelays: collector.sumOfDelays,
-                timeSteps: collector.timeSteps.map((t) => t.toString()),
             };
         });
 
         this.categoryStats.forEach((collector, categoryName) => {
             stats.categories[categoryName] = {
-                trainsCount: collector.trainsCount,
+                trainsCount: collector.trainsAlive,
                 averageLatency: collector.averageLatency,
-                timeSteps: collector.timeSteps.map((t) => t.toString()),
             };
         });
 
@@ -191,7 +189,7 @@ class StationStatsCollector {
 
 class CategoryStatsCollector {
     category: TrainCategory;
-    trainsCount: Array<number> = [];
+    trainsAlive: Array<number> = [];
     averageLatency: Array<number> = [];
     timeSteps: Array<Time> = [];
 
@@ -204,7 +202,7 @@ class CategoryStatsCollector {
     collectStats() {
         const categoryTrains = simulation.trains.filter((train) => !train.destroyed && train.type === this.category);
         const trainsNumber = categoryTrains.length;
-        this.trainsCount.push(trainsNumber);
+        this.trainsAlive.push(trainsNumber);
 
         const latency =
             categoryTrains.reduce((sum, train) => {
@@ -216,7 +214,7 @@ class CategoryStatsCollector {
     }
 
     resetStats() {
-        this.trainsCount = [];
+        this.trainsAlive = [];
         this.averageLatency = [];
         this.timeSteps = [];
     }
@@ -227,12 +225,12 @@ class CategoryStatsCollector {
         let totalTime = 0;
         for (let i = 1; i < this.timeSteps.length; i++) {
             const td = this.timeSteps[i].toSeconds() - this.timeSteps[i - 1].toSeconds();
-            totalTrainsCount += this.trainsCount[i] * td;
+            totalTrainsCount += this.trainsAlive[i] * td;
             totalAverageLatency += this.averageLatency[i] * td;
             totalTime += td;
         }
         return {
-            trainsCount: totalTrainsCount / totalTime,
+            trainsAlive: totalTrainsCount / totalTime,
             averageLatency: totalAverageLatency / totalTime,
         };
     }

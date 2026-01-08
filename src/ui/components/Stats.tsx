@@ -5,6 +5,7 @@ import Collapsable from "./Collapsable";
 import StationChart from "./StationChart";
 import { statsCollector } from "../../utils/stats";
 import { TrainScheduleStep } from "../../core/trainScheduleStep";
+import CategoryChart from "./CategoryChart";
 
 interface StatsProps {
     onClose?: () => void;
@@ -64,6 +65,19 @@ export default function Stats({ onClose }: StatsProps) {
                             station={s.station}
                             statistic={[{ key: "sumOfDelays", title: "Sum of delays" }]}
                         />
+                    </Collapsable>
+                ))}
+                {Array.from(statsCollector.categoryStats.entries()).map(([categoryName, c]) => (
+                    <Collapsable title={`Category: ${categoryName}`} key={categoryName}>
+                        <CategoryChart statistic="trainsAlive" title="Trains Count" categoryName={categoryName} />
+                        <div>
+                            Average Trains Alive:{" "}
+                            <span className="font-bold">{c.totalStats().trainsAlive.toFixed(3)}</span>
+                        </div>
+                        <CategoryChart statistic="averageLatency" title="Average Delay" categoryName={categoryName} />
+                        <div>
+                            Average Delay: <span className="font-bold">{c.totalStats().averageLatency.toFixed(3)}</span>
+                        </div>
                     </Collapsable>
                 ))}
             </div>
