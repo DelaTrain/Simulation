@@ -96,7 +96,7 @@ export class Station {
                     const anyTrainToWaitFor = schedules
                         .filter((t) => t.train.train !== null)
                         .filter((t) => t.train.train !== track.train)
-                        .some((t) => track.train!.shouldWaitLonger(t.train.train!, this.#trainsSchedule));
+                        .some((t) => track.train!.shouldWaitLonger(t.train.train!));
                     if (
                         simulation.currentTime.toSeconds() >= trainSchedule.departureTime.toSeconds() && // departure time reached
                         !track.train.delay.handleArrivalOrDepartureHappeningNextDay(

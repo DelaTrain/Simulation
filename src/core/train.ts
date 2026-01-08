@@ -279,16 +279,34 @@ export class Train {
      * @param otherTrain train to wait for (or not to wait for)
      * @returns boolean indicating whether to wait longer
      */
-    shouldWaitLonger(otherTrain: Train, schedules: Map<TrainTemplate, TrainScheduleStep[]>): boolean | null {
+    shouldWaitLonger(otherTrain: Train): boolean | null {
         // Check if this train is at a station
         if (!(this.position instanceof Track)) {
             return null;
         }
+        const schedules = this.position.station.trainsSchedule;
+
         // Check if the other train has a schedule at a station in which the train has a schedule time later than the current simulation time
-        const schedule = schedules.get(otherTrain.trainTemplate)?.find((s) => s.satisfied === false);
-        if (!schedule) {
+        const scheduleOther = schedules.get(otherTrain.trainTemplate)?.find((s) => s.satisfied === false);
+        const schedule = schedules.get(this.trainTemplate)?.find((s) => s.satisfied === false);
+
+        const otherTime = scheduleOther
+            ? Math.max(
+                  scheduleOther.arrivalTime ? scheduleOther.arrivalTime.toSeconds() : 0,
+                  scheduleOther.departureTime ? scheduleOther.departureTime.toSeconds() : 0
+              )
+            : null;
+        const thisTime = schedule
+            ? Math.max(
+                  schedule.arrivalTime ? schedule.arrivalTime.toSeconds() : 0,
+                  schedule.departureTime ? schedule.departureTime.toSeconds() : 0
+              )
+            : null;
+        if (!otherTime || !thisTime) {
             return false;
         }
+
+        if (thisTime > thisTime) return false;
 
         // Calculate time left before this train exceeds its max waiting time at the station
         const timeLeft =
@@ -338,9 +356,7 @@ export class Train {
                 const trainsToWaitFor = schedules
                     .filter((t) => t.train.train !== null)
                     .filter((t) => t.train.train !== this)
-                    .filter((t) =>
-                        this.shouldWaitLonger(t.train.train!, (this.#position as Track).station.trainsSchedule)
-                    );
+                    .filter((t) => this.shouldWaitLonger(t.train.train!));
 
                 console.warn(
                     `${simulation.currentTime} Train ${this.displayName()} at station ${
