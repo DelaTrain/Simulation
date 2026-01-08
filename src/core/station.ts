@@ -273,13 +273,11 @@ export class Station {
         const delayedTrains = Array.from(this.#trainsSchedule.values())
             .flatMap((schedules) => schedules)
             .filter((schedule) => {
-                const nextDay = simulation.trains
-                    .find((train) => train.trainTemplate === schedule.train)
-                    ?.delay.handleArrivalOrDepartureHappeningNextDay(
-                        false,
-                        schedule.arrivalTime,
-                        schedule.departureTime
-                    );
+                const nextDay = schedule.train.train?.delay.handleArrivalOrDepartureHappeningNextDay(
+                    false,
+                    schedule.arrivalTime,
+                    schedule.departureTime
+                );
                 return (
                     schedule.realArrivalTime === null &&
                     schedule.arrivalTime !== null &&
