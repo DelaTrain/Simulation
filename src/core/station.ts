@@ -275,7 +275,11 @@ export class Station {
                 (schedule) =>
                     schedule.realArrivalTime === null &&
                     schedule.arrivalTime !== null &&
-                    schedule.arrivalTime.toSeconds() < simulation.currentTime.toSeconds()
+                    schedule.arrivalTime.toSeconds() < simulation.currentTime.toSeconds() &&
+                    !simulation.trains
+                        .find((train) => train.trainTemplate === schedule.train)
+                        ?.delay.handleArrivalOrDepartureHappeningNextDay(schedule.arrivalTime, schedule.departureTime)
+                        .nextDayArrival
             );
         return delayedTrains;
     }
