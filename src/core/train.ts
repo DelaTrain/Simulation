@@ -358,10 +358,12 @@ export class Train {
     warnIfLateAtStation() {
         if (this.#position instanceof Track) {
             if (this.#position.station.currentExceedingTimeInSeconds(this) > 10 * 60) {
-                const [delayedTrains, schedules] = this.#position.station.lateTrainsToArrive();
-                const trainsToWaitFor = delayedTrains
-                    .filter((t) => t !== this)
-                    .filter((t) => this.shouldWaitLonger(t, schedules));
+                const schedules = this.#position.station.lateTrainsToArrive();
+                const trainsToWaitFor = schedules
+                    .filter((t) => t.train.train !== this)
+                    .filter((t) =>
+                        this.shouldWaitLonger(t.train.train!, (this.#position as Track).station.trainsSchedule)
+                    );
 
                 console.warn(
                     `${simulation.currentTime} Train ${this.displayName()} at station ${
@@ -373,9 +375,9 @@ export class Train {
                     } and is waiting for other trains: ${trainsToWaitFor
                         .map(
                             (t) =>
-                                t.displayName() +
+                                t.train.train!.displayName() +
                                 (this.#position as Track).station.trainsSchedule
-                                    .get(t.trainTemplate)
+                                    .get(t.train.train!.trainTemplate)
                                     ?.find((s) => s.satisfied === false)?.arrivalTime
                         )
                         .join(", ")}.`

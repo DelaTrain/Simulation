@@ -92,16 +92,29 @@ export class Station {
                     .get(track.train.trainTemplate)
                     ?.find((schedule) => schedule.satisfied === false);
                 if (trainSchedule && trainSchedule.departureTime) {
-                    const [delayedTrains, schedules] = this.lateTrainsToArrive();
-                    const anyTrainToWaitFor = delayedTrains
-                        .filter((t) => t !== track.train)
-                        .some((t) => track.train!.shouldWaitLonger(t, schedules));
+                    const schedules = this.lateTrainsToArrive();
+                    console.log(
+                        `Station ${this.#name} - delayed trains to arrive: ${schedules
+                            .map((t) => t.train.displayName())
+                            .join(", ")}`
+                    );
+                    const anyTrainToWaitFor = schedules
+                        .filter((t) => t.train.train !== null)
+                        .filter((t) => t.train.train !== track.train)
+                        .some((t) => {
+                            const val = track.train!.shouldWaitLonger(t.train.train!, this.#trainsSchedule);
+                            console.log(val);
+                            return val;
+                        });
+                    console.log(
+                        !anyTrainToWaitFor,
+                        this.currentExceedingTimeInSeconds(track.train) > track.train.trainTemplate.type.maxWaitingTime
+                    );
                     if (
-                        track.train && // train is still at the track
-                        simulation.currentTime.toSeconds() >= trainSchedule!.departureTime!.toSeconds() && // departure time reached
+                        simulation.currentTime.toSeconds() >= trainSchedule.departureTime.toSeconds() && // departure time reached
                         !track.train.delay.handleArrivalOrDepartureHappeningNextDay(
-                            trainSchedule!.arrivalTime,
-                            trainSchedule!.departureTime
+                            trainSchedule.arrivalTime,
+                            trainSchedule.departureTime
                         ).nextDayDeparture && // not next day departure
                         (!anyTrainToWaitFor ||
                             this.currentExceedingTimeInSeconds(track.train) >
@@ -268,24 +281,16 @@ export class Station {
      * Returns a list of trains that are late to arrive at the station
      * @returns array of late trains at the station and the full trains schedule map
      */
-    lateTrainsToArrive(): [Train[], Map<TrainTemplate, TrainScheduleStep[]>] {
-        const delayedTrains = Array.from(this.#trainsSchedule.entries())
-            .filter(([_, schedules]) => {
-                const schedule = schedules.find((schedule) => schedule.satisfied === false);
-                return (
-                    schedule &&
-                    schedule.departureTime &&
-                    schedule.satisfied === false &&
-                    schedule.departureTime.toSeconds() < simulation.currentTime.toSeconds() &&
-                    !schedule.train.nextDayStations
-                        .get(this.#name)
-                        ?.some((scheduleTime) => scheduleTime!.toSeconds() === schedule.departureTime!.toSeconds()) &&
-                    (schedule.arrivalTime ? schedule.arrivalTime.toSeconds() > 0 : true)
-                );
-            })
-            .map(([trainTemplate]) => trainTemplate.train)
-            .filter((train) => train !== null);
-        return [delayedTrains, this.#trainsSchedule];
+    lateTrainsToArrive(): TrainScheduleStep[] {
+        const delayedTrains = Array.from(this.#trainsSchedule.values())
+            .flatMap((schedules) => schedules)
+            .filter(
+                (schedule) =>
+                    schedule.realArrivalTime === null &&
+                    schedule.arrivalTime !== null &&
+                    schedule.arrivalTime.toSeconds() < simulation.currentTime.toSeconds()
+            );
+        return delayedTrains;
     }
 
     /**
