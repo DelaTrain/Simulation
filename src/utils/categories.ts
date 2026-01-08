@@ -51,3 +51,4 @@ class CategoryManager {
 }
 
 export const categoryManager = new CategoryManager();
+(window as any).categoryManager = categoryManager;
