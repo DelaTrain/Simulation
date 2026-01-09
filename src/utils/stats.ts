@@ -17,6 +17,7 @@ class StatsCollector {
     constructor() {
         simulation.stepEvent.subscribe(this.collectStats.bind(this));
         simulation.resetEvent.subscribe(this.resetStats.bind(this));
+        // this.allCategories();
     }
 
     all() {

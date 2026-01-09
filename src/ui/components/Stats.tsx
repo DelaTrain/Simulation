@@ -69,6 +69,13 @@ export default function Stats({ onClose }: StatsProps) {
                 ))}
                 {Array.from(statsCollector.categoryStats.entries()).map(([categoryName, c]) => (
                     <Collapsable title={`Category: ${categoryName}`} key={categoryName}>
+                        {TrainScheduleStep.perCategoryArrivedDelayed.get(categoryName)?.map((range) => (
+                            <div key={range.min}>
+                                Trains arrived late between {range.min == -1 ? "0s" : scendsToString(range.min)} and{" "}
+                                {range.max === Infinity ? "∞" : scendsToString(range.max)} seconds:{" "}
+                                <span className="font-bold">{range.count}</span>
+                            </div>
+                        ))}
                         <CategoryChart statistic="trainsAlive" title="Trains Count" categoryName={categoryName} />
                         <div>
                             Average Trains Alive:{" "}

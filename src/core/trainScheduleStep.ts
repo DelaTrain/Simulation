@@ -2,6 +2,7 @@ import type { Time } from "../utils/time";
 import { Rail } from "./rail";
 import { Station } from "./station";
 import type { Track } from "./track";
+import type { TrainCategory } from "./trainCategory";
 import type { TrainTemplate } from "./trainTemplate";
 
 export class TrainScheduleStep {
@@ -15,6 +16,15 @@ export class TrainScheduleStep {
         { min: 3600, max: 7199, count: 0 },
         { min: 7200, max: Infinity, count: 0 },
     ];
+
+    static perCategoryArrivedDelayed: Map<
+        string,
+        Array<{
+            min: number;
+            max: number;
+            count: number;
+        }>
+    > = new Map();
 
     /** Whether the Schedule has been completed (in order to check whether the train is delayed) */
     realArrivalTime: Time | null = null;
@@ -39,6 +49,22 @@ export class TrainScheduleStep {
                     range.count += 1;
                 }
             });
+            const category = this.train.type.name;
+            if (!TrainScheduleStep.perCategoryArrivedDelayed.has(category)) {
+                TrainScheduleStep.perCategoryArrivedDelayed.set(category, [
+                    { min: -1, max: 359, count: 0 },
+                    { min: 360, max: 3599, count: 0 },
+                    { min: 3600, max: 7199, count: 0 },
+                    { min: 7200, max: Infinity, count: 0 },
+                ]);
+            } else {
+                const categoryRanges = TrainScheduleStep.perCategoryArrivedDelayed.get(category)!;
+                categoryRanges.forEach((range) => {
+                    if (secondsLate >= range.min && secondsLate <= range.max) {
+                        range.count += 1;
+                    }
+                });
+            }
         }
         return this;
     }
